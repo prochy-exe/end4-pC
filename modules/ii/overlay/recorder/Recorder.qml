@@ -49,7 +49,7 @@ StyledOverlayWidget {
                     name: "Record region"
                     onClicked: {
                         GlobalStates.overlayOpen = false;
-                        Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "recordWithSound"]);
+                        Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "record"]);
                     }
                 }
                 
@@ -58,7 +58,12 @@ StyledOverlayWidget {
                     name: "Record screen"
                     onClicked: {
                         GlobalStates.overlayOpen = false;
-                        Quickshell.execDetached([Directories.recordScriptPath, "--fullscreen", "--sound"]);
+                        const command = [Directories.recordScriptPath, "--fullscreen"];
+                        if (Config.options.screenRecord.recordSystemAudio)
+                            command.push("--system-audio");
+                        if (Config.options.screenRecord.recordMicAudio)
+                            command.push("--mic");
+                        Quickshell.execDetached(command);
                     }
                 }
             }

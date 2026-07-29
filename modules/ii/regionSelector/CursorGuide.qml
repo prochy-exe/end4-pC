@@ -10,15 +10,16 @@ Item {
 
     property string description: switch (root.action) {
     case RegionSelection.SnipAction.Copy:
+        return Translation.tr("Capture selected area");
     case RegionSelection.SnipAction.Edit:
-        return Translation.tr("Copy region (LMB) or annotate (RMB)");
+        return Translation.tr("Capture and annotate selected area");
     case RegionSelection.SnipAction.Search:
-        return Translation.tr("Search with Google Lens");
+        return Translation.tr("Search selected area with Google Lens");
     case RegionSelection.SnipAction.CharRecognition:
-        return Translation.tr("Recognize text");
+        return Translation.tr("Recognize text in selected area");
     case RegionSelection.SnipAction.Record:
     case RegionSelection.SnipAction.RecordWithSound:
-        return Translation.tr("Record region");
+        return Translation.tr("Record selected area");
     }
     property string materialSymbol: switch (root.action) {
     case RegionSelection.SnipAction.Copy:

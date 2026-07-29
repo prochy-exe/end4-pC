@@ -25,7 +25,7 @@ Singleton {
     property string imageSearchEngineBaseUrl: Config.options.search.imageSearch.imageSearchEngineBaseUrl
     property string fileUploadApiEndpoint: "https://uguu.se/upload"
 
-    function getCommand(x, y, width, height, screenshotPath, action, saveDir = "") {
+    function getCommand(x, y, width, height, screenshotPath, action, saveDir = "", recordSystemAudio = false, recordMicAudio = false, copyToClipboard = true) {
         // Set command for action
         const rx = Math.round(x);
         const ry = Math.round(y);
@@ -48,12 +48,22 @@ Singleton {
                     return ["bash", "-c", `${cropToStdout} | wl-copy && ${cleanup}`]
                     break;
                 }
+                if (copyToClipboard) {
+                    return [
+                        "bash", "-c",
+                        `mkdir -p '${StringUtils.shellSingleQuoteEscape(saveDir)}' && \
+                        saveFileName="screenshot-$(date '+%Y-%m-%d_%H.%M.%S').png" && \
+                        savePath="${saveDir}/$saveFileName" && \
+                        ${cropToStdout} | tee >(wl-copy) > "$savePath" && \
+                        ${cleanup}`
+                    ]
+                }
                 return [
                     "bash", "-c",
                     `mkdir -p '${StringUtils.shellSingleQuoteEscape(saveDir)}' && \
                     saveFileName="screenshot-$(date '+%Y-%m-%d_%H.%M.%S').png" && \
                     savePath="${saveDir}/$saveFileName" && \
-                    ${cropToStdout} | tee >(wl-copy) > "$savePath" && \
+                    ${cropToStdout} > "$savePath" && \
                     ${cleanup}`
                 ]
 
@@ -68,10 +78,19 @@ Singleton {
                 return ["bash", "-c", `${cropInPlace} && tesseract '${StringUtils.shellSingleQuoteEscape(screenshotPath)}' stdout -l $(tesseract --list-langs | awk 'NR>1{print $1}' | tr '\\n' '+' | sed 's/\\+$/\\n/') | wl-copy && ${cleanup}`]
                 break;
             case ScreenshotAction.Action.Record:
-                return ["bash", "-c", `${Directories.recordScriptPath} --region '${slurpRegion}'`]
+                {
+                    const recordArgs = [`--region '${slurpRegion}'`];
+                    if (recordSystemAudio)
+                        recordArgs.push("--system-audio");
+                    if (recordMicAudio)
+                        recordArgs.push("--mic");
+                    if (copyToClipboard)
+                        recordArgs.push("--copy-after");
+                    return ["bash", "-c", `${Directories.recordScriptPath} ${recordArgs.join(" ")}`]
+                }
                 break;
             case ScreenshotAction.Action.RecordWithSound:
-                return ["bash", "-c", `${Directories.recordScriptPath} --region '${slurpRegion}' --sound`]
+                return ["bash", "-c", `${Directories.recordScriptPath} --region '${slurpRegion}' --system-audio`]
                 break;
             default:
                 console.warn("[Region Selector] Unknown snip action, skipping snip.");

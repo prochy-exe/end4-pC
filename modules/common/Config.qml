@@ -724,6 +724,8 @@ Singleton {
 
             property JsonObject screenRecord: JsonObject {
                 property string savePath: Directories.videos.replace("file://","") // strip "file://"
+                property bool recordSystemAudio: false
+                property bool recordMicAudio: false
             }
 
             property JsonObject screenSnip: JsonObject {

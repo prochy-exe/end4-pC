@@ -9,13 +9,87 @@ import Quickshell.Hyprland
 Scope {
     id: root
 
+    function updateHoveredMonitorFromCursor() {
+        const hoveredScreen = Quickshell.screens.find(s => {
+            const mon = Hyprland.monitorFor(s)
+            if (!mon) {
+                return false
+            }
+            const monWidth = mon.width ?? s.width
+            const monHeight = mon.height ?? s.height
+            return root.cursorGlobalX >= mon.x
+                && root.cursorGlobalX < mon.x + monWidth
+                && root.cursorGlobalY >= mon.y
+                && root.cursorGlobalY < mon.y + monHeight
+        })
+        if (!hoveredScreen) {
+            return
+        }
+        root.hoveredMonitorName = hoveredScreen.name
+        root.controlsMonitorName = hoveredScreen.name
+    }
+
     function dismiss() {
         GlobalStates.regionSelectorOpen = false
+        root.postMode = false
+    }
+
+    function currentFocusedMonitorName() {
+        const focusedName = Hyprland.focusedMonitor?.name
+        return focusedName ?? Quickshell.screens[0]?.name ?? ""
+    }
+
+    function openSelector() {
+        root.controlsMonitorName = root.currentFocusedMonitorName()
+        root.hoveredMonitorName = root.controlsMonitorName
+        if (root.controlsMonitorName === "") {
+            return
+        }
+        GlobalStates.regionSelectorOpen = true
     }
 
     property var action: RegionSelection.SnipAction.Copy
     property var selectionMode: RegionSelection.SelectionMode.RectCorners
-    
+    property bool recordSystemAudio: Config.options.screenRecord.recordSystemAudio
+    property bool recordMicAudio: Config.options.screenRecord.recordMicAudio
+    property string controlsMonitorName: ""
+    property string hoveredMonitorName: ""
+    property real cursorGlobalX: -1
+    property real cursorGlobalY: -1
+    property bool postMode: false
+
+    Process {
+        id: cursorPosProc
+        command: ["hyprctl", "cursorpos"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const parts = text.trim().split(",")
+                if (parts.length < 2) {
+                    return
+                }
+                const x = parseFloat(parts[0])
+                const y = parseFloat(parts[1])
+                if (Number.isNaN(x) || Number.isNaN(y)) {
+                    return
+                }
+                root.cursorGlobalX = x
+                root.cursorGlobalY = y
+                root.updateHoveredMonitorFromCursor()
+            }
+        }
+    }
+
+    Timer {
+        interval: 40
+        repeat: true
+        running: GlobalStates.regionSelectorOpen && !root.postMode
+        onTriggered: {
+            if (!cursorPosProc.running) {
+                cursorPosProc.running = true
+            }
+        }
+    }
+
     Variants {
         model: Quickshell.screens
         delegate: Loader {
@@ -26,8 +100,19 @@ Scope {
             sourceComponent: RegionSelection {
                 screen: regionSelectorLoader.modelData
                 onDismiss: root.dismiss()
+                onRecordingStarted: root.postMode = true
+                onSelectionModeChanged: root.selectionMode = selectionMode
+                onActionChanged: root.action = action
+                onRecordSystemAudioChanged: root.recordSystemAudio = recordSystemAudio
+                onRecordMicAudioChanged: root.recordMicAudio = recordMicAudio
                 action: root.action
                 selectionMode: root.selectionMode
+                recordSystemAudio: root.recordSystemAudio
+                recordMicAudio: root.recordMicAudio
+                showControls: regionSelectorLoader.modelData.name === root.controlsMonitorName
+                cursorGlobalX: root.cursorGlobalX
+                cursorGlobalY: root.cursorGlobalY
+                postMode: root.postMode
             }
         }
     }
@@ -46,7 +131,16 @@ Scope {
         }
         root.action = RegionSelection.SnipAction.Copy
         root.selectionMode = RegionSelection.SelectionMode.RectCorners
-        GlobalStates.regionSelectorOpen = true
+        root.openSelector()
+    }
+
+    function screenshotOrStopRecording() {
+        root.dismiss()
+        Quickshell.execDetached([
+            "bash",
+            "-c",
+            `if pgrep wf-recorder >/dev/null; then '${Directories.recordScriptPath}'; else qs -p '${Quickshell.shellPath("")}' ipc call region screenshot; fi`
+        ])
     }
 
     function search() {
@@ -56,13 +150,13 @@ Scope {
         } else {
             root.selectionMode = RegionSelection.SelectionMode.RectCorners
         }
-        GlobalStates.regionSelectorOpen = true
+        root.openSelector()
     }
 
     function ocr() {
         root.action = RegionSelection.SnipAction.CharRecognition
         root.selectionMode = RegionSelection.SelectionMode.RectCorners
-        GlobalStates.regionSelectorOpen = true
+        root.openSelector()
     }
 
     function record() {
@@ -72,17 +166,35 @@ Scope {
         }
         root.action = RegionSelection.SnipAction.Record
         root.selectionMode = RegionSelection.SelectionMode.RectCorners
-        GlobalStates.regionSelectorOpen = true
+        root.recordSystemAudio = Config.options.screenRecord.recordSystemAudio
+        root.recordMicAudio = Config.options.screenRecord.recordMicAudio
+        // If already open then re-trigger to stop recording
+        if (GlobalStates.regionSelectorOpen) GlobalStates.regionSelectorOpen = false
+        root.openSelector()
     }
 
     function recordWithSound() {
-        if (Persistent.states.record.enable) {
-            Quickshell.execDetached([Directories.recordScriptPath]);
-            return;
-        }
-        root.action = RegionSelection.SnipAction.RecordWithSound
+        root.action = RegionSelection.SnipAction.Record
         root.selectionMode = RegionSelection.SelectionMode.RectCorners
-        GlobalStates.regionSelectorOpen = true
+        root.recordSystemAudio = true
+        root.recordMicAudio = false
+        // If already open then re-trigger to stop recording
+        if (GlobalStates.regionSelectorOpen) GlobalStates.regionSelectorOpen = false
+        root.openSelector()
+    }
+
+    function recordWithOptions(systemAudio, micAudio) {
+        root.action = RegionSelection.SnipAction.Record
+        root.selectionMode = RegionSelection.SelectionMode.RectCorners
+        root.recordSystemAudio = systemAudio
+        root.recordMicAudio = micAudio
+        if (GlobalStates.regionSelectorOpen) GlobalStates.regionSelectorOpen = false
+        root.openSelector()
+    }
+
+    function stopRecording() {
+        root.dismiss()
+        Quickshell.execDetached(["bash", "-c", `pgrep wf-recorder >/dev/null && '${Directories.recordScriptPath}'`])
     }
 
     IpcHandler {
@@ -103,12 +215,18 @@ Scope {
         function recordWithSound() {
             root.recordWithSound()
         }
+        function recordWithOptions(systemAudio, micAudio) {
+            root.recordWithOptions(systemAudio, micAudio)
+        }
+        function stopRecording() {
+            root.stopRecording()
+        }
     }
 
     GlobalShortcut {
         name: "regionScreenshot"
         description: "Takes a screenshot of the selected region"
-        onPressed: root.screenshot()
+        onPressed: root.screenshotOrStopRecording()
     }
     GlobalShortcut {
         name: "regionSearch"
@@ -129,5 +247,10 @@ Scope {
         name: "regionRecordWithSound"
         description: "Records the selected region with sound"
         onPressed: root.recordWithSound()
+    }
+    GlobalShortcut {
+        name: "regionStopRecording"
+        description: "Stops active screen recording"
+        onPressed: root.stopRecording()
     }
 }

@@ -15,29 +15,58 @@ Item {
     property bool showAimLines: Config.options.regionSelector.rect.showAimLines
 
     property bool breathingBorderOnly: false
+    readonly property bool hasSelection: root.regionWidth > 0 && root.regionHeight > 0
 
-    // Overlay to darken screen
-    // Base dark overlay around region
+    // Darken the whole monitor only before a selection exists.
     Rectangle {
-        id: darkenOverlay
         z: 1
-        visible: !root.breathingBorderOnly
-        anchors {
-            left: parent.left
-            top: parent.top
-            leftMargin: root.regionX - darkenOverlay.border.width
-            topMargin: root.regionY - darkenOverlay.border.width
-        }
-        width: root.regionWidth + darkenOverlay.border.width * 2
-        height: root.regionHeight + darkenOverlay.border.width * 2
-        color: "transparent"
-        border.color: root.overlayColor
-        border.width: Math.max(root.width, root.height)
+        visible: !root.breathingBorderOnly && !root.hasSelection
+        anchors.fill: parent
+        color: root.overlayColor
+    }
+
+    // Carve out the active selection from the overlay using four rectangles.
+    Rectangle {
+        z: 2
+        visible: !root.breathingBorderOnly && root.hasSelection
+        x: 0
+        y: 0
+        width: parent.width
+        height: Math.max(0, Math.round(root.regionY))
+        color: root.overlayColor
+    }
+    Rectangle {
+        z: 2
+        visible: !root.breathingBorderOnly && root.hasSelection
+        x: 0
+        y: Math.round(root.regionY)
+        width: Math.max(0, Math.round(root.regionX))
+        height: Math.max(0, Math.round(root.regionHeight))
+        color: root.overlayColor
+    }
+    Rectangle {
+        z: 2
+        visible: !root.breathingBorderOnly && root.hasSelection
+        x: Math.round(root.regionX + root.regionWidth)
+        y: Math.round(root.regionY)
+        width: Math.max(0, parent.width - x)
+        height: Math.max(0, Math.round(root.regionHeight))
+        color: root.overlayColor
+    }
+    Rectangle {
+        z: 2
+        visible: !root.breathingBorderOnly && root.hasSelection
+        x: 0
+        y: Math.round(root.regionY + root.regionHeight)
+        width: parent.width
+        height: Math.max(0, parent.height - y)
+        color: root.overlayColor
     }
 
     DashedBorder {
         id: selectionBorder
         z: 9
+        visible: root.hasSelection
         anchors {
             left: parent.left
             top: parent.top
@@ -64,7 +93,7 @@ Item {
 
     StyledText {
         z: 2
-        visible: !root.breathingBorderOnly
+        visible: !root.breathingBorderOnly && root.hasSelection
         anchors {
             top: selectionBorder.bottom
             right: selectionBorder.right
