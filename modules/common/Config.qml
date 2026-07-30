@@ -233,6 +233,7 @@ Singleton {
                 property JsonObject input: JsonObject {
                     property string kbLayout: "us"
                     property bool showLayoutVariantInBar: true
+                    property int appleFnMode: 2
                     property bool numlock: true
                     property int repeatDelay: 250
                     property int repeatRate: 35

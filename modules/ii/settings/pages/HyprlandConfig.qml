@@ -11,6 +11,29 @@ import qs.modules.common.models.hyprland
 ContentPage {
     id: page
     forceWidth: true
+    property bool appleFnModeSupported: false
+    property int appleFnModeCurrent: Config.options.hyprland.input.appleFnMode
+    property int appleFnModeDraft: Config.options.hyprland.input.appleFnMode
+
+    function refreshAppleFnMode() {
+        appleFnModeReadProc.running = true
+    }
+
+    function setAppleFnMode(value) {
+        if (!page.appleFnModeSupported || appleFnModeWriteProc.running) return
+        const nextValue = Math.max(0, Math.min(4, Number(value)))
+        if (nextValue === page.appleFnModeCurrent) return
+
+        appleFnModeWriteProc.pendingValue = nextValue
+        const applyAndPersistScript = [
+            "set -e",
+            `printf '%s' '${nextValue}' > /sys/module/hid_apple/parameters/fnmode`,
+            "mkdir -p /etc/modprobe.d",
+            `printf '%s\\n' 'options hid_apple fnmode=${nextValue}' > /etc/modprobe.d/hid_apple.conf`
+        ].join("; ")
+        appleFnModeWriteProc.command = ["pkexec", "bash", "-c", applyAndPersistScript]
+        appleFnModeWriteProc.running = true
+    }
 
     function setPrimaryWorkspaceStart(value) {
         const start = Math.max(1, Math.min(value, Config.options.hyprland.primaryWorkspaceEnd))
@@ -74,7 +97,52 @@ ContentPage {
             "input:touchpad:clickfinger_behavior":  h.input.touchpad.clickfingerBehavior ? 1 : 0,
             "input:touchpad:scroll_factor":         h.input.touchpad.scrollFactor
         })
+        page.refreshAppleFnMode()
     }
+
+    Process {
+        id: appleFnModeReadProc
+        command: ["bash", "-c", "cat /sys/module/hid_apple/parameters/fnmode 2>/dev/null || true"]
+        stdout: StdioCollector {
+            id: appleFnModeReadCollector
+            onStreamFinished: {
+                const text = appleFnModeReadCollector.text.trim()
+                if (!/^\d+$/.test(text)) {
+                    page.appleFnModeSupported = false
+                    return
+                }
+
+                const parsed = Number(text)
+                if (parsed < 0 || parsed > 4) {
+                    page.appleFnModeSupported = false
+                    return
+                }
+
+                page.appleFnModeSupported = true
+                page.appleFnModeCurrent = parsed
+                page.appleFnModeDraft = parsed
+                Config.options.hyprland.input.appleFnMode = parsed
+            }
+        }
+    }
+
+    Process {
+        id: appleFnModeWriteProc
+        property int pendingValue: 2
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                page.appleFnModeSupported = true
+                page.appleFnModeCurrent = appleFnModeWriteProc.pendingValue
+                page.appleFnModeDraft = appleFnModeWriteProc.pendingValue
+                Config.options.hyprland.input.appleFnMode = appleFnModeWriteProc.pendingValue
+                Quickshell.execDetached(["notify-send", Translation.tr("Input settings"), Translation.tr("Apple Fn mode applied now and persisted for next boot"), "-a", "Shell"])
+                page.refreshAppleFnMode()
+            } else {
+                Quickshell.execDetached(["notify-send", Translation.tr("Input settings"), Translation.tr("Failed to apply and persist Apple Fn mode"), "-a", "Shell"])
+            }
+        }
+    }
+
     MonitorConfigOption { id: monitorConfig }
 
     ColumnLayout {
@@ -324,6 +392,62 @@ ContentPage {
                             Config.options.hyprland.input.numlock = checked
                             HyprlandConfig.set("input:numlock_by_default", checked ? 1 : 0)
                         }
+                    }
+
+                    ConfigSpinBox {
+                        icon: "keyboard_keys"
+                        enabled: page.appleFnModeSupported
+                        text: page.appleFnModeSupported
+                            ? Translation.tr("Apple Fn mode")
+                            : Translation.tr("Apple Fn mode (not available)")
+                        value: page.appleFnModeDraft
+                        from: 0
+                        to: 4
+                        stepSize: 1
+                        onValueChanged: {
+                            page.appleFnModeDraft = value
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.leftMargin: 40
+                        Layout.rightMargin: 8
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        RippleButtonWithIcon {
+                            materialIcon: "save"
+                            mainText: Translation.tr("Apply now + persist")
+                            enabled: page.appleFnModeSupported
+                                && !appleFnModeWriteProc.running
+                                && page.appleFnModeDraft !== page.appleFnModeCurrent
+                            onClicked: {
+                                page.setAppleFnMode(page.appleFnModeDraft)
+                            }
+                        }
+
+                        RippleButtonWithIcon {
+                            materialIcon: "restart_alt"
+                            mainText: Translation.tr("Reset")
+                            enabled: page.appleFnModeSupported
+                                && !appleFnModeWriteProc.running
+                                && page.appleFnModeDraft !== page.appleFnModeCurrent
+                            onClicked: {
+                                page.appleFnModeDraft = page.appleFnModeCurrent
+                            }
+                        }
+                    }
+
+                    StyledText {
+                        Layout.leftMargin: 40
+                        Layout.rightMargin: 8
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        color: Appearance.colors.colSubtext
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        text: page.appleFnModeSupported
+                            ? Translation.tr("0: disabled, 1: media keys first, 2: function keys first, 3: auto, 4: function keys disabled. Choose a value, then click Apply.")
+                            : Translation.tr("hid_apple fnmode sysfs parameter was not found on this system")
                     }
 
                     ConfigSwitch {
