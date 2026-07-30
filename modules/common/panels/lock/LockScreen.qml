@@ -150,4 +150,8 @@ Scope {
             root.initIfReady();
         }
     }
+
+    Component.onCompleted: {
+        root.initIfReady();
+    }
 }
