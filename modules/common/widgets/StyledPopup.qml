@@ -13,15 +13,22 @@ LazyLoader {
     property real popupBackgroundMargin: 0
     active: hoverTarget && hoverTarget.containsMouse
 
-    readonly property bool barVertical: Config.options.bar.vertical
+    readonly property var targetScreen: hoverTarget?.QsWindow?.window?.screen
+        ?? root.QsWindow?.window?.screen
+        ?? null
+    readonly property string popupMonitorName: targetScreen?.name ?? ""
+
+    readonly property bool barVertical: Config.getBarSetting(popupMonitorName, ["vertical"], Config.options.bar.vertical)
     readonly property string barEdge: {
-        if (!barVertical) return Config.options.bar.bottom ? "bottom" : "top"
-        return Config.options.bar.bottom ? "right" : "left"
+        const bottom = Config.getBarSetting(popupMonitorName, ["bottom"], Config.options.bar.bottom)
+        if (!barVertical) return bottom ? "bottom" : "top"
+        return bottom ? "right" : "left"
     }
     readonly property real barThickness: barVertical ? Appearance.sizes.verticalBarWidth : Appearance.sizes.barHeight
 
     component: PanelWindow {
         id: popupWindow
+        screen: root.targetScreen
 
         // Bring contentItem reference into this scope
         property Item innerContent: root.contentItem

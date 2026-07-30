@@ -45,6 +45,7 @@ PanelWindow {
     property bool postMode: false
     property var lastSelectionMode: RegionSelection.SelectionMode.RectCorners
     property bool selectionLocked: false
+    property bool selectionFromTargetRegion: false
     property string dragEditMode: "none" // none|move|resize_tl|resize_tr|resize_bl|resize_br
     property real editStartRegionX: 0
     property real editStartRegionY: 0
@@ -92,6 +93,19 @@ PanelWindow {
         sequence: "Escape"
         enabled: root.visible && root.phase === RegionSelection.Phase.Select
         onActivated: root.dismiss()
+    }
+
+    Shortcut {
+        sequence: "Ctrl+C"
+        enabled: root.visible
+            && root.phase === RegionSelection.Phase.Select
+            && root.selectionLocked
+            && root.regionWidth > 0
+            && root.regionHeight > 0
+        onActivated: {
+            root.selectionLocked = false
+            root.snip(true)
+        }
     }
 
     // Styles
@@ -247,6 +261,7 @@ PanelWindow {
 
     function resetSelectionState() {
         root.selectionLocked = false;
+        root.selectionFromTargetRegion = false;
         root.dragging = false;
         root.dragEditMode = "none";
         root.mouseButton = null;
@@ -277,7 +292,8 @@ PanelWindow {
         const screenshotAction = root.getScreenshotAction();
         const immediateAction = screenshotAction === ScreenshotAction.Action.Record
             || screenshotAction === ScreenshotAction.Action.RecordWithSound
-            || root.selectionMode !== RegionSelection.SelectionMode.RectCorners;
+            || root.selectionMode !== RegionSelection.SelectionMode.RectCorners
+            || root.selectionFromTargetRegion;
 
         if (immediateAction) {
             root.selectionLocked = false;
@@ -419,7 +435,7 @@ PanelWindow {
     }
 
     // Execution after selection
-    function snip() {
+    function snip(forceCopyToClipboard = false) {
         // Validity check
         if (root.regionWidth <= 0 || root.regionHeight <= 0) {
             console.warn("[Region Selector] Invalid region size, skipping snip.");
@@ -433,6 +449,10 @@ PanelWindow {
         const screenshotDir = Config.options.screenSnip.savePath !== "" ? //
             Config.options.screenSnip.savePath : "";
         var screenshotAction = root.getScreenshotAction();
+        const shouldForceClipboard = forceCopyToClipboard
+            && screenshotAction !== ScreenshotAction.Action.Record
+            && screenshotAction !== ScreenshotAction.Action.RecordWithSound
+        const commandCopyToClipboard = shouldForceClipboard ? true : root.copyToClipboard
         let commandX = root.regionX * root.monitorScale;
         let commandY = root.regionY * root.monitorScale;
         if (screenshotAction === ScreenshotAction.Action.Record || screenshotAction === ScreenshotAction.Action.RecordWithSound) {
@@ -450,7 +470,7 @@ PanelWindow {
             screenshotDir,
             root.recordSystemAudio,
             root.recordMicAudio,
-            root.copyToClipboard
+            commandCopyToClipboard
         )
         Quickshell.execDetached(command);
         if (root.action == RegionSelection.SnipAction.Record || root.action == RegionSelection.SnipAction.RecordWithSound) {
@@ -537,10 +557,12 @@ PanelWindow {
                 root.regionY = 0;
                 root.regionWidth = root.screen.width;
                 root.regionHeight = root.screen.height;
+                root.selectionFromTargetRegion = false;
                 root.dragging = false;
                 root.mouseButton = mouse.button;
                 return;
             }
+            root.selectionFromTargetRegion = false;
             root.dragStartX = mouse.x;
             root.dragStartY = mouse.y;
             root.draggingX = mouse.x;
@@ -592,6 +614,7 @@ PanelWindow {
             // Detect if it was a click -> Try to select targeted region
             if (isClick) {
                 if (root.targetedRegionValid()) {
+                    root.selectionFromTargetRegion = true;
                     root.setRegionToTargeted();
                 } else {
                     shouldSnip = false;
@@ -599,6 +622,7 @@ PanelWindow {
             }
             // Circle dragging?
             else if (root.selectionMode === RegionSelection.SelectionMode.Circle) {
+                root.selectionFromTargetRegion = false;
                 const padding = Config.options.regionSelector.circle.padding + Config.options.regionSelector.circle.strokeWidth / 2;
                 const dragPoints = (root.points.length > 0) ? root.points : [{ x: mouseArea.mouseX, y: mouseArea.mouseY }];
                 const maxX = Math.max(...dragPoints.map(p => p.x));
@@ -859,6 +883,7 @@ PanelWindow {
             id: selectionConfirmControls
             z: 11
             visible: root.selectionLocked
+                && !root.selectionFromTargetRegion
                 && root.phase === RegionSelection.Phase.Select
                 && root.selectionMode === RegionSelection.SelectionMode.RectCorners
                 && root.regionWidth > 0

@@ -4,8 +4,9 @@ import QtQuick.Layouts
 
 Item {
     id: root
-    property bool vertical: false
-    property bool isMaterial: Config.options.bar.cornerStyle === 3
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
+    property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     property real horizontalExtraPadding: 12
 
     property Component colDefault

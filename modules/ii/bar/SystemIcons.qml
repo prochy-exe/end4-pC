@@ -10,10 +10,11 @@ import qs.modules.common.functions
 
 Item {
     id: root
-    property bool borderless: Config.options.bar.borderless
-    property bool showDate: Config.options.bar.verbose
-    property bool vertical: Config.options.bar.vertical
-    property bool isMaterial: Config.options.bar.cornerStyle === 3
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
+    property bool showDate: Config.getBarSetting(root.monitorName, ["verbose"], Config.options.bar.verbose)
+    property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
+    property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
 
     implicitWidth: root.vertical ? 32 : flow.implicitWidth + 4
     implicitHeight: root.vertical ? flow.implicitHeight + 4 : 32

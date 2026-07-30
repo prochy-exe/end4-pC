@@ -6,9 +6,10 @@ import QtQuick.Layouts
 
 MouseArea {
     id: root
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
     property bool vertical: false
-    property bool borderless: Config.options.bar.borderless
-    property bool isMaterial: Config.options.bar.cornerStyle === 3
+    property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
+    property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     readonly property var chargeState: Battery.chargeState
     readonly property bool isCharging: Battery.isCharging
     readonly property bool isPluggedIn: Battery.isPluggedIn
@@ -19,7 +20,7 @@ MouseArea {
     implicitWidth:  vertical ? Appearance.sizes.verticalBarWidth : batteryProgress.valueBarWidth + 8
     implicitHeight: vertical ? batteryProgress.valueBarWidth + 8 : Appearance.sizes.barHeight
 
-    hoverEnabled: !Config.options.bar.tooltips.clickToShow
+    hoverEnabled: !Config.getBarSetting(root.monitorName, ["tooltips", "clickToShow"], Config.options.bar.tooltips.clickToShow)
 
     ClippedProgressBar {
         id: batteryProgress

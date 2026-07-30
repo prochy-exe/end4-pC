@@ -43,6 +43,18 @@ ContentPage {
             : path
     }
 
+    function availableNotificationMonitorNames() {
+        return Hyprland.monitors.values.map(m => m.name)
+    }
+
+    function ensureNotificationSpecificMonitor() {
+        const names = page.availableNotificationMonitorNames()
+        if (names.length === 0) return
+        const current = Config.options.notifications.monitorName ?? ""
+        if (!names.includes(current))
+            Config.options.notifications.monitorName = names[0]
+    }
+
     ColumnLayout {
         id: mainLayout 
         Layout.fillWidth: true   
@@ -1030,6 +1042,103 @@ ContentPage {
                         onCheckedChanged: {
                             Config.options.background.showSnapLines = checked;
                         }
+                    }
+                }
+            }
+        }
+
+        ContentSection {
+            icon: "notifications"
+            shape: MaterialShape.Shape.Bun
+            title: Translation.tr("Notification popups")
+
+            GroupedList {
+                ConfigComboBox {
+                    text: Translation.tr("Popup position")
+                    buttonIcon: "my_location"
+                    currentValue: Config.options.notifications.position
+                    fieldWidth: 50
+                    onSelected: newValue => {
+                        Config.options.notifications.position = newValue;
+                    }
+                    model: [
+                        {
+                            displayName: Translation.tr("Top left"),
+                            value: "top_left"
+                        },
+                        {
+                            displayName: Translation.tr("Top center"),
+                            value: "top_center"
+                        },
+                        {
+                            displayName: Translation.tr("Top right"),
+                            value: "top_right"
+                        },
+                        {
+                            displayName: Translation.tr("Bottom left"),
+                            value: "bottom_left"
+                        },
+                        {
+                            displayName: Translation.tr("Bottom center"),
+                            value: "bottom_center"
+                        },
+                        {
+                            displayName: Translation.tr("Bottom right"),
+                            value: "bottom_right"
+                        }
+                    ]
+                }
+
+                ConfigComboBox {
+                    text: Translation.tr("Popup monitor")
+                    buttonIcon: "monitor"
+                    currentValue: Config.options.notifications.monitorMode ?? "primary"
+                    fieldWidth: 50
+                    onSelected: newValue => {
+                        Config.options.notifications.monitorMode = newValue;
+                        if (newValue === "specific") {
+                            page.ensureNotificationSpecificMonitor();
+                        }
+                    }
+                    model: [
+                        { displayName: Translation.tr("Primary monitor"), value: "primary" },
+                        { displayName: Translation.tr("Specific monitor"), value: "specific" }
+                    ]
+                }
+
+                ConfigComboBox {
+                    text: Translation.tr("Specific monitor")
+                    buttonIcon: "tv"
+                    visible: (Config.options.notifications.monitorMode ?? "primary") === "specific"
+                    currentValue: Config.options.notifications.monitorName ?? ""
+                    fieldWidth: 50
+                    onSelected: newValue => {
+                        Config.options.notifications.monitorName = newValue;
+                    }
+                    model: page.availableNotificationMonitorNames().map(name => ({
+                        displayName: name,
+                        value: name
+                    }))
+                }
+
+                ConfigSwitch {
+                    buttonIcon: "counter_2"
+                    text: Translation.tr("Unread indicator: show count")
+                    checked: Config.options.bar.indicators.notifications.showUnreadCount
+                    onCheckedChanged: {
+                        Config.options.bar.indicators.notifications.showUnreadCount = checked;
+                    }
+                }
+
+                ConfigSpinBox {
+                    icon: "av_timer"
+                    text: Translation.tr("Timeout duration (if not defined by notification) (ms)")
+                    value: Config.options.notifications.timeout
+                    from: 1000
+                    to: 60000
+                    stepSize: 1000
+                    onValueChanged: {
+                        Config.options.notifications.timeout = value;
                     }
                 }
             }

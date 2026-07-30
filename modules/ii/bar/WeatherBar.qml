@@ -9,14 +9,15 @@ import QtQuick.Layouts
 MouseArea {
     id: root
     property bool hovered: false
-    property bool vertical: Config.options.bar.vertical
-    property bool isMaterial: Config.options.bar.cornerStyle === 3
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
+    property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
 
     implicitWidth: vertical ? 32 : (contentLoader.item?.implicitWidth ?? 0) 
     implicitHeight: vertical ? (contentLoader.item?.implicitHeight ?? 0) : Appearance.sizes.barHeight
 
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    hoverEnabled: !Config.options.bar.tooltips.clickToShow
+    hoverEnabled: !Config.getBarSetting(root.monitorName, ["tooltips", "clickToShow"], Config.options.bar.tooltips.clickToShow)
 
     onPressed: {
         if (mouse.button === Qt.RightButton) {

@@ -15,6 +15,7 @@ import Quickshell.Hyprland
 
 ShellRoot {
     id: root
+    property bool autostartTriggered: false
 
     ReloadPopup {}
 
@@ -23,14 +24,28 @@ ShellRoot {
         command: ["python3", `${Directories.scriptPath}/hyprland/autostart.py`]
     }
 
+    function maybeRunAutostart() {
+        if (root.autostartTriggered) return
+        if (!Config.ready || !Persistent.ready) return
+        if (!Persistent.isNewHyprlandInstance) return
+        if (!Config.options.hyprland.autostartApps.enable) return
+        if ((Config.options.hyprland.autostartApps.apps ?? []).length === 0) return
+
+        root.autostartTriggered = true
+        autostartProc.running = true
+    }
+
     Connections {
         target: Config
         function onReadyChanged() {
-            if (!Config.ready) return
-            if (Config.options.hyprland.autostartApps.enable &&
-                Config.options.hyprland.autostartApps.apps.length > 0) {
-                autostartProc.running = true
-            }
+            root.maybeRunAutostart()
+        }
+    }
+
+    Connections {
+        target: Persistent
+        function onReadyChanged() {
+            root.maybeRunAutostart()
         }
     }
 

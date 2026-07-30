@@ -13,6 +13,24 @@ Singleton {
     property string distroIcon: ""
     property string username: "user"
     property string hostname: ""
+    readonly property string usernameWithoutHostname: {
+        const raw = root.username ?? ""
+        const atIndex = raw.indexOf("@")
+        return atIndex >= 0 ? raw.slice(0, atIndex) : raw
+    }
+    readonly property string usernameDisplay: {
+        const base = root.usernameWithoutHostname
+        if (!Config.options.profile.showHostnameWithUsername) {
+            return base
+        }
+        if ((root.username ?? "").includes("@")) {
+            return root.username
+        }
+        if ((root.hostname ?? "").length === 0) {
+            return base
+        }
+        return `${base}@${root.hostname}`
+    }
     property string homeUrl: ""
     property string documentationUrl: ""
     property string supportUrl: ""

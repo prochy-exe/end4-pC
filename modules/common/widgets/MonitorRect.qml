@@ -57,6 +57,8 @@ Rectangle {
     Behavior on y { enabled: !isDragging; NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
     Behavior on color { ColorAnimation { duration: 150 } }
 
+    readonly property bool isPrimaryMonitor: (Config.options.hyprland.primaryMonitor ?? "") === (monitor.name ?? "")
+
     Rectangle {
         visible: root.isDragging && !root.hasOverlap
         x: root.snappedX * root.scaleFactor + root.canvasOffset.x - root.x
@@ -68,6 +70,37 @@ Rectangle {
         border.color: Appearance.colors.colPrimary
         border.width: 2
         opacity: 0.6
+    }
+
+    Rectangle {
+        visible: root.isPrimaryMonitor
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.margins: 6
+        radius: Appearance.rounding.full
+        color: root.isSelected ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colPrimaryContainer
+        border.width: 1
+        border.color: root.isSelected ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colPrimary
+        implicitHeight: 24
+        implicitWidth: primaryRow.implicitWidth + 12
+
+        RowLayout {
+            id: primaryRow
+            anchors.centerIn: parent
+            spacing: 4
+
+            MaterialSymbol {
+                text: "home_pin"
+                iconSize: 14
+                color: root.isSelected ? Appearance.colors.colPrimaryContainer : Appearance.colors.colPrimary
+            }
+
+            StyledText {
+                text: Translation.tr("Primary")
+                font.pixelSize: Appearance.font.pixelSize.small
+                color: root.isSelected ? Appearance.colors.colPrimaryContainer : Appearance.colors.colPrimary
+            }
+        }
     }
 
     Column {

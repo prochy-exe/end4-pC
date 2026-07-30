@@ -11,9 +11,87 @@ import Quickshell.Services.UPower
 
 Item {
     id: root
-    property bool borderless: Config.options.bar.borderless
-    property bool vertical: Config.options.bar.vertical
-    property bool isMaterial: Config.options.bar.cornerStyle === 3
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
+    property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
+    property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
+
+    readonly property var knownActionOrder: [
+        "screenSnip",
+        "colorPicker",
+        "screenRecord",
+        "recordingIndicator",
+        "keyboardToggle",
+        "wallpaperToggle",
+        "micToggle",
+        "darkModeToggle",
+        "performanceProfileToggle"
+    ]
+    readonly property var configuredActionOrder: Config.getBarSetting(root.monitorName, ["utilButtons", "order"], Config.options.bar.utilButtons.order)
+
+    function toArray(value) {
+        if (Array.isArray(value)) return value.slice()
+        if (value === undefined || value === null) return []
+        if (typeof value.length === "number") {
+            let out = []
+            for (let i = 0; i < value.length; i++) out.push(value[i])
+            return out
+        }
+        return []
+    }
+
+    readonly property var effectiveActionOrder: {
+        const configured = root.toArray(configuredActionOrder)
+        const filteredConfigured = configured.filter(actionId => knownActionOrder.includes(actionId))
+        if (filteredConfigured.length > 0) {
+            return filteredConfigured
+        }
+
+        // Legacy fallback for existing configs without utilButtons.order.
+        let legacy = []
+        if (Config.getBarSetting(root.monitorName, ["utilButtons", "showScreenSnip"], Config.options.bar.utilButtons.showScreenSnip)) legacy.push("screenSnip")
+        if (Config.getBarSetting(root.monitorName, ["utilButtons", "showColorPicker"], Config.options.bar.utilButtons.showColorPicker)) legacy.push("colorPicker")
+        if (Config.getBarSetting(root.monitorName, ["utilButtons", "showScreenRecord"], Config.options.bar.utilButtons.showScreenRecord)) legacy.push("screenRecord")
+        if (Config.getBarSetting(root.monitorName, ["utilButtons", "showScreenRecordingIndicator"], Config.options.bar.utilButtons.showScreenRecordingIndicator)) legacy.push("recordingIndicator")
+        if (Config.getBarSetting(root.monitorName, ["utilButtons", "showKeyboardToggle"], Config.options.bar.utilButtons.showKeyboardToggle)) legacy.push("keyboardToggle")
+        if (Config.getBarSetting(root.monitorName, ["utilButtons", "showWallpaperToggle"], Config.options.bar.utilButtons.showWallpaperToggle)) legacy.push("wallpaperToggle")
+        if (Config.getBarSetting(root.monitorName, ["utilButtons", "showMicToggle"], Config.options.bar.utilButtons.showMicToggle)) legacy.push("micToggle")
+        if (Config.getBarSetting(root.monitorName, ["utilButtons", "showDarkModeToggle"], Config.options.bar.utilButtons.showDarkModeToggle)) legacy.push("darkModeToggle")
+        if (Config.getBarSetting(root.monitorName, ["utilButtons", "showPerformanceProfileToggle"], Config.options.bar.utilButtons.showPerformanceProfileToggle)) legacy.push("performanceProfileToggle")
+        return legacy
+    }
+
+    function componentForAction(actionId) {
+        switch (actionId) {
+            case "screenSnip":
+                return root.isMaterial ? screenSnipM3 : legacyScreenSnip
+            case "colorPicker":
+                return root.isMaterial ? colorPickerM3 : legacyColorPicker
+            case "screenRecord":
+                return root.isMaterial ? screenRecordM3 : legacyScreenRecord
+            case "recordingIndicator":
+                return root.isMaterial ? recordingIndicatorM3 : recordingIndicatorLegacy
+            case "keyboardToggle":
+                return root.isMaterial ? keyboardM3 : legacyKeyboard
+            case "wallpaperToggle":
+                return root.isMaterial ? wallpaperM3 : legacyWallpaper
+            case "micToggle":
+                return root.isMaterial ? micM3 : legacyMic
+            case "darkModeToggle":
+                return root.isMaterial ? darkModeM3 : legacyDarkMode
+            case "performanceProfileToggle":
+                return root.isMaterial ? perfM3 : legacyPerf
+            default:
+                return null
+        }
+    }
+
+    function isActionVisible(actionId) {
+        if (actionId === "recordingIndicator") {
+            return Persistent.states.record.enable
+        }
+        return true
+    }
 
     implicitWidth: isMaterial && !root.vertical ? flow.implicitWidth : root.vertical ? Appearance.sizes.verticalBarWidth - 14 : flow.implicitWidth + 4
     implicitHeight: isMaterial && root.vertical ? flow.implicitHeight: isMaterial ? 32 : root.vertical ? flow.implicitHeight + 4 : Appearance.sizes.barHeight
@@ -24,10 +102,14 @@ Item {
         flow: root.vertical ? Flow.TopToBottom : Flow.LeftToRight
         spacing: isMaterial ? 2 : 4
 
-        Loader {
-            active: Config.options.bar.utilButtons.showScreenSnip
-            visible: active
-            sourceComponent: isMaterial ? screenSnipM3 : legacyScreenSnip
+        Repeater {
+            model: root.effectiveActionOrder
+            delegate: Loader {
+                required property string modelData
+                active: root.isActionVisible(modelData)
+                visible: active
+                sourceComponent: root.componentForAction(modelData)
+            }
         }
 
         Component {
@@ -51,11 +133,6 @@ Item {
             }
         }
 
-        Loader {
-            active: Config.options.bar.utilButtons.showColorPicker
-            visible: active
-            sourceComponent: isMaterial ? colorPickerM3 : legacyColorPicker
-        }
         Component {
             id: colorPickerM3
             UtilButton {
@@ -74,12 +151,6 @@ Item {
                     color: Appearance.colors.colOnLayer2
                 }
             }
-        }
-
-        Loader {
-            active: Config.options.bar.utilButtons.showScreenRecord
-            visible: active
-            sourceComponent: isMaterial ? screenRecordM3 : legacyScreenRecord
         }
 
         Component {
@@ -158,10 +229,29 @@ Item {
             }
         }
 
-        Loader {
-            active: Config.options.bar.utilButtons.showKeyboardToggle
-            visible: active
-            sourceComponent: isMaterial ? keyboardM3 : legacyKeyboard
+        Component {
+            id: recordingIndicatorM3
+            UtilButton {
+                iconText: "radio_button_checked"
+                forceHovered: true
+                onClicked: Quickshell.execDetached([Directories.recordScriptPath])
+            }
+        }
+
+        Component {
+            id: recordingIndicatorLegacy
+            CircleUtilButton {
+                colBackground: Appearance.colors.colPrimaryContainer
+                onClicked: Quickshell.execDetached([Directories.recordScriptPath])
+
+                MaterialSymbol {
+                    horizontalAlignment: Qt.AlignHCenter
+                    fill: 1
+                    text: "radio_button_checked"
+                    iconSize: Appearance.font.pixelSize.large
+                    color: Appearance.colors.colPrimary
+                }
+            }
         }
         Component {
             id: keyboardM3
@@ -182,12 +272,6 @@ Item {
                 }
             }
         }
-
-        Loader {
-            active: Config.options.bar.utilButtons.showWallpaperToggle
-            visible: active
-            sourceComponent: isMaterial ? wallpaperM3 : legacyWallpaper
-        }
         Component {
             id: wallpaperM3
             UtilButton {
@@ -206,12 +290,6 @@ Item {
                     color: Appearance.colors.colOnLayer2
                 }
             }
-        }
-
-        Loader {
-            active: Config.options.bar.utilButtons.showMicToggle
-            visible: active
-            sourceComponent: isMaterial ? micM3 : legacyMic
         }
         Component {
             id: micM3
@@ -232,12 +310,6 @@ Item {
                     color: Appearance.colors.colOnLayer2
                 }
             }
-        }
-
-        Loader {
-            active: Config.options.bar.utilButtons.showDarkModeToggle
-            visible: active
-            sourceComponent: isMaterial ? darkModeM3 : legacyDarkMode
         }
         Component {
             id: darkModeM3
@@ -268,12 +340,6 @@ Item {
                     color: Appearance.colors.colOnLayer2
                 }
             }
-        }
-
-        Loader {
-            active: Config.options.bar.utilButtons.showPerformanceProfileToggle
-            visible: active
-            sourceComponent: isMaterial ? perfM3 : legacyPerf
         }
         Component {
             id: perfM3

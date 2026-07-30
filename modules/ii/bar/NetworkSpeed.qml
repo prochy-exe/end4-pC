@@ -6,6 +6,7 @@ import qs.modules.common.widgets
 
 MouseArea {
     id: root
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
 
     property bool vertical: false
     property real downloadBytesPerSecond: 0
@@ -19,7 +20,7 @@ MouseArea {
     implicitWidth: vertical ? 36 : speedColumn.implicitWidth + 8
     implicitHeight: vertical ? speedColumn.implicitHeight + 6 : 32
 
-    hoverEnabled: !Config.options.bar.tooltips.clickToShow
+    hoverEnabled: !Config.getBarSetting(root.monitorName, ["tooltips", "clickToShow"], Config.options.bar.tooltips.clickToShow)
 
     function formatRate(rate, compact) {
         const units = compact

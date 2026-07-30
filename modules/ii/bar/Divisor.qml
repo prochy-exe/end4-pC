@@ -4,12 +4,13 @@ import qs.modules.common.widgets
 
 Item {
     id: root
-    property bool vertical: Config.options.bar.vertical
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     property real btnSize: 40
     property real btnSpacing: 2
-    property bool isMaterial: Config.options.bar.cornerStyle === 3
-    property string style: Config.options.bar.divider.style // "rect" - "dot" - "space"
-    property int dividerSpacing: Config.options.bar.divider.spacing
+    property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
+    property string style: Config.getBarSetting(root.monitorName, ["divider", "style"], Config.options.bar.divider.style) // "rect" - "dot" - "space"
+    property int dividerSpacing: Config.getBarSetting(root.monitorName, ["divider", "spacing"], Config.options.bar.divider.spacing)
 
     width:  vertical ? btnSize : (root.style === "space" ? root.dividerSpacing : (1 + btnSpacing * 3))
     height: vertical ? (root.style === "space" ? root.dividerSpacing : (1 + btnSpacing * 3)) : btnSize

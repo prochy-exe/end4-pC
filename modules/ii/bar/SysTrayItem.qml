@@ -13,6 +13,9 @@ MouseArea {
     id: root
     required property SystemTrayItem item
     property bool targetMenuOpen: false
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property bool currentVertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
+    readonly property bool currentBottom: Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom)
 
     signal menuOpened(qsWindow: var)
     signal menuClosed()
@@ -53,12 +56,12 @@ MouseArea {
             anchor {
                 window: root.QsWindow.window
                 item: root
-                gravity: Config.options.bar.vertical
-                    ? (Config.options.bar.bottom ? Edges.Left : Edges.Right)
-                    : (Config.options.bar.bottom ? Edges.Top : Edges.Bottom)
-                edges: Config.options.bar.vertical
-                    ? (Config.options.bar.bottom ? Edges.Left : Edges.Right)
-                    : (Config.options.bar.bottom ? Edges.Top : Edges.Bottom)
+                gravity: root.currentVertical
+                    ? (root.currentBottom ? Edges.Left : Edges.Right)
+                    : (root.currentBottom ? Edges.Top : Edges.Bottom)
+                edges: root.currentVertical
+                    ? (root.currentBottom ? Edges.Left : Edges.Right)
+                    : (root.currentBottom ? Edges.Top : Edges.Bottom)
             }
             onMenuOpened: (window) => root.menuOpened(window);
             onMenuClosed: {
@@ -100,7 +103,7 @@ MouseArea {
         id: tooltip
         extraVisibleCondition: root.containsMouse
         alternativeVisibleCondition: extraVisibleCondition
-        anchorEdges: (!Config.options.bar.bottom && !Config.options.bar.vertical) ? Edges.Bottom : Edges.Top
+        anchorEdges: (!root.currentBottom && !root.currentVertical) ? Edges.Bottom : Edges.Top
     }
 
 }

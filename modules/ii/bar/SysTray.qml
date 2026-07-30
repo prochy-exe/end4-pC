@@ -9,14 +9,22 @@ import qs.modules.common.widgets
 
 Item {
     id: root
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
     property bool vertical: false
     property bool invertSide: false
     property bool trayOverflowOpen: false
     property bool showSeparator: true
     property bool showOverflowMenu: true
     property var activeMenu: null
-    readonly property bool isOnLeft: Config.options.bar.layouts.leftLayout.includes("sysTray")
-    readonly property bool isMaterial: Config.options.bar.cornerStyle === 3
+    readonly property var monitorLayoutEntry: {
+        const layouts = Config.options.bar.monitorLayouts ?? []
+        return layouts.find(item => item.name === root.monitorName) ?? null
+    }
+    readonly property var leftLayout: monitorLayoutEntry?.leftLayout ?? Config.options.bar.layouts.leftLayout
+    readonly property bool isOnLeft: leftLayout.includes("sysTray")
+    readonly property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
+    readonly property bool currentBottom: Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom)
+    readonly property bool currentVertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
 
     visible: SystemTray.items.values.length > 0
     implicitWidth: vertical ? Appearance.sizes.verticalBarWidth : (isMaterial ? pill.implicitWidth - 4 : gridLayout.implicitWidth)
@@ -92,10 +100,10 @@ Item {
             contentItem: MaterialSymbol {
                 anchors.centerIn: parent
                 iconSize: Appearance.font.pixelSize.larger
-                text: Config.options.bar.bottom ? "keyboard_control_key" : "expand_more"
+                text: root.currentBottom ? "keyboard_control_key" : "expand_more"
                 horizontalAlignment: Text.AlignHCenter
                 color: root.trayOverflowOpen ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer2
-                rotation: (root.trayOverflowOpen ? 180 : 0) - (90 * root.vertical) + (180 * root.invertSide)
+                rotation: (root.trayOverflowOpen ? 180 : 0) - (90 * root.currentVertical) + (180 * root.invertSide)
                 Behavior on rotation {
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                 }

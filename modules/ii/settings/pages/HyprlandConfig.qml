@@ -12,6 +12,20 @@ ContentPage {
     id: page
     forceWidth: true
 
+    function setPrimaryWorkspaceStart(value) {
+        const start = Math.max(1, Math.min(value, Config.options.hyprland.primaryWorkspaceEnd))
+        if (start === Config.options.hyprland.primaryWorkspaceStart) return
+        Config.options.hyprland.primaryWorkspaceStart = start
+        monitorConfig.save()
+    }
+
+    function setPrimaryWorkspaceEnd(value) {
+        const end = Math.min(100, Math.max(value, Config.options.hyprland.primaryWorkspaceStart))
+        if (end === Config.options.hyprland.primaryWorkspaceEnd) return
+        Config.options.hyprland.primaryWorkspaceEnd = end
+        monitorConfig.save()
+    }
+
     function goTo(term) {
         const t = term.toLowerCase().trim()
 
@@ -90,14 +104,85 @@ ContentPage {
 
                 GroupedList {
                     ConfigSwitch {
+                        id: enabledSwitch
                         buttonIcon: "tv_off"
                         text: Translation.tr("Enabled")
-                        checked: !(monitorConfig.monitors[monitorCanvas.selectedIndex]?.disabled ?? false)
-                        onCheckedChanged: {
-                            if (checked === !(monitorConfig.monitors[monitorCanvas.selectedIndex]?.disabled ?? false)) return
-                            monitorConfig.updateMonitor(monitorCanvas.selectedIndex, { disabled: !checked })
+                        checked: false
+                        onClicked: {
+                            const nextChecked = !(monitorConfig.monitors[monitorCanvas.selectedIndex]?.disabled ?? false)
+                            monitorConfig.updateMonitor(monitorCanvas.selectedIndex, { disabled: nextChecked })
                             monitorConfig.applyAndSave(monitorCanvas.selectedIndex)
                         }
+
+                        Binding {
+                            target: enabledSwitch
+                            property: "checked"
+                            value: !(monitorConfig.monitors[monitorCanvas.selectedIndex]?.disabled ?? false)
+                            restoreMode: Binding.RestoreBinding
+                        }
+                    }
+
+                    ConfigSwitch {
+                        id: showBarSwitch
+                        buttonIcon: "dock_to_right"
+                        text: Translation.tr("Show bar on this monitor")
+                        checked: false
+                        onClicked: {
+                            const monitorName = monitorConfig.monitors[monitorCanvas.selectedIndex]?.name ?? ""
+                            if (!monitorName) return
+                            monitorConfig.setBarEnabled(monitorName, !monitorConfig.isBarEnabled(monitorName))
+                        }
+
+                        Binding {
+                            target: showBarSwitch
+                            property: "checked"
+                            value: {
+                                const monitorName = monitorConfig.monitors[monitorCanvas.selectedIndex]?.name ?? ""
+                                return monitorName ? monitorConfig.isBarEnabled(monitorName) : false
+                            }
+                            restoreMode: Binding.RestoreBinding
+                        }
+                    }
+
+                    ConfigSwitch {
+                        id: primaryMonitorSwitch
+                        buttonIcon: "home_pin"
+                        text: Translation.tr("Primary monitor")
+                        enabled: !(monitorConfig.monitors[monitorCanvas.selectedIndex]?.disabled ?? false)
+                        checked: false
+                        onClicked: {
+                            const monitorName = monitorConfig.monitors[monitorCanvas.selectedIndex]?.name ?? ""
+                            if (!monitorName) return
+                            const isCurrentPrimary = (Config.options.hyprland.primaryMonitor ?? "") === monitorName
+                            const nextValue = isCurrentPrimary ? "" : monitorName
+                            Config.options.hyprland.primaryMonitor = nextValue
+                            monitorConfig.save()
+                        }
+
+                        Binding {
+                            target: primaryMonitorSwitch
+                            property: "checked"
+                            value: (Config.options.hyprland.primaryMonitor ?? "") === (monitorConfig.monitors[monitorCanvas.selectedIndex]?.name ?? "")
+                            restoreMode: Binding.RestoreBinding
+                        }
+                    }
+
+                    ConfigSpinBox {
+                        icon: "counter_1"
+                        text: Translation.tr("Primary workspace start")
+                        enabled: (Config.options.hyprland.primaryMonitor ?? "") !== ""
+                        value: Config.options.hyprland.primaryWorkspaceStart
+                        from: 1; to: 100; stepSize: 1
+                        onValueChanged: page.setPrimaryWorkspaceStart(value)
+                    }
+
+                    ConfigSpinBox {
+                        icon: "format_list_numbered"
+                        text: Translation.tr("Primary workspace end")
+                        enabled: (Config.options.hyprland.primaryMonitor ?? "") !== ""
+                        value: Config.options.hyprland.primaryWorkspaceEnd
+                        from: 1; to: 100; stepSize: 1
+                        onValueChanged: page.setPrimaryWorkspaceEnd(value)
                     }
 
                     ConfigComboBox {
@@ -238,6 +323,16 @@ ContentPage {
                             if (checked === Config.options.hyprland.input.numlock) return
                             Config.options.hyprland.input.numlock = checked
                             HyprlandConfig.set("input:numlock_by_default", checked ? 1 : 0)
+                        }
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "short_text"
+                        text: Translation.tr("Bar keyboard layout: show variant")
+                        checked: Config.options.hyprland.input.showLayoutVariantInBar
+                        onCheckedChanged: {
+                            if (checked === Config.options.hyprland.input.showLayoutVariantInBar) return
+                            Config.options.hyprland.input.showLayoutVariantInBar = checked
                         }
                     }
 

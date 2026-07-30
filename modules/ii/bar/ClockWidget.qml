@@ -6,8 +6,9 @@ import QtQuick.Layouts
 
 BarWidgetSwitcher {
     id: root
-    property bool borderless: Config.options.bar.borderless
-    property bool showDate: Config.options.bar.verbose
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
+    property bool showDate: Config.getBarSetting(root.monitorName, ["verbose"], Config.options.bar.verbose)
     property var today: new Date()
     readonly property string dateTimeString: DateTime.time
     readonly property bool hasAmPm: dateTimeString.toLowerCase().includes("am") || dateTimeString.toLowerCase().includes("pm")
@@ -190,7 +191,7 @@ BarWidgetSwitcher {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        hoverEnabled: !Config.options.bar.tooltips.clickToShow
+        hoverEnabled: !Config.getBarSetting(root.monitorName, ["tooltips", "clickToShow"], Config.options.bar.tooltips.clickToShow)
         ClockWidgetPopup {
             hoverTarget: mouseArea
             today: root.today

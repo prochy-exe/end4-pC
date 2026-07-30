@@ -18,8 +18,9 @@ Item {
     property real iconSize:      23
     property real btnSize:       28
     property real btnSpacing:    2
-    property bool vertical:    Config.options.bar.vertical
-    property bool isMaterial:  Config.options.bar.cornerStyle === 3
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    property bool vertical:    Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
+    property bool isMaterial:  Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     property var pinnedApps: Config.options?.dock.pinnedApps ?? []
     property var activeUnpinned: TaskbarApps.apps.filter(
         a => !a.pinned && a.appId !== "SEPARATOR" && a.toplevels.length > 0

@@ -15,12 +15,13 @@ import Quickshell.Services.Mpris
 
 Item {
     id: root
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
     
-    property bool vertical: false
-    property bool borderless: Config.options.bar.borderless
-    property bool isMaterial: Config.options.bar.cornerStyle === 3
+    property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
+    property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
+    property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     readonly property MprisPlayer activePlayer: {
-        const preferred = Config.options.bar.media.preferredPlayer.trim().toLowerCase()
+        const preferred = Config.getBarSetting(root.monitorName, ["media", "preferredPlayer"], Config.options.bar.media.preferredPlayer).trim().toLowerCase()
         if (preferred.length === 0) return MprisController.activePlayer
         const _ = MprisController.players.count
         for (const p of MprisController.players) {
@@ -80,8 +81,8 @@ Item {
         : (isMaterial 
             ? materialRow.implicitWidth 
             : Math.max(
-                Config.options.bar.media.minWidth,
-                Math.min(rowLayout.implicitWidth + 8, Config.options.bar.media.maxWidth)
+                Config.getBarSetting(root.monitorName, ["media", "minWidth"], Config.options.bar.media.minWidth),
+                Math.min(rowLayout.implicitWidth + 8, Config.getBarSetting(root.monitorName, ["media", "maxWidth"], Config.options.bar.media.maxWidth))
             ))
     implicitHeight: vertical ? (isMaterial ? 32 : mediaCircProg.implicitHeight) : Appearance.sizes.barHeight
 
@@ -95,7 +96,7 @@ Item {
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.MiddleButton | Qt.BackButton | Qt.ForwardButton | Qt.RightButton | Qt.LeftButton
-        hoverEnabled: !Config.options.bar.tooltips.clickToShow
+        hoverEnabled: !Config.getBarSetting(root.monitorName, ["tooltips", "clickToShow"], Config.options.bar.tooltips.clickToShow)
         onPressed: (event) => {
             if (event.button === Qt.MiddleButton)      activePlayer?.togglePlaying()
             else if (event.button === Qt.BackButton)   activePlayer?.previous()
@@ -179,14 +180,14 @@ Item {
                 }
             }
             StyledText {
-                visible: Config.options.bar.verbose
+                visible: Config.getBarSetting(root.monitorName, ["verbose"], Config.options.bar.verbose)
                 Layout.alignment: Qt.AlignVCenter
                 Layout.fillWidth: true
                 Layout.rightMargin: 0
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 color: Appearance.colors.colOnLayer1
-                text: Config.options.bar.media.onlyTitle ? root.cleanedTitle : `${root.cleanedTitle}${root.activePlayer?.trackArtist ? ' • ' + root.activePlayer.trackArtist : ''}`
+                text: Config.getBarSetting(root.monitorName, ["media", "onlyTitle"], Config.options.bar.media.onlyTitle) ? root.cleanedTitle : `${root.cleanedTitle}${root.activePlayer?.trackArtist ? ' • ' + root.activePlayer.trackArtist : ''}`
             }
         }
     }

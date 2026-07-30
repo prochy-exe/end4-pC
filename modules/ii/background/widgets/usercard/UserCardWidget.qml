@@ -21,7 +21,12 @@ AbstractBackgroundWidget {
     property int avatarSize: 64
     property string hostname: SystemInfo.hostname
     property string username: Config.options.profile.displayName === "" ? SystemInfo.username : Config.options.profile.displayName
-    property string userDisplay: username.length > 10 ? username : (username + "@" + hostname)
+    property string userDisplay: {
+        if (Config.options.profile.displayName !== "") {
+            return username
+        }
+        return SystemInfo.usernameDisplay
+    }
     property var currentQuip: weatherQuip()
     
 

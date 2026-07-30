@@ -34,6 +34,8 @@ Singleton {
     property string settingsPage: ""
     property Item currentPageInstance: null
     property list<real> visualizerPoints: []
+    property list<real> visualizerOutputPoints: []
+    property list<real> visualizerInputPoints: []
     property bool desktopWidgetKeyboardFocus: false
     property bool desktopMenuOpen: false
     property var desktopMenuScreen: null

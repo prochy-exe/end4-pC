@@ -6,6 +6,7 @@ import QtQuick.Layouts
 
 Item {
     id: root
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
     required property string iconName
     required property double percentage
     property bool vertical: false
@@ -72,7 +73,7 @@ Item {
         active: root.vertical
         visible: active
         anchors.centerIn: parent
-        sourceComponent: Config.options.bar.resources.style === "filled" ? filledStyle : outlineStyle
+        sourceComponent: Config.getBarSetting(root.monitorName, ["resources", "style"], Config.options.bar.resources.style) === "filled" ? filledStyle : outlineStyle
     }
 
     // Horizontal
@@ -87,12 +88,12 @@ Item {
             Layout.alignment: Qt.AlignVCenter
             active: !root.vertical
             visible: active
-            sourceComponent: Config.options.bar.resources.style === "filled" ? filledStyle : outlineStyle
+            sourceComponent: Config.getBarSetting(root.monitorName, ["resources", "style"], Config.options.bar.resources.style) === "filled" ? filledStyle : outlineStyle
         }
 
         Item {
             Layout.alignment: Qt.AlignVCenter
-            visible: Config.options.bar.resources.showValue
+            visible: Config.getBarSetting(root.monitorName, ["resources", "showValue"], Config.options.bar.resources.showValue)
             implicitWidth: visible ? fullPercentageTextMetrics.width : 0
             implicitHeight: percentageText.implicitHeight
             TextMetrics {

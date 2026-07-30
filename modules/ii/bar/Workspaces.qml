@@ -20,10 +20,10 @@ ButtonMouseArea {
         monitor: root.monitor
     }
 
-    property bool vertical: Config.options.bar.vertical
+    property bool vertical: Config.getBarSetting(root.monitor?.name ?? "", ["vertical"], Config.options.bar.vertical)
     property bool superPressAndHeld: false // Relevant modifications at bottom of file
 
-    property real workspaceButtonWidth: Config.options.bar.cornerStyle === 3 ? 30 : 26
+    property real workspaceButtonWidth: Config.getBarSetting(root.monitor?.name ?? "", ["cornerStyle"], Config.options.bar.cornerStyle) === 3 ? 30 : 26
     property real activeWorkspaceMargin: 2
     property real activeWorkspaceSize: workspaceButtonWidth - activeWorkspaceMargin * 2
     property real workspaceIconSize: workspaceButtonWidth * 0.69
@@ -214,7 +214,7 @@ ButtonMouseArea {
 
                     AppIcon {
                         id: appIcon
-                        property real cornerMargin: (!root.superPressAndHeld && Config.options?.bar.workspaces.showAppIcons && wsApp.biggestWindow) ? (root.workspaceButtonWidth - root.workspaceIconSize) / 2 : root.workspaceIconMarginShrinked
+                        property real cornerMargin: (!root.superPressAndHeld && Config.getBarSetting(root.monitor?.name ?? "", ["workspaces", "showAppIcons"], Config.options.bar.workspaces.showAppIcons) && wsApp.biggestWindow) ? (root.workspaceButtonWidth - root.workspaceIconSize) / 2 : root.workspaceIconMarginShrinked
                         anchors {
                             bottom: parent.bottom
                             right: parent.right
@@ -250,13 +250,13 @@ ButtonMouseArea {
                             implicitWidth: appIcon.implicitWidth
                             implicitHeight: appIcon.implicitHeight
                             colorizationColor: Appearance.m3colors.darkmode ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnPrimary
-                            colorization: Config.options.bar.workspaces.monochromeIcons ? 0.8 : 0.5
+                            colorization: Config.getBarSetting(root.monitor?.name ?? "", ["workspaces", "monochromeIcons"], Config.options.bar.workspaces.monochromeIcons) ? 0.8 : 0.5
                             brightness: 0
                             source: appIcon
 
-                            opacity: !Config.options?.bar.workspaces.showAppIcons ? 0 : (wsApp.biggestWindow && !root.superPressAndHeld && Config.options?.bar.workspaces.showAppIcons) ? 1 : wsApp.biggestWindow ? root.workspaceIconOpacityShrinked : 0
+                            opacity: !Config.getBarSetting(root.monitor?.name ?? "", ["workspaces", "showAppIcons"], Config.options.bar.workspaces.showAppIcons) ? 0 : (wsApp.biggestWindow && !root.superPressAndHeld && Config.getBarSetting(root.monitor?.name ?? "", ["workspaces", "showAppIcons"], Config.options.bar.workspaces.showAppIcons)) ? 1 : wsApp.biggestWindow ? root.workspaceIconOpacityShrinked : 0
                             visible: opacity > 0
-                            scale: ((!root.superPressAndHeld && Config.options?.bar.workspaces.showAppIcons) ? root.workspaceIconSize : root.workspaceIconSizeShrinked) / root.workspaceIconSize
+                            scale: ((!root.superPressAndHeld && Config.getBarSetting(root.monitor?.name ?? "", ["workspaces", "showAppIcons"], Config.options.bar.workspaces.showAppIcons)) ? root.workspaceIconSize : root.workspaceIconSizeShrinked) / root.workspaceIconSize
 
                             Behavior on opacity {
                                 animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)

@@ -4,16 +4,19 @@ import QtQuick.Layouts
 
 Item {
     id: root
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
     property bool vertical: false
     property int currentIndex: 0
     property int totalCount: 0
-    property bool isMaterial: Config.options.bar.cornerStyle === 3
+    property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
+    readonly property string currentBorderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
+    readonly property int currentCornerStyle: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle)
     property bool paintMaterialPill: false
     property real padding: (root.isMaterial && !root.paintMaterialPill) ? 0 : 5
     property color bgColor: Appearance.colors.colPrimaryContainer
 
     readonly property real fullRadius: height / 2
-    readonly property real midRadius: Config.options.bar.cornerStyle === 2 ? Appearance.rounding.unsharpenmore + 2 : Appearance.rounding.unsharpenmore
+    readonly property real midRadius: root.currentCornerStyle === 2 ? Appearance.rounding.unsharpenmore + 2 : Appearance.rounding.unsharpenmore
     property real startRadius: {
         if (totalCount <= 1) return fullRadius;
         if (currentIndex === 0) return fullRadius;
@@ -43,16 +46,16 @@ Item {
             ? "transparent"
             : (root.isMaterial && root.paintMaterialPill)
                 ? root.bgColor
-                : (Config.options?.bar.borderless === "transparent"
+                : (root.currentBorderless === "transparent"
                     ? "transparent"
-                    : Config.options.bar.cornerStyle === 2
+                    : root.currentCornerStyle === 2
                         ? Appearance.colors.colLayer0
                         : Appearance.colors.colLayer1)
 
-        topLeftRadius: (root.isMaterial && root.paintMaterialPill) ? root.fullRadius : (Config.options?.bar.borderless === "separated" ? root.fullRadius : root.startRadius)
-        bottomLeftRadius: (root.isMaterial && root.paintMaterialPill) ? root.fullRadius : (Config.options?.bar.borderless === "separated" ? root.fullRadius : root.vertical ? root.endRadius : root.startRadius)
-        topRightRadius: (root.isMaterial && root.paintMaterialPill) ? root.fullRadius : (Config.options?.bar.borderless === "separated" ? root.fullRadius : root.vertical ? root.startRadius : root.endRadius)
-        bottomRightRadius: (root.isMaterial && root.paintMaterialPill) ? root.fullRadius : (Config.options?.bar.borderless === "separated" ? root.fullRadius : root.endRadius)
+        topLeftRadius: (root.isMaterial && root.paintMaterialPill) ? root.fullRadius : (root.currentBorderless === "separated" ? root.fullRadius : root.startRadius)
+        bottomLeftRadius: (root.isMaterial && root.paintMaterialPill) ? root.fullRadius : (root.currentBorderless === "separated" ? root.fullRadius : root.vertical ? root.endRadius : root.startRadius)
+        topRightRadius: (root.isMaterial && root.paintMaterialPill) ? root.fullRadius : (root.currentBorderless === "separated" ? root.fullRadius : root.vertical ? root.startRadius : root.endRadius)
+        bottomRightRadius: (root.isMaterial && root.paintMaterialPill) ? root.fullRadius : (root.currentBorderless === "separated" ? root.fullRadius : root.endRadius)
 
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)

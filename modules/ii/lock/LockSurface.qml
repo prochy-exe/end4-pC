@@ -11,6 +11,7 @@ import qs.modules.common.functions
 import qs.modules.common.panels.lock
 import qs.modules.ii.bar as Bar
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.SystemTray
 
 MouseArea {
@@ -18,6 +19,8 @@ MouseArea {
     required property LockContext context
     property bool active: false
     property bool showInputField: active || context.currentText.length > 0
+    property bool capsLockOn: false
+    property bool numLockOn: false
     readonly property bool requirePasswordToPower: Config.options.lock.security.requirePasswordToPower
     readonly property MprisPlayer activePlayer: {
         const preferred = Config.options.bar.media.preferredPlayer.trim().toLowerCase()
@@ -90,6 +93,35 @@ MouseArea {
             root.ctrlHeld = false;
         }
         forceFieldFocus();
+    }
+
+    Process {
+        id: keyboardStateProc
+        command: ["hyprctl", "-j", "devices"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const parsedOutput = JSON.parse(text)
+                    const mainKeyboard = parsedOutput?.keyboards?.find(kb => kb.main === true)
+                    root.capsLockOn = mainKeyboard?.capsLock ?? false
+                    root.numLockOn = mainKeyboard?.numLock ?? false
+                } catch (e) {
+                    root.capsLockOn = false
+                    root.numLockOn = false
+                }
+            }
+        }
+    }
+
+    Timer {
+        interval: 250
+        repeat: true
+        running: GlobalStates.screenLocked
+        onTriggered: {
+            if (!keyboardStateProc.running) {
+                keyboardStateProc.running = true
+            }
+        }
     }
 
     // RippleButton {
@@ -260,7 +292,9 @@ MouseArea {
             Layout.leftMargin: 8
             icon: "account_circle"
             visible: !Config.options.lock.showMedia || MprisController.activePlayer === null
-            text: SystemInfo.username
+            text: Config.options.profile.showHostnameWithUsername
+                ? SystemInfo.username
+                : SystemInfo.usernameWithoutHostname
         }
 
         // Media player info 
@@ -394,7 +428,6 @@ MouseArea {
         Loader {
             Layout.rightMargin: 8
             Layout.fillHeight: true
-            visible: !Config.options.lock.showMedia || MprisController.activePlayer === null
 
             sourceComponent: Row {
                 spacing: 8
@@ -410,12 +443,25 @@ MouseArea {
                 Loader {
                     anchors.verticalCenter: parent.verticalCenter
                     sourceComponent: StyledText {
-                        text: HyprlandXkb.currentLayoutCode
+                        text: HyprlandXkb.displayedLayoutCode
                         color: Appearance.colors.colOnSurfaceVariant
                         animateChange: true
                     }
                 }
             }
+        }
+
+        IconAndTextPair {
+            visible: root.capsLockOn
+            icon: "keyboard_capslock"
+            text: Translation.tr("Caps")
+            color: Appearance.colors.colError
+        }
+
+        IconAndTextPair {
+            visible: root.numLockOn
+            icon: "pin"
+            text: Translation.tr("Num")
         }
 
         // Keyboard layout (Fcitx)

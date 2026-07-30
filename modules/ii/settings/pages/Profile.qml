@@ -204,6 +204,15 @@ ContentPage {
                         onValueChanged: displayNameDebounceTimer.restart()
                     }
 
+                    ConfigSwitch {
+                        buttonIcon: "alternate_email"
+                        text: Translation.tr("Show hostname with username")
+                        checked: Config.options.profile.showHostnameWithUsername
+                        onCheckedChanged: {
+                            Config.options.profile.showHostnameWithUsername = checked
+                        }
+                    }
+
                     ConfigTextArea {
                         id: hostnameField
                         Layout.fillWidth: true

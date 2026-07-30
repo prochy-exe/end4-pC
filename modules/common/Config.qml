@@ -13,6 +13,45 @@ Singleton {
     property int readWriteDelay: 50 // milliseconds
     property bool blockWrites: false
 
+    function ensureProfileDisplayNameInitialized() {
+        if (!root.ready) return
+        if (root.options.profile.displayNameInitialized) return
+
+        const envUser = (Quickshell.env("USER") ?? "").trim()
+        if ((root.options.profile.displayName ?? "").trim().length === 0 && envUser.length > 0) {
+            root.options.profile.displayName = envUser
+        }
+        root.options.profile.displayNameInitialized = true
+    }
+
+    onReadyChanged: {
+        if (root.ready) {
+            root.ensureProfileDisplayNameInitialized()
+        }
+    }
+
+    function resolvePathValue(target, path, fallbackValue) {
+        let current = target
+        const keys = Array.isArray(path) ? path : path.split(".")
+        for (let i = 0; i < keys.length; i++) {
+            if (current === undefined || current === null || !(keys[i] in current)) {
+                return fallbackValue
+            }
+            current = current[keys[i]]
+        }
+        return current
+    }
+
+    function getBarSetting(monitorName, path, fallbackValue) {
+        const keys = Array.isArray(path) ? path : path.split(".")
+        const entry = (root.options?.bar?.monitorSettings ?? []).find(item => item.name === monitorName)
+        const overrideValue = root.resolvePathValue(entry?.values ?? {}, keys, undefined)
+        if (overrideValue !== undefined) {
+            return overrideValue
+        }
+        return root.resolvePathValue(root.options?.bar ?? {}, keys, fallbackValue)
+    }
+
     function setNestedValue(nestedKey, value) {
         let keys = nestedKey.split(".");
         let obj = root.options;
@@ -154,6 +193,8 @@ Singleton {
                 property string avatarPicture: ""
                 property string descriptionText: "::distro::"
                 property string displayName: ""
+                property bool displayNameInitialized: false
+                property bool showHostnameWithUsername: true
 
             }
 
@@ -162,6 +203,9 @@ Singleton {
                     property string animation: "normal"
                     property bool enable: true
                 }
+                property string primaryMonitor: ""
+                property int primaryWorkspaceStart: 1
+                property int primaryWorkspaceEnd: 1
                 property JsonObject autostartApps: JsonObject {
                     property bool enable: false
                     property list<var> apps: []
@@ -188,6 +232,7 @@ Singleton {
                 }
                 property JsonObject input: JsonObject {
                     property string kbLayout: "us"
+                    property bool showLayoutVariantInBar: true
                     property bool numlock: true
                     property int repeatDelay: 250
                     property int repeatRate: 35
@@ -408,7 +453,11 @@ Singleton {
                 }
                 
                 property list<string> screenList: [] // List of names, like "eDP-1", find out with 'hyprctl monitors' command
+                property list<var> monitorLayouts: []
+                property list<var> monitorSettings: []
+                property list<var> monitorVisibility: []
                 property JsonObject utilButtons: JsonObject {
+                    property list<string> order: ["screenSnip", "keyboardToggle", "darkModeToggle"]
                     property bool showScreenSnip: true
                     property bool showColorPicker: false
                     property bool showMicToggle: false
@@ -417,6 +466,7 @@ Singleton {
                     property bool showDarkModeToggle: true
                     property bool showPerformanceProfileToggle: false
                     property bool showScreenRecord: false       
+                    property bool showScreenRecordingIndicator: false
                     property bool isRecording: false
                 }
 
@@ -562,6 +612,8 @@ Singleton {
             property JsonObject notifications: JsonObject {
                 property int timeout: 7000
                 property string position: "top_right"
+                property string monitorMode: "primary" // "primary" or "specific"
+                property string monitorName: ""
             }
 
             property JsonObject osd: JsonObject {
@@ -638,6 +690,7 @@ Singleton {
                 property int nonAppResultDelay: 30 // This prevents lagging when typing
                 property string engineBaseUrl: "https://www.google.com/search?q="
                 property list<string> excludedSites: ["quora.com", "facebook.com"]
+                property list<string> clipboardPinnedEntries: []
                 property bool sloppy: false // Uses levenshtein distance based scoring instead of fuzzy sort. Very weird.
                 property JsonObject prefix: JsonObject {
                     property bool showDefaultActionsWithoutPrefix: true

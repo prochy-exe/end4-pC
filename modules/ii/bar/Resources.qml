@@ -6,42 +6,43 @@ import QtQuick.Layouts
 
 BarWidgetSwitcherArea {
     id: root
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
     property bool alwaysShowAllResources: false
     horizontalExtraPadding: 12
 
-    hoverEnabled: !Config.options.bar.tooltips.clickToShow
+    hoverEnabled: !Config.getBarSetting(root.screen?.name ?? "", ["tooltips", "clickToShow"], Config.options.bar.tooltips.clickToShow)
 
     rowDefault: Component {
         RowLayout {
             spacing: 0
             Resource {
                 iconName: "memory"
-                shown: Config.options.bar.resources.alwaysShowRam
+                shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowRam"], Config.options.bar.resources.alwaysShowRam)
                 percentage: ResourceUsage.memoryUsedPercentage
                 warningThreshold: Config.options.bar.resources.memoryWarningThreshold
             }
             Resource {
                 iconName: "planner_review"
-                shown: Config.options.bar.resources.alwaysShowCpu
+                shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpu"], Config.options.bar.resources.alwaysShowCpu)
                 percentage: ResourceUsage.cpuUsage
                 Layout.leftMargin: shown ? 6 : 0
                 warningThreshold: Config.options.bar.resources.cpuWarningThreshold
             }
             Resource {
                 iconName: "thermostat"
-                shown: Config.options.bar.resources.alwaysShowCpuTemp
+                shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpuTemp"], Config.options.bar.resources.alwaysShowCpuTemp)
                 percentage: ResourceUsage.cpuTemp / 100
                 Layout.leftMargin: shown ? 6 : 0
             }
             Resource {
                 iconName: "hard_drive"
-                shown: Config.options.bar.resources.alwaysShowDisk
+                shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowDisk"], Config.options.bar.resources.alwaysShowDisk)
                 percentage: ResourceUsage.diskUsedPercentage
                 Layout.leftMargin: shown ? 6 : 0
             }
             Resource {
                 iconName: "swap_horiz"
-                shown: Config.options.bar.resources.alwaysShowSwap
+                shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowSwap"], Config.options.bar.resources.alwaysShowSwap)
                 percentage: ResourceUsage.swapUsedPercentage
                 Layout.leftMargin: shown ? 6 : 0
                 warningThreshold: Config.options.bar.resources.swapWarningThreshold
@@ -54,32 +55,32 @@ BarWidgetSwitcherArea {
             spacing: 0
             Resource {
                 iconName: "memory"
-                shown: Config.options.bar.resources.alwaysShowRam
+                shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowRam"], Config.options.bar.resources.alwaysShowRam)
                 percentage: ResourceUsage.memoryUsedPercentage
                 warningThreshold: Config.options.bar.resources.memoryWarningThreshold
             }
             Resource {
                 iconName: "planner_review"
-                shown: Config.options.bar.resources.alwaysShowCpu
+                shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpu"], Config.options.bar.resources.alwaysShowCpu)
                 percentage: ResourceUsage.cpuUsage
                 Layout.leftMargin: shown ? 6 : 0
                 warningThreshold: Config.options.bar.resources.cpuWarningThreshold
             }
             Resource {
                 iconName: "thermostat"
-                shown: Config.options.bar.resources.alwaysShowCpuTemp
+                shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpuTemp"], Config.options.bar.resources.alwaysShowCpuTemp)
                 percentage: ResourceUsage.cpuTemp / 100
                 Layout.leftMargin: shown ? 6 : 0
             }
             Resource {
                 iconName: "hard_drive"
-                shown: Config.options.bar.resources.alwaysShowDisk
+                shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowDisk"], Config.options.bar.resources.alwaysShowDisk)
                 percentage: ResourceUsage.diskUsedPercentage
                 Layout.leftMargin: shown ? 6 : 0
             }
             Resource {
                 iconName: "swap_horiz"
-                shown: Config.options.bar.resources.alwaysShowSwap
+                shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowSwap"], Config.options.bar.resources.alwaysShowSwap)
                 percentage: ResourceUsage.swapUsedPercentage
                 Layout.leftMargin: shown ? 6 : 0
                 warningThreshold: Config.options.bar.resources.swapWarningThreshold
@@ -94,7 +95,7 @@ BarWidgetSwitcherArea {
                 Layout.alignment: Qt.AlignHCenter
                 iconName: "memory"
                 vertical: true
-                visible: Config.options.bar.resources.alwaysShowRam
+                visible: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowRam"], Config.options.bar.resources.alwaysShowRam)
                 percentage: ResourceUsage.memoryUsedPercentage
                 warningThreshold: Config.options.bar.resources.memoryWarningThreshold
             }
@@ -102,7 +103,7 @@ BarWidgetSwitcherArea {
                 Layout.alignment: Qt.AlignHCenter
                 iconName: "planner_review"
                 vertical: true
-                visible: Config.options.bar.resources.alwaysShowCpu
+                visible: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpu"], Config.options.bar.resources.alwaysShowCpu)
                 percentage: ResourceUsage.cpuUsage
                 warningThreshold: Config.options.bar.resources.cpuWarningThreshold
             }
@@ -110,21 +111,21 @@ BarWidgetSwitcherArea {
                 Layout.alignment: Qt.AlignHCenter
                 iconName: "thermostat"
                 vertical: true
-                visible: Config.options.bar.resources.alwaysShowCpuTemp
+                visible: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpuTemp"], Config.options.bar.resources.alwaysShowCpuTemp)
                 percentage: ResourceUsage.cpuTemp / 100
             }
             Resource {
                 Layout.alignment: Qt.AlignHCenter
                 iconName: "hard_drive"
                 vertical: true
-                visible: Config.options.bar.resources.alwaysShowDisk
+                visible: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowDisk"], Config.options.bar.resources.alwaysShowDisk)
                 percentage: ResourceUsage.diskUsedPercentage
             }
             Resource {
                 Layout.alignment: Qt.AlignHCenter
                 iconName: "swap_horiz"
                 vertical: true
-                visible: Config.options.bar.resources.alwaysShowSwap
+                visible: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowSwap"], Config.options.bar.resources.alwaysShowSwap)
                 percentage: ResourceUsage.swapUsedPercentage
                 warningThreshold: Config.options.bar.resources.swapWarningThreshold
             }
@@ -138,7 +139,7 @@ BarWidgetSwitcherArea {
                 Layout.alignment: Qt.AlignHCenter
                 iconName: "memory"
                 vertical: true
-                visible: Config.options.bar.resources.alwaysShowRam
+                visible: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowRam"], Config.options.bar.resources.alwaysShowRam)
                 percentage: ResourceUsage.memoryUsedPercentage
                 warningThreshold: Config.options.bar.resources.memoryWarningThreshold
             }
@@ -146,7 +147,7 @@ BarWidgetSwitcherArea {
                 Layout.alignment: Qt.AlignHCenter
                 iconName: "planner_review"
                 vertical: true
-                visible: Config.options.bar.resources.alwaysShowCpu
+                visible: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpu"], Config.options.bar.resources.alwaysShowCpu)
                 percentage: ResourceUsage.cpuUsage
                 warningThreshold: Config.options.bar.resources.cpuWarningThreshold
             }
@@ -154,21 +155,21 @@ BarWidgetSwitcherArea {
                 Layout.alignment: Qt.AlignHCenter
                 iconName: "thermostat"
                 vertical: true
-                visible: Config.options.bar.resources.alwaysShowCpuTemp
+                visible: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpuTemp"], Config.options.bar.resources.alwaysShowCpuTemp)
                 percentage: ResourceUsage.cpuTemp / 100
             }
             Resource {
                 Layout.alignment: Qt.AlignHCenter
                 iconName: "hard_drive"
                 vertical: true
-                visible: Config.options.bar.resources.alwaysShowDisk
+                visible: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowDisk"], Config.options.bar.resources.alwaysShowDisk)
                 percentage: ResourceUsage.diskUsedPercentage
             }
             Resource {
                 Layout.alignment: Qt.AlignHCenter
                 iconName: "swap_horiz"
                 vertical: true
-                visible: Config.options.bar.resources.alwaysShowSwap
+                visible: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowSwap"], Config.options.bar.resources.alwaysShowSwap)
                 percentage: ResourceUsage.swapUsedPercentage
                 warningThreshold: Config.options.bar.resources.swapWarningThreshold
             }

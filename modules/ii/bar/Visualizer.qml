@@ -9,12 +9,16 @@ import qs.modules.common.widgets
 
 Item {
     id: root
-    property bool vertical: Config.options.bar.vertical
-    property bool isMaterial: Config.options.bar.cornerStyle === 3
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    property string sourceType: "output" // output | input
+    property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
+    property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     property bool mirrored: false
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
     readonly property bool isPlaying: activePlayer?.isPlaying ?? false
-    readonly property list<real> points: GlobalStates.visualizerPoints
+    readonly property list<real> points: sourceType === "input"
+        ? GlobalStates.visualizerInputPoints
+        : (GlobalStates.visualizerOutputPoints.length > 0 ? GlobalStates.visualizerOutputPoints : GlobalStates.visualizerPoints)
     property int barCount: 20
     property real dotSize: 3
     property real dotSpacing: 3

@@ -6,8 +6,9 @@ import qs.modules.common.widgets
 
 RippleButton {
     id: root
-    property bool isMaterial: Config.options.bar.cornerStyle === 3
-    property bool vertical: Config.options.bar.vertical
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
+    property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     property real buttonPadding: 5
 
     implicitWidth: 32

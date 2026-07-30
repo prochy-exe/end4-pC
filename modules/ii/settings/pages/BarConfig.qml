@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQml
 import qs
 import qs.services
 import qs.modules.common
@@ -9,6 +10,20 @@ import Quickshell.Hyprland
 ContentPage {
     id: page
     forceWidth: true
+    property string selectedMonitorTab: ""
+    readonly property var layoutKeys: ["leftLayout", "middleLayout", "rightLayout"]
+
+    component MonitorConfigSwitch: ConfigSwitch {
+        id: monitorSwitch
+        required property var settingPath
+        required property var fallbackValue
+
+        Binding on checked {
+            value: page.currentMonitorBarSetting(monitorSwitch.settingPath, monitorSwitch.fallbackValue)
+        }
+
+        onCheckedChanged: page.setCurrentMonitorBarSetting(settingPath, checked)
+    }
 
     function goTo(term) {
         const t = term.toLowerCase().trim()
@@ -51,20 +66,35 @@ ContentPage {
         { id: "powerButton",       name: Translation.tr("Power Button"),         icon: "power_settings_new" },
         { id: "updatesCount",      name: Translation.tr("Updates"),              icon: "deployed_code_update" },
         { id: "docktoPanel",       name: Translation.tr("Dock to Panel"),        icon: "apps" },
-        { id: "visualizer",        name: Translation.tr("Visualizer"),           icon: "graphic_eq" },
+        { id: "visualizer",        name: Translation.tr("Visualizer (Output)"),  icon: "graphic_eq" },
+        { id: "visualizerInput",   name: Translation.tr("Visualizer (Input)"),   icon: "mic" },
         { id: "hyprlandXkbIndicator",   name: Translation.tr("Keyboard Layout"), icon: "keyboard" },
         { id: "divisor",            name: Translation.tr("Divider"),             icon: "horizontal_distribute" },
     ]
 
-    function availableFor() {
+    property var utilButtonActions: [
+        { id: "screenSnip",              name: Translation.tr("Screen snip"),         icon: "screenshot_region" },
+        { id: "colorPicker",             name: Translation.tr("Color picker"),        icon: "colorize" },
+        { id: "screenRecord",            name: Translation.tr("Record Screen"),       icon: "screen_record" },
+        { id: "recordingIndicator",      name: Translation.tr("Recording indicator"), icon: "radio_button_checked" },
+        { id: "keyboardToggle",          name: Translation.tr("Keyboard toggle"),     icon: "keyboard" },
+        { id: "wallpaperToggle",         name: Translation.tr("Wallpapers Toggle"),   icon: "imagesmode" },
+        { id: "micToggle",               name: Translation.tr("Mic toggle"),          icon: "mic" },
+        { id: "darkModeToggle",          name: Translation.tr("Dark/Light toggle"),   icon: "dark_mode" },
+        { id: "performanceProfileToggle",name: Translation.tr("Performance Profile"), icon: "speed" },
+    ]
+
+    readonly property var knownUtilButtonActionOrder: utilButtonActions.map(action => action.id)
+
+    function availableForLayouts(layouts) {
         let used = [
-            ...Config.options.bar.layouts.leftLayout,
-            ...Config.options.bar.layouts.middleLayout,
-            ...Config.options.bar.layouts.rightLayout
+            ...layouts.leftLayout,
+            ...layouts.middleLayout,
+            ...layouts.rightLayout
         ]
-        const multipleAllowed = ["visualizer", "divisor"]
+        const multipleAllowed = ["divisor"]
         return allWidgets.filter(w => {
-            if (w.id === "divisor" && Config.options.bar.borderless !== "transparent") return false
+            if (w.id === "divisor" && page.currentMonitorBarSetting(["borderless"], Config.options.bar.borderless) !== "transparent") return false
             return !used.includes(w.id) || multipleAllowed.includes(w.id)
         })
     }
@@ -74,126 +104,345 @@ ContentPage {
         return w ? w.name : id
     }
 
+    function getUtilButtonActionName(id) {
+        const action = utilButtonActions.find(a => a.id === id)
+        return action ? action.name : id
+    }
+
+    function toArray(value) {
+        if (Array.isArray(value)) return value.slice()
+        if (value === undefined || value === null) return []
+        if (typeof value.length === "number") {
+            let out = []
+            for (let i = 0; i < value.length; i++) out.push(value[i])
+            return out
+        }
+        return []
+    }
+
+    function normalizedUtilButtonActionOrder(value) {
+        const actions = page.toArray(value)
+        return actions.filter(actionId => page.knownUtilButtonActionOrder.includes(actionId))
+    }
+
+    function legacyUtilButtonActions(monitorName) {
+        let legacy = []
+        if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showScreenSnip"], Config.options.bar.utilButtons.showScreenSnip)) legacy.push("screenSnip")
+        if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showColorPicker"], Config.options.bar.utilButtons.showColorPicker)) legacy.push("colorPicker")
+        if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showScreenRecord"], Config.options.bar.utilButtons.showScreenRecord)) legacy.push("screenRecord")
+        if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showScreenRecordingIndicator"], Config.options.bar.utilButtons.showScreenRecordingIndicator)) legacy.push("recordingIndicator")
+        if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showKeyboardToggle"], Config.options.bar.utilButtons.showKeyboardToggle)) legacy.push("keyboardToggle")
+        if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showWallpaperToggle"], Config.options.bar.utilButtons.showWallpaperToggle)) legacy.push("wallpaperToggle")
+        if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showMicToggle"], Config.options.bar.utilButtons.showMicToggle)) legacy.push("micToggle")
+        if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showDarkModeToggle"], Config.options.bar.utilButtons.showDarkModeToggle)) legacy.push("darkModeToggle")
+        if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showPerformanceProfileToggle"], Config.options.bar.utilButtons.showPerformanceProfileToggle)) legacy.push("performanceProfileToggle")
+        return legacy
+    }
+
+    function selectedUtilButtonActions() {
+        const monitorName = page.selectedMonitorTab
+        const monitorEntry = page.monitorSettingsEntry(monitorName)
+        const monitorOrder = page.resolvePathValue(monitorEntry?.values ?? {}, ["utilButtons", "order"], undefined)
+        if (monitorOrder !== undefined)
+            return page.normalizedUtilButtonActionOrder(monitorOrder)
+
+        const globalOrder = page.resolvePathValue(Config.options.bar, ["utilButtons", "order"], undefined)
+        if (globalOrder !== undefined)
+            return page.normalizedUtilButtonActionOrder(globalOrder)
+
+        return page.legacyUtilButtonActions(monitorName)
+    }
+
+    function availableUtilButtonActions(layout) {
+        const used = page.normalizedUtilButtonActionOrder(layout)
+        return utilButtonActions.filter(action => !used.includes(action.id))
+    }
+
+    function enabledBarMonitorNames() {
+        const allNames = Hyprland.monitors.values.map(m => m.name)
+        const selected = Config.options.bar.screenList ?? []
+        if (selected.length === 0) return allNames
+        return allNames.filter(name => selected.includes(name))
+    }
+
+    function ensureSelectedMonitorTab() {
+        const names = enabledBarMonitorNames()
+        if (names.length === 0) {
+            page.selectedMonitorTab = ""
+            return
+        }
+
+        if (!names.includes(page.selectedMonitorTab))
+            page.selectedMonitorTab = names[0]
+    }
+
+    function monitorSettingsEntry(monitorName) {
+        return (Config.options.bar.monitorSettings ?? []).find(item => item.name === monitorName) ?? null
+    }
+
+    function resolvePathValue(target, path, fallbackValue) {
+        let current = target
+        for (let i = 0; i < path.length; i++) {
+            if (current === undefined || current === null || !(path[i] in current))
+                return fallbackValue
+            current = current[path[i]]
+        }
+        return current
+    }
+
+    function setPathValue(target, path, value) {
+        let current = target
+        for (let i = 0; i < path.length - 1; i++) {
+            const key = path[i]
+            if (current[key] === undefined || current[key] === null || typeof current[key] !== "object") {
+                current[key] = {}
+            }
+            current = current[key]
+        }
+        current[path[path.length - 1]] = value
+        return target
+    }
+
+    function deletePathValue(target, path) {
+        let current = target
+        for (let i = 0; i < path.length - 1; i++) {
+            if (current === undefined || current === null || !(path[i] in current))
+                return false
+            current = current[path[i]]
+        }
+        if (current === undefined || current === null || !(path[path.length - 1] in current))
+            return false
+        delete current[path[path.length - 1]]
+        return true
+    }
+
+    function getMonitorBarSetting(monitorName, path, fallbackValue) {
+        if (!monitorName) return fallbackValue
+        const entry = page.monitorSettingsEntry(monitorName)
+        const values = entry?.values ?? {}
+        return page.resolvePathValue(values, path, fallbackValue)
+    }
+
+    function setMonitorBarSetting(monitorName, path, value) {
+        if (!monitorName) return
+        const fallbackValue = page.resolvePathValue(Config.options.bar, path, undefined)
+        let settings = (Config.options.bar.monitorSettings ?? []).slice()
+        const index = settings.findIndex(item => item.name === monitorName)
+        let entry = index >= 0 ? Object.assign({}, settings[index]) : { name: monitorName, values: {} }
+        let values = entry.values ? JSON.parse(JSON.stringify(entry.values)) : {}
+
+        if (value === fallbackValue) {
+            page.deletePathValue(values, path)
+            if (Object.keys(values).length === 0) {
+                if (index >= 0) settings.splice(index, 1)
+                Config.options.bar.monitorSettings = settings
+                return
+            }
+        } else {
+            page.setPathValue(values, path, value)
+        }
+
+        entry.values = values
+        if (index >= 0) settings[index] = entry
+        else settings.push(entry)
+
+        Config.options.bar.monitorSettings = settings
+    }
+
+    function currentMonitorBarSetting(path, fallbackValue) {
+        return page.getMonitorBarSetting(page.selectedMonitorTab, path, fallbackValue)
+    }
+
+    function setCurrentMonitorBarSetting(path, value) {
+        page.setMonitorBarSetting(page.selectedMonitorTab, path, value)
+    }
+
+    function copyCurrentMonitorSettingsToAll() {
+        if (!page.selectedMonitorTab) return
+        const entry = page.monitorSettingsEntry(page.selectedMonitorTab)
+        const values = entry?.values ? JSON.parse(JSON.stringify(entry.values)) : {}
+        const monitors = page.enabledBarMonitorNames()
+        let settings = (Config.options.bar.monitorSettings ?? []).slice()
+
+        monitors.forEach(name => {
+            if (name === page.selectedMonitorTab) return
+            const index = settings.findIndex(item => item.name === name)
+            const newEntry = { name, values: JSON.parse(JSON.stringify(values)) }
+            if (index >= 0) settings[index] = newEntry
+            else settings.push(newEntry)
+        })
+
+        Config.options.bar.monitorSettings = settings
+    }
+
+    function monitorLayoutEntry(monitorName) {
+        return (Config.options.bar.monitorLayouts ?? []).find(item => item.name === monitorName) ?? null
+    }
+
+    function layoutForMonitor(monitorName, layoutKey) {
+        const entry = monitorLayoutEntry(monitorName)
+        const override = entry?.[layoutKey]
+        return override !== undefined ? override : Config.options.bar.layouts[layoutKey]
+    }
+
+    function selectedMonitorLayouts() {
+        return {
+            leftLayout: layoutForMonitor(page.selectedMonitorTab, "leftLayout"),
+            middleLayout: layoutForMonitor(page.selectedMonitorTab, "middleLayout"),
+            rightLayout: layoutForMonitor(page.selectedMonitorTab, "rightLayout"),
+        }
+    }
+
+    function arraysEqual(a, b) {
+        if (a.length !== b.length) return false
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) return false
+        }
+        return true
+    }
+
+    function normalizeMonitorLayoutEntry(entry) {
+        for (let i = 0; i < page.layoutKeys.length; i++) {
+            const key = page.layoutKeys[i]
+            if (entry[key] !== undefined && arraysEqual(entry[key], Config.options.bar.layouts[key]))
+                delete entry[key]
+        }
+
+        return page.layoutKeys.some(key => entry[key] !== undefined)
+    }
+
+    function setSelectedMonitorLayout(layoutKey, list) {
+        if (page.selectedMonitorTab.length === 0) return
+
+        let layouts = (Config.options.bar.monitorLayouts ?? []).slice()
+        const index = layouts.findIndex(item => item.name === page.selectedMonitorTab)
+        let entry = index >= 0 ? Object.assign({}, layouts[index]) : { name: page.selectedMonitorTab }
+
+        entry[layoutKey] = list.slice()
+
+        if (normalizeMonitorLayoutEntry(entry)) {
+            if (index >= 0) layouts[index] = entry
+            else layouts.push(entry)
+        } else if (index >= 0) {
+            layouts.splice(index, 1)
+        }
+
+        Config.options.bar.monitorLayouts = layouts
+    }
+
+    function clearSelectedMonitorLayoutOverride() {
+        if (page.selectedMonitorTab.length === 0) return
+        Config.options.bar.monitorLayouts = (Config.options.bar.monitorLayouts ?? []).filter(item => item.name !== page.selectedMonitorTab)
+    }
+
+    Component.onCompleted: ensureSelectedMonitorTab()
+
+    Item {
+        id: stickyMonitorTabs
+        parent: page
+        z: 1000
+        visible: page.enabledBarMonitorNames().length > 0
+        width: Math.min(page.baseWidth, page.width - 24)
+        height: 48
+        x: (page.width - width) / 2
+        y: 8
+
+        Rectangle {
+            anchors.fill: parent
+            radius: Appearance.rounding.normal
+            color: Appearance.colors.colLayer0
+            border.width: 1
+            border.color: Appearance.colors.colLayer0Border
+        }
+
+        SecondaryTabBar {
+            id: stickyTabBar
+            anchors.fill: parent
+            anchors.margins: 2
+            allowWheelSwitch: false
+            currentIndex: Math.max(0, page.enabledBarMonitorNames().indexOf(page.selectedMonitorTab))
+
+            Repeater {
+                model: page.enabledBarMonitorNames()
+                delegate: SecondaryTabButton {
+                    required property string modelData
+                    buttonText: modelData
+                    checked: page.selectedMonitorTab === modelData
+                    onClicked: page.selectedMonitorTab = modelData
+                }
+            }
+        }
+    }
+
     ColumnLayout {
         id: mainLayout 
         Layout.fillWidth: true   
         Layout.fillHeight: true
         spacing: 20
 
-        ContentSection {
-            icon: "monitor"
-            shape: MaterialShape.Shape.ClamShell
-            visible: Hyprland.monitors.values.length > 1
-            title: Translation.tr("Screens")
-            ContentSubsection {
-                title: Translation.tr("Show bar on")
-
-                ColumnLayout {
-                    id: monitorsCol
-                    Layout.fillWidth: true
-                    spacing: 2
-
-                    Rectangle {
-                        id: allRow
-                        Layout.fillWidth: true
-                        implicitHeight: allSwitchItem.implicitHeight + 16 + 8
-                        color: Appearance.colors.colLayer1
-                        topLeftRadius: Appearance.rounding.normal
-                        topRightRadius: Appearance.rounding.normal
-                        bottomLeftRadius: Appearance.rounding.unsharpenmore
-                        bottomRightRadius: Appearance.rounding.unsharpenmore
-
-                        ConfigSwitch {
-                            id: allSwitchItem
-                            anchors { fill: parent; margins: 8 }
-                            buttonIcon: "tv_displays"
-                            text: Translation.tr("All")
-                            onCheckedChanged: {
-                                if (checked) Config.options.bar.screenList = []
-                            }
-
-                            Binding {
-                                target: allSwitchItem
-                                property: "checked"
-                                value: Config.options.bar.screenList.length === 0
-                                restoreMode: Binding.RestoreBinding
-                            }
-                        }
-                    }
-
-                    Repeater {
-                        model: Hyprland.monitors
-                        delegate: Rectangle {
-                            id: monitorRow
-                            required property var modelData
-                            required property int index
-                            readonly property bool isLast: index === Hyprland.monitors.values.length - 1
-
-                            Layout.fillWidth: true
-                            implicitHeight: switchItem.implicitHeight + 16 + 8
-                            color: Appearance.colors.colLayer1
-                            topLeftRadius:     Appearance.rounding.unsharpenmore
-                            topRightRadius:    Appearance.rounding.unsharpenmore
-                            bottomLeftRadius:  isLast ? Appearance.rounding.normal : Appearance.rounding.unsharpenmore
-                            bottomRightRadius: isLast ? Appearance.rounding.normal : Appearance.rounding.unsharpenmore
-
-                            ConfigSwitch {
-                                id: switchItem
-                                anchors { fill: parent; margins: 8 }
-                                buttonIcon: "monitor"
-                                text: monitorRow.modelData.name
-                                onCheckedChanged: {
-                                    const allNames = Hyprland.monitors.values.map(m => m.name)
-                                    let list = Config.options.bar.screenList.length === 0 ? allNames.slice() : Config.options.bar.screenList.slice()
-                                    if (checked) {
-                                        if (!list.includes(monitorRow.modelData.name)) list.push(monitorRow.modelData.name)
-                                    } else {
-                                        list = list.filter(s => s !== monitorRow.modelData.name)
-                                    }
-                                    Config.options.bar.screenList = list.length === allNames.length ? [] : list
-                                }
-
-                                Binding {
-                                    target: switchItem
-                                    property: "checked"
-                                    value: Config.options.bar.screenList.length === 0 || Config.options.bar.screenList.includes(monitorRow.modelData.name)
-                                    restoreMode: Binding.RestoreBinding
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        Item {
+            Layout.fillWidth: true
+            implicitHeight: stickyMonitorTabs.visible ? stickyMonitorTabs.height + 8 : 0
         }
 
         ContentSection {
-            icon: "splitscreen_add"
-            shape: MaterialShape.Shape.Cookie6Sided
-            title: Translation.tr("Bar layout")
+            icon: "tv_options_edit_channels"
+            shape: MaterialShape.Shape.ClamShell
+            title: Translation.tr("Monitor-specific layout")
+            visible: page.enabledBarMonitorNames().length > 0
 
-            GroupedList {
-                LayoutSection {
-                    sectionTitle: Config.options.bar.vertical ? Translation.tr("Top") : Translation.tr("Left")
-                    layout: Config.options.bar.layouts.leftLayout
-                    availableWidgets: page.availableFor()
-                    getWidgetName: page.getWidgetName
-                    onUpdate: list => Config.options.bar.layouts.leftLayout = list
+            onVisibleChanged: if (visible) page.ensureSelectedMonitorTab()
+
+            ContentSubsection {
+                title: Translation.tr("Override layout per monitor")
+
+                ConfigRow {
+                    uniform: false
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: Translation.tr("Configure bar layout for the selected monitor.")
+                        wrapMode: Text.Wrap
+                        color: Appearance.colors.colSubtext
+                    }
+
+                    RippleButtonWithIcon {
+                        materialIcon: "restart_alt"
+                        mainText: Translation.tr("Reset")
+                        onClicked: page.clearSelectedMonitorLayoutOverride()
+                    }
+
+                    RippleButtonWithIcon {
+                        materialIcon: "sync"
+                        mainText: Translation.tr("Copy to all")
+                        visible: page.enabledBarMonitorNames().length > 1
+                        onClicked: page.copyCurrentMonitorSettingsToAll()
+                    }
                 }
 
-                LayoutSection {
-                    sectionTitle: Translation.tr("Center")
-                    layout: Config.options.bar.layouts.middleLayout
-                    availableWidgets: page.availableFor()
-                    getWidgetName: page.getWidgetName
-                    onUpdate: list => Config.options.bar.layouts.middleLayout = list
-                }
+                GroupedList {
+                    LayoutSection {
+                        sectionTitle: page.currentMonitorBarSetting(["vertical"], Config.options.bar.vertical) ? Translation.tr("Top") : Translation.tr("Left")
+                        layout: page.selectedMonitorLayouts().leftLayout
+                        availableWidgets: page.availableForLayouts(page.selectedMonitorLayouts())
+                        getWidgetName: page.getWidgetName
+                        onUpdate: list => page.setSelectedMonitorLayout("leftLayout", list)
+                    }
 
-                LayoutSection {
-                    sectionTitle: Config.options.bar.vertical ? Translation.tr("Bottom") : Translation.tr("Right")
-                    layout: Config.options.bar.layouts.rightLayout
-                    availableWidgets: page.availableFor()
-                    getWidgetName: page.getWidgetName
-                    onUpdate: list => Config.options.bar.layouts.rightLayout = list
+                    LayoutSection {
+                        sectionTitle: Translation.tr("Center")
+                        layout: page.selectedMonitorLayouts().middleLayout
+                        availableWidgets: page.availableForLayouts(page.selectedMonitorLayouts())
+                        getWidgetName: page.getWidgetName
+                        onUpdate: list => page.setSelectedMonitorLayout("middleLayout", list)
+                    }
+
+                    LayoutSection {
+                        sectionTitle: page.currentMonitorBarSetting(["vertical"], Config.options.bar.vertical) ? Translation.tr("Bottom") : Translation.tr("Right")
+                        layout: page.selectedMonitorLayouts().rightLayout
+                        availableWidgets: page.availableForLayouts(page.selectedMonitorLayouts())
+                        getWidgetName: page.getWidgetName
+                        onUpdate: list => page.setSelectedMonitorLayout("rightLayout", list)
+                    }
                 }
             }
         }
@@ -206,10 +455,10 @@ ContentPage {
                 ConfigSelectionArray {
                     text: Translation.tr("Bar position")
                     icon: "swap_vert"
-                    currentValue: (Config.options.bar.bottom ? 1 : 0) | (Config.options.bar.vertical ? 2 : 0)
+                    currentValue: (page.currentMonitorBarSetting(["bottom"], Config.options.bar.bottom) ? 1 : 0) | (page.currentMonitorBarSetting(["vertical"], Config.options.bar.vertical) ? 2 : 0)
                     onSelected: newValue => {
-                        Config.options.bar.bottom = (newValue & 1) !== 0;
-                        Config.options.bar.vertical = (newValue & 2) !== 0;
+                        page.setCurrentMonitorBarSetting(["bottom"], (newValue & 1) !== 0);
+                        page.setCurrentMonitorBarSetting(["vertical"], (newValue & 2) !== 0);
                     }
                     options: [
                         { displayName: Translation.tr("Top"),    icon: "arrow_upward",   value: 0 },
@@ -221,8 +470,8 @@ ContentPage {
                 ConfigSelectionArray {
                     text: Translation.tr("Bar style")
                     icon: "style"
-                    currentValue: Config.options.bar.cornerStyle
-                    onSelected: newValue => { Config.options.bar.cornerStyle = newValue; }
+                    currentValue: page.currentMonitorBarSetting(["cornerStyle"], Config.options.bar.cornerStyle)
+                    onSelected: newValue => { page.setCurrentMonitorBarSetting(["cornerStyle"], newValue); }
                     options: [
                         { displayName: Translation.tr("Hug"),     icon: "line_curve", value: 0 },
                         { displayName: Translation.tr("Float"),   icon: "view_day",   value: 1 },
@@ -233,8 +482,8 @@ ContentPage {
                 ConfigSelectionArray {
                     text: Translation.tr("Group style")
                     icon: "tab_group"
-                    currentValue: Config.options.bar.borderless
-                    onSelected: newValue => { Config.options.bar.borderless = newValue; }
+                    currentValue: page.currentMonitorBarSetting(["borderless"], Config.options.bar.borderless)
+                    onSelected: newValue => { page.setCurrentMonitorBarSetting(["borderless"], newValue); }
                     options: [
                         { displayName: Translation.tr(""),          icon: "block",          value: "transparent" },
                         { displayName: Translation.tr("Pills"),     icon: "pill",           value: "pills" },
@@ -243,83 +492,22 @@ ContentPage {
                 }
                 ConfigRow{
                     uniform: true
-                    ConfigSwitch {
+                    MonitorConfigSwitch {
                         buttonIcon: "variable_insert"
                         text: Translation.tr("Show Background")
-                        enabled: Config.options.bar.cornerStyle === 0 || Config.options.bar.cornerStyle === 1
-                        checked: Config.options.bar.showBackground
-                        onCheckedChanged: { Config.options.bar.showBackground = checked; }
+                        settingPath: ["showBackground"]
+                        fallbackValue: Config.options.bar.showBackground
+                        enabled: page.currentMonitorBarSetting(["cornerStyle"], Config.options.bar.cornerStyle) === 0 || page.currentMonitorBarSetting(["cornerStyle"], Config.options.bar.cornerStyle) === 1
                     }
                     ConfigSelectionArray {
                         text: Translation.tr("Autohide")
                         icon: "preview_off"
-                        currentValue: Config.options.bar.autoHide.enable
-                        onSelected: newValue => { Config.options.bar.autoHide.enable = newValue; }
+                        currentValue: page.currentMonitorBarSetting(["autoHide", "enable"], Config.options.bar.autoHide.enable)
+                        onSelected: newValue => { page.setCurrentMonitorBarSetting(["autoHide", "enable"], newValue); }
                         options: [
                             { displayName: Translation.tr("No"),  icon: "close", value: false },
                             { displayName: Translation.tr("Yes"), icon: "check", value: true }
                         ]
-                    }
-                }
-            }
-        }
-
-        ContentSection {
-            icon: "notifications"
-            shape: MaterialShape.Shape.Bun
-            title: Translation.tr("Notifications")
-            
-            GroupedList {
-                ConfigComboBox { // too much items for configselectionarray - I know it's not the best place to put this but I can change it later
-                    text: Translation.tr("Popup position")
-                    buttonIcon: "my_location" 
-                    currentValue: Config.options.notifications.position
-                    fieldWidth: 50
-                    onSelected: newValue => {
-                        Config.options.notifications.position = newValue;
-                    }
-                    model: [
-                        {
-                            displayName: Translation.tr("Top left"),
-                            value: "top_left"
-                        },
-                        {
-                            displayName: Translation.tr("Top center"),
-                            value: "top_center"
-                        },
-                        {
-                            displayName: Translation.tr("Top right"),
-                            value: "top_right"
-                        },
-                        {
-                            displayName: Translation.tr("Bottom left"),
-                            value: "bottom_left"
-                        },
-                        {
-                            displayName: Translation.tr("Bottom center"),
-                            value: "bottom_center"
-                        },
-                        {
-                            displayName: Translation.tr("Bottom right"),
-                            value: "bottom_right"
-                        }
-                    ]
-                }
-                ConfigSwitch {
-                    buttonIcon: "counter_2"
-                    text: Translation.tr("Unread indicator: show count")
-                    checked: Config.options.bar.indicators.notifications.showUnreadCount
-                    onCheckedChanged: { Config.options.bar.indicators.notifications.showUnreadCount = checked; }
-                }
-                ConfigSpinBox {
-                    icon: "av_timer"
-                    text: Translation.tr("Timeout duration (if not defined by notification) (ms)")
-                    value: Config.options.notifications.timeout
-                    from: 1000
-                    to: 60000
-                    stepSize: 1000
-                    onValueChanged: {
-                        Config.options.notifications.timeout = value;
                     }
                 }
             }
@@ -352,8 +540,8 @@ ContentPage {
                 ConfigSelectionArray {
                     text: Translation.tr("Style")
                     icon: "style"
-                    currentValue: Config.options.bar.divider.style
-                    onSelected: newValue => { Config.options.bar.divider.style = newValue; }
+                    currentValue: page.currentMonitorBarSetting(["divider", "style"], Config.options.bar.divider.style)
+                    onSelected: newValue => { page.setCurrentMonitorBarSetting(["divider", "style"], newValue); }
                     options: [
                         { displayName: Translation.tr("Line"),  icon: "more_vert",       value: "rect" },
                         { displayName: Translation.tr("Dot"),   icon: "fiber_manual_record", value: "dot" },
@@ -362,14 +550,14 @@ ContentPage {
                 }
                 ConfigSpinBox {
                     icon: "width"
-                    enabled: Config.options.bar.divider.style === "space"
+                    enabled: page.currentMonitorBarSetting(["divider", "style"], Config.options.bar.divider.style) === "space"
                     text: Translation.tr("Space width (px)")
-                    value: Config.options.bar.divider.spacing
+                    value: page.currentMonitorBarSetting(["divider", "spacing"], Config.options.bar.divider.spacing)
                     from: 4
                     to: 100
                     stepSize: 2
                     onValueChanged: {
-                        Config.options.bar.divider.spacing = value;
+                        page.setCurrentMonitorBarSetting(["divider", "spacing"], value);
                     }
                 }
             }
@@ -381,64 +569,16 @@ ContentPage {
             title: Translation.tr("Utility buttons")
 
             GroupedList {
-                ConfigRow {
-                    uniform: true
-                    ConfigSwitch {
-                        buttonIcon: "screenshot_region"
-                        text: Translation.tr("Screen snip")
-                        checked: Config.options.bar.utilButtons.showScreenSnip
-                        onCheckedChanged: { Config.options.bar.utilButtons.showScreenSnip = checked }
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "colorize"
-                        text: Translation.tr("Color picker")
-                        checked: Config.options.bar.utilButtons.showColorPicker
-                        onCheckedChanged: { Config.options.bar.utilButtons.showColorPicker = checked }
-                    }
-                }
-                ConfigRow {
-                    uniform: true
-                    ConfigSwitch {
-                        buttonIcon: "keyboard"
-                        text: Translation.tr("Keyboard toggle")
-                        checked: Config.options.bar.utilButtons.showKeyboardToggle
-                        onCheckedChanged: { Config.options.bar.utilButtons.showKeyboardToggle = checked }
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "mic"
-                        text: Translation.tr("Mic toggle")
-                        checked: Config.options.bar.utilButtons.showMicToggle
-                        onCheckedChanged: { Config.options.bar.utilButtons.showMicToggle = checked }
-                    }
-                }
-                ConfigRow {
-                    uniform: true
-                    ConfigSwitch {
-                        buttonIcon: "dark_mode"
-                        text: Translation.tr("Dark/Light toggle")
-                        checked: Config.options.bar.utilButtons.showDarkModeToggle
-                        onCheckedChanged: { Config.options.bar.utilButtons.showDarkModeToggle = checked }
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "speed"
-                        text: Translation.tr("Performance Profile")
-                        checked: Config.options.bar.utilButtons.showPerformanceProfileToggle
-                        onCheckedChanged: { Config.options.bar.utilButtons.showPerformanceProfileToggle = checked }
-                    }
-                }
-                ConfigRow {
-                    uniform: true
-                    ConfigSwitch {
-                        buttonIcon: "screen_record"
-                        text: Translation.tr("Record Screen")
-                        checked: Config.options.bar.utilButtons.showScreenRecord
-                        onCheckedChanged: { Config.options.bar.utilButtons.showScreenRecord = checked }
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "imagesmode"
-                        text: Translation.tr("Wallpapers Toggle")
-                        checked: Config.options.bar.utilButtons.showWallpaperToggle
-                        onCheckedChanged: { Config.options.bar.utilButtons.showWallpaperToggle = checked }
+                LayoutSection {
+                    sectionTitle: Translation.tr("Actions")
+                    layout: page.selectedUtilButtonActions()
+                    availableWidgets: page.availableUtilButtonActions(layout)
+                    getWidgetName: page.getUtilButtonActionName
+                    onUpdate: list => {
+                        if (page.selectedMonitorTab)
+                            page.setCurrentMonitorBarSetting(["utilButtons", "order"], list)
+                        else
+                            Config.options.bar.utilButtons.order = list
                     }
                 }
             }
@@ -448,17 +588,17 @@ ContentPage {
             shape: MaterialShape.Shape.Cookie12Sided
             icon: "steppers"; title: Translation.tr("Workspaces")
             GroupedList {
-                ConfigSwitch {
+                MonitorConfigSwitch {
                     buttonIcon: "counter_1"; text: Translation.tr("Always show numbers")
-                    checked: Config.options.bar.workspaces.alwaysShowNumbers
-                    onCheckedChanged: { Config.options.bar.workspaces.alwaysShowNumbers = checked; }
+                    settingPath: ["workspaces", "alwaysShowNumbers"]
+                    fallbackValue: Config.options.bar.workspaces.alwaysShowNumbers
                 }
                 ConfigSelectionArray {
                     text: Translation.tr("Numbers style")
                     icon: "looks_3"
-                    currentValue: JSON.stringify(Config.options.bar.workspaces.numberMap)
+                    currentValue: JSON.stringify(page.currentMonitorBarSetting(["workspaces", "numberMap"], Config.options.bar.workspaces.numberMap))
                     onSelected: newValue => {
-                        Config.options.bar.workspaces.numberMap = JSON.parse(newValue)
+                        page.setCurrentMonitorBarSetting(["workspaces", "numberMap"], JSON.parse(newValue))
                     }
                     options: [
                         { displayName: Translation.tr("Normal"),    icon: "timer_10",        value: '[]' },
@@ -466,23 +606,23 @@ ContentPage {
                         { displayName: Translation.tr("Roman"),     icon: "account_balance", value: '["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV","XVI","XVII","XVIII","XIX","XX"]' }
                     ]
                 }
-                ConfigSwitch {
+                MonitorConfigSwitch {
                     buttonIcon: "award_star"; text: Translation.tr("Show app icons")
-                    checked: Config.options.bar.workspaces.showAppIcons
-                    onCheckedChanged: { Config.options.bar.workspaces.showAppIcons = checked; }
+                    settingPath: ["workspaces", "showAppIcons"]
+                    fallbackValue: Config.options.bar.workspaces.showAppIcons
                 }
                 ConfigSpinBox {
                     icon: "view_column"; text: Translation.tr("Workspaces shown")
-                    value: Config.options.bar.workspaces.shown
+                    value: page.currentMonitorBarSetting(["workspaces", "shown"], Config.options.bar.workspaces.shown)
                     from: 1; to: 30
-                    onValueChanged: { Config.options.bar.workspaces.shown = value; }
+                    onValueChanged: { page.setCurrentMonitorBarSetting(["workspaces", "shown"], value); }
                 }
                 ConfigSelectionArray {
                     text: Translation.tr("Indicator style")
                     icon: "page_control"
-                    currentValue: Config.options.bar.workspaces.indicatorStyle ?? "icon"
+                    currentValue: page.currentMonitorBarSetting(["workspaces", "indicatorStyle"], Config.options.bar.workspaces.indicatorStyle ?? "icon")
                     onSelected: newValue => {
-                        Config.options.bar.workspaces.indicatorStyle = newValue
+                        page.setCurrentMonitorBarSetting(["workspaces", "indicatorStyle"], newValue)
                     }
                     options: [
                         { displayName: Translation.tr("Dots"),  icon: "radio_button_checked",   value: "dot" },
@@ -500,57 +640,57 @@ ContentPage {
             GroupedList {
                 ConfigRow {
                     uniform: true
-                    ConfigSwitch {
+                    MonitorConfigSwitch {
                         buttonIcon: "planner_review"
                         text: Translation.tr("CPU")
-                        checked: Config.options.bar.resources.alwaysShowCpu
-                        onCheckedChanged: { Config.options.bar.resources.alwaysShowCpu = checked }
+                        settingPath: ["resources", "alwaysShowCpu"]
+                        fallbackValue: Config.options.bar.resources.alwaysShowCpu
                     }
-                    ConfigSwitch {
+                    MonitorConfigSwitch {
                         buttonIcon: "thermostat"
                         text: Translation.tr("CPU Temperature")
-                        checked: Config.options.bar.resources.alwaysShowCpuTemp
-                        onCheckedChanged: { Config.options.bar.resources.alwaysShowCpuTemp = checked }
+                        settingPath: ["resources", "alwaysShowCpuTemp"]
+                        fallbackValue: Config.options.bar.resources.alwaysShowCpuTemp
                     }
                 }
                 ConfigRow {
                     uniform: true
-                    ConfigSwitch {
+                    MonitorConfigSwitch {
                         buttonIcon: "memory"
                         text: Translation.tr("RAM")
-                        checked: Config.options.bar.resources.alwaysShowRam
-                        onCheckedChanged: { Config.options.bar.resources.alwaysShowRam = checked }
+                        settingPath: ["resources", "alwaysShowRam"]
+                        fallbackValue: Config.options.bar.resources.alwaysShowRam
                     }
-                    ConfigSwitch {
+                    MonitorConfigSwitch {
                         buttonIcon: "storage"
                         text: Translation.tr("Disk")
-                        checked: Config.options.bar.resources.alwaysShowDisk
-                        onCheckedChanged: { Config.options.bar.resources.alwaysShowDisk = checked }
+                        settingPath: ["resources", "alwaysShowDisk"]
+                        fallbackValue: Config.options.bar.resources.alwaysShowDisk
                     }
                 }
                 ConfigRow {
                     uniform: true
-                    ConfigSwitch {
+                    MonitorConfigSwitch {
                         buttonIcon: "swap_horiz"
                         text: Translation.tr("Swap")
-                        checked: Config.options.bar.resources.alwaysShowSwap
-                        onCheckedChanged: { Config.options.bar.resources.alwaysShowSwap = checked }
+                        settingPath: ["resources", "alwaysShowSwap"]
+                        fallbackValue: Config.options.bar.resources.alwaysShowSwap
                     }
                 }
                 ConfigSelectionArray {
                     text: Translation.tr("Style")
                     icon: "style"
-                    currentValue: Config.options.bar.resources.style
-                    onSelected: newValue => { Config.options.bar.resources.style = newValue; }
+                    currentValue: page.currentMonitorBarSetting(["resources", "style"], Config.options.bar.resources.style)
+                    onSelected: newValue => { page.setCurrentMonitorBarSetting(["resources", "style"], newValue); }
                     options: [
                         { displayName: Translation.tr("Filled"),    icon: "incomplete_circle",  value: "filled" },
                         { displayName: Translation.tr("Outline"),   icon: "circles",            value: "outline" }
                     ]
                 }
-                ConfigSwitch {
+                MonitorConfigSwitch {
                     buttonIcon: "decimal_increase"; text: Translation.tr("Show Percentage")
-                    checked: Config.options.bar.resources.showValue
-                    onCheckedChanged: { Config.options.bar.resources.showValue = checked; }
+                    settingPath: ["resources", "showValue"]
+                    fallbackValue: Config.options.bar.resources.showValue
                 }
                 ConfigSpinBox {
                     icon: "av_timer"
@@ -578,7 +718,7 @@ ContentPage {
                     buttonIcon: "play_circle"
                     text: Translation.tr("Preferred Player")
                     placeholderText: Translation.tr("e.g. spotify, firefox")
-                    value: Config.options.bar.media.preferredPlayer
+                    value: page.currentMonitorBarSetting(["media", "preferredPlayer"], Config.options.bar.media.preferredPlayer)
                     onValueChanged: {
                         mediaDebounceTimer.restart();
                     }
@@ -588,29 +728,29 @@ ContentPage {
                         interval: 600
                         repeat: false
                         onTriggered: {
-                            Config.options.bar.media.preferredPlayer = preferredPlayerField.value;
+                            page.setCurrentMonitorBarSetting(["media", "preferredPlayer"], preferredPlayerField.value);
                         }
                     }
                 }
-                ConfigSwitch {
+                MonitorConfigSwitch {
                     buttonIcon: "keep"; text: Translation.tr("Pin media controls")
-                    checked: Config.options.bar.media.alwaysVisible
-                    onCheckedChanged: { Config.options.bar.media.alwaysVisible = checked; }
+                    settingPath: ["media", "alwaysVisible"]
+                    fallbackValue: Config.options.bar.media.alwaysVisible
                 }
-                ConfigSwitch {
+                MonitorConfigSwitch {
                     buttonIcon: "titlecase"; text: Translation.tr("Show only title")
-                    checked: Config.options.bar.media.onlyTitle
-                    onCheckedChanged: { Config.options.bar.media.onlyTitle = checked; }
+                    settingPath: ["media", "onlyTitle"]
+                    fallbackValue: Config.options.bar.media.onlyTitle
                 }
                 ConfigSpinBox {
                     icon: "width"
                     text: Translation.tr("Max media width")
-                    value: Config.options.bar.media.maxWidth
+                    value: page.currentMonitorBarSetting(["media", "maxWidth"], Config.options.bar.media.maxWidth)
                     from: 100
                     to: 500
                     stepSize: 10
                     onValueChanged: {
-                        Config.options.bar.media.maxWidth = value;
+                        page.setCurrentMonitorBarSetting(["media", "maxWidth"], value);
                     }
                 }
             }
@@ -620,10 +760,10 @@ ContentPage {
             shape: MaterialShape.Shape.Puffy
             icon: "tooltip"; title: Translation.tr("Tooltips")
             GroupedList {
-                ConfigSwitch {
+                MonitorConfigSwitch {
                     buttonIcon: "ads_click"; text: Translation.tr("Click to show")
-                    checked: Config.options.bar.tooltips.clickToShow
-                    onCheckedChanged: { Config.options.bar.tooltips.clickToShow = checked; }
+                    settingPath: ["tooltips", "clickToShow"]
+                    fallbackValue: Config.options.bar.tooltips.clickToShow
                 }
             }
         }

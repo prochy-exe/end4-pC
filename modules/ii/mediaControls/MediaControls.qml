@@ -47,6 +47,26 @@ Scope {
     readonly property real gap: Config.options.bar.cornerStyle === 3 ? Appearance.sizes.hyprlandGapsOut : 0
     readonly property bool cornerStyleReducesGap: Config.options.bar.cornerStyle === 1 || Config.options.bar.cornerStyle === 2
     readonly property real barThickness: barVertical ? Appearance.sizes.verticalBarWidth : Appearance.sizes.barHeight
+    function layoutUsesWidget(layoutEntry, widgetId) {
+        if (!layoutEntry) return false
+        return (layoutEntry.leftLayout ?? []).includes(widgetId)
+            || (layoutEntry.middleLayout ?? []).includes(widgetId)
+            || (layoutEntry.rightLayout ?? []).includes(widgetId)
+    }
+
+    function anyLayoutUsesWidget(widgetId) {
+        if (layoutUsesWidget(Config.options.bar.layouts, widgetId)) return true
+        return (Config.options.bar.monitorLayouts ?? []).some(layout => layoutUsesWidget(layout, widgetId))
+    }
+
+    readonly property bool outputVisualizerInLayout: anyLayoutUsesWidget("visualizer")
+    readonly property bool inputVisualizerInLayout: anyLayoutUsesWidget("visualizerInput")
+    readonly property bool outputVisualizerNeeded:
+        GlobalStates.mediaControlsOpen ||
+        GlobalStates.sidebarRightOpen ||
+        outputVisualizerInLayout ||
+        Config.options.background.widgets.visualizer.enable
+    readonly property bool inputVisualizerNeeded: inputVisualizerInLayout
 
     function filterDuplicatePlayers(players) {
         let filtered = [];
@@ -78,24 +98,38 @@ Scope {
     }
 
     Process {
-        id: cavaProc
-        running: (GlobalStates.mediaControlsOpen ||
-            GlobalStates.sidebarRightOpen || 
-            Config.options.bar.layouts.leftLayout.includes("visualizer") ||
-            Config.options.bar.layouts.middleLayout.includes("visualizer") ||
-            Config.options.bar.layouts.rightLayout.includes("visualizer") ||
-            Config.options.background.widgets.visualizer.enable)
-            && MprisController.activePlayer !== null
+        id: outputCavaProc
+        running: outputVisualizerNeeded
         onRunningChanged: {
-            if (!cavaProc.running) {
+            if (!outputCavaProc.running) {
                 GlobalStates.visualizerPoints = [];
+                GlobalStates.visualizerOutputPoints = [];
             }
         }
         command: ["cava", "-p", `${FileUtils.trimFileProtocol(Directories.scriptPath)}/cava/raw_output_config.txt`]
         stdout: SplitParser {
             onRead: data => {
                 let points = data.split(";").map(p => parseFloat(p.trim())).filter(p => !isNaN(p));
+                // Keep legacy points for consumers that still read visualizerPoints.
                 GlobalStates.visualizerPoints = points;
+                GlobalStates.visualizerOutputPoints = points;
+            }
+        }
+    }
+
+    Process {
+        id: inputCavaProc
+        running: inputVisualizerNeeded
+        onRunningChanged: {
+            if (!inputCavaProc.running) {
+                GlobalStates.visualizerInputPoints = [];
+            }
+        }
+        command: ["cava", "-p", `${FileUtils.trimFileProtocol(Directories.scriptPath)}/cava/raw_input_config.txt`]
+        stdout: SplitParser {
+            onRead: data => {
+                let points = data.split(";").map(p => parseFloat(p.trim())).filter(p => !isNaN(p));
+                GlobalStates.visualizerInputPoints = points;
             }
         }
     }

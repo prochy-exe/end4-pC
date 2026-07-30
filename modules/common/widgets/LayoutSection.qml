@@ -200,7 +200,7 @@ ContentSubsection {
                             let list = root.layout.slice()
                             list.push(modelData.id)
                             root.onUpdate(list)
-                            const keepOpen = ["visualizer", "divisor"]
+                            const keepOpen = ["visualizer", "visualizerInput", "divisor"]
                             if (!keepOpen.includes(modelData.id)) {
                                 Qt.callLater(() => { dropdown.dropdownOpen = false })
                             }

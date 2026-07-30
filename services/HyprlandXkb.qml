@@ -16,6 +16,14 @@ Singleton {
     property var cachedLayoutCodes: ({})
     property string currentLayoutName: ""
     property string currentLayoutCode: ""
+    readonly property string displayedLayoutCode: {
+        const code = root.currentLayoutCode ?? ""
+        if (Config.options.hyprland.input.showLayoutVariantInBar) {
+            return code
+        }
+        const colonIndex = code.indexOf(":")
+        return colonIndex >= 0 ? code.slice(0, colonIndex) : code
+    }
     // For the service
     property var baseLayoutFilePath: "/usr/share/X11/xkb/rules/base.lst"
     property bool needsLayoutRefresh: false

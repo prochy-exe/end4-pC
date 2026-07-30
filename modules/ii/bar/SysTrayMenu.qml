@@ -13,6 +13,9 @@ PopupWindow {
     required property QsMenuHandle trayItemMenuHandle
     property string trayItemId: ""
     property real popupBackgroundMargin: 0
+    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property bool currentVertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
+    readonly property bool currentBottom: Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom)
 
     signal menuClosed
     signal menuOpened(qsWindow: var) // Correct type is QsWindow, but QML does not like that
@@ -66,9 +69,9 @@ PopupWindow {
             anchors {
                 left: parent.left
                 right: parent.right
-                verticalCenter: Config.options.bar.vertical ? parent.verticalCenter : undefined
-                top: Config.options.bar.vertical ? undefined : Config.options.bar.bottom ? undefined : parent.top
-                bottom: Config.options.bar.vertical ? undefined : Config.options.bar.bottom ? parent.bottom : undefined
+                verticalCenter: root.currentVertical ? parent.verticalCenter : undefined
+                top: root.currentVertical ? undefined : root.currentBottom ? undefined : parent.top
+                bottom: root.currentVertical ? undefined : root.currentBottom ? parent.bottom : undefined
                 margins: root.padding
             }
 

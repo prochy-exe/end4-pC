@@ -14,7 +14,29 @@ Scope {
     PanelWindow {
         id: root
         visible: (Notifications.popupList.length > 0) && !GlobalStates.screenLocked
-        screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? null
+        property string monitorMode: Config.options.notifications.monitorMode ?? "primary"
+        property string monitorName: Config.options.notifications.monitorName ?? ""
+        property string configuredPrimaryMonitor: Config.options.hyprland.primaryMonitor ?? ""
+
+        function screenByName(name) {
+            if (!name || name.length === 0) return null
+            return Quickshell.screens.find(s => s.name === name) ?? null
+        }
+
+        screen: {
+            if (root.monitorMode === "specific") {
+                const specific = root.screenByName(root.monitorName)
+                if (specific) return specific
+            }
+
+            const primary = root.screenByName(root.configuredPrimaryMonitor)
+            if (primary) return primary
+
+            const focused = root.screenByName(Hyprland.focusedMonitor?.name ?? "")
+            if (focused) return focused
+
+            return Quickshell.screens.length > 0 ? Quickshell.screens[0] : null
+        }
 
         property string position: {
             const raw = Config.options.notifications.position ?? "top_right"
