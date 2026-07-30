@@ -19,11 +19,12 @@ RowLayout {
         searchInput.forceActiveFocus();
     }
 
-    enum SearchPrefixType { Action, App, Clipboard, Emojis, Symbols, Math, ShellCommand, WebSearch, Keybinds, DefaultSearch }
+    enum SearchPrefixType { Action, App, Bitwarden, Clipboard, Emojis, Symbols, Math, ShellCommand, WebSearch, Keybinds, DefaultSearch }
 
     property var searchPrefixType: {
         if (root.searchingText.startsWith(Config.options.search.prefix.action)) return SearchBar.SearchPrefixType.Action;
         if (root.searchingText.startsWith(Config.options.search.prefix.app)) return SearchBar.SearchPrefixType.App;
+        if (root.searchingText.startsWith(Config.options.search.prefix.bitwarden)) return SearchBar.SearchPrefixType.Bitwarden;
         if (root.searchingText.startsWith(Config.options.search.prefix.clipboard)) return SearchBar.SearchPrefixType.Clipboard;
         if (root.searchingText.startsWith(Config.options.search.prefix.emojis)) return SearchBar.SearchPrefixType.Emojis;
         if (root.searchingText.startsWith(Config.options.search.prefix.symbols)) return SearchBar.SearchPrefixType.Symbols;
@@ -41,6 +42,7 @@ RowLayout {
         shape: switch(root.searchPrefixType) {
             case SearchBar.SearchPrefixType.Action: return MaterialShape.Shape.Pill;
             case SearchBar.SearchPrefixType.App: return MaterialShape.Shape.Clover4Leaf;
+            case SearchBar.SearchPrefixType.Bitwarden: return MaterialShape.Shape.Oval;
             case SearchBar.SearchPrefixType.Clipboard: return MaterialShape.Shape.Gem;
             case SearchBar.SearchPrefixType.Emojis: return MaterialShape.Shape.Sunny;
             case SearchBar.SearchPrefixType.Symbols: return MaterialShape.Shape.Clover4Leaf;
@@ -53,6 +55,7 @@ RowLayout {
         text: switch (root.searchPrefixType) {
             case SearchBar.SearchPrefixType.Action: return "settings_suggest";
             case SearchBar.SearchPrefixType.App: return "apps";
+            case SearchBar.SearchPrefixType.Bitwarden: return "password";
             case SearchBar.SearchPrefixType.Clipboard: return "content_paste_search";
             case SearchBar.SearchPrefixType.Emojis: return "add_reaction";
             case SearchBar.SearchPrefixType.Symbols: return "interests";

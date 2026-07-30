@@ -35,6 +35,7 @@ RippleButton {
             return "main"
     }
     property string itemClickActionName: entry?.verb ?? "Open"
+    property bool dismissOnExecute: entry?.dismissOnExecute ?? true
     property string bigText: entry?.iconType === LauncherSearchResult.IconType.Text ? entry?.iconName ?? "" : ""
     property string materialSymbol: entry.iconType === LauncherSearchResult.IconType.Material ? entry?.iconName ?? "" : ""
     property string cliphistRawString: entry?.rawValue ?? ""
@@ -109,7 +110,8 @@ RippleButton {
     }
 
     onClicked: {
-        GlobalStates.overviewOpen = false
+        if (root.dismissOnExecute)
+            GlobalStates.overviewOpen = false
         root.itemExecute()
     }
     Keys.onPressed: (event) => {
@@ -235,7 +237,7 @@ RippleButton {
                 }
             }
             StyledText { // Symbol tags / description
-                visible: root.itemTags !== "" && root.itemType === Translation.tr("Symbol")
+                visible: root.itemTags !== "" && (root.itemType === Translation.tr("Symbol") || root.itemType === Translation.tr("Bitwarden"))
                 Layout.fillWidth: true
                 font.pixelSize: Appearance.font.pixelSize.smaller
                 color: root.selected ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colSubtext
@@ -315,7 +317,11 @@ RippleButton {
                         }
                     }
 
-                    onClicked: modelData.execute()
+                    onClicked: {
+                        if (modelData?.dismissOnExecute === true)
+                            GlobalStates.overviewOpen = false
+                        modelData.execute()
+                    }
 
                     StyledToolTip {
                         text: modelData.name

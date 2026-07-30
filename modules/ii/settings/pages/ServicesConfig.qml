@@ -187,6 +187,21 @@ ContentPage {
             }
 
             ContentSubsection {
+                title: Translation.tr("Bitwarden")
+
+                GroupedList {
+                    ConfigSwitch {
+                        buttonIcon: "visibility_lock"
+                        text: Translation.tr("Dismiss Win+B menu after interacting with an item")
+                        checked: Config.options.search.bitwardenDismissOnInteract
+                        onCheckedChanged: {
+                            Config.options.search.bitwardenDismissOnInteract = checked;
+                        }
+                    }
+                }
+            }
+
+            ContentSubsection {
                 title: Translation.tr("Prefixes")
 
                 GroupedList {
@@ -276,6 +291,20 @@ ContentPage {
                         }
                         ConfigTextArea {
                             Layout.fillWidth: true
+                            buttonIcon: "password"
+                            fieldWidth: 100
+                            text: Translation.tr("Bitwarden")
+                            value: Config.options.search.prefix.bitwarden
+                            onValueChanged: {
+                                Config.options.search.prefix.bitwarden = value;
+                            }
+                        }
+                    }
+
+                    ConfigRow {
+                        uniform: true
+                        ConfigTextArea {
+                            Layout.fillWidth: true
                             buttonIcon: "keyboard_command_key"
                             fieldWidth: 100
                             text: Translation.tr("Keybinds")
@@ -284,6 +313,7 @@ ContentPage {
                                 Config.options.search.prefix.keybinds = value;
                             }
                         }
+                        Item { Layout.fillWidth: true }
                     }
                 }
             }

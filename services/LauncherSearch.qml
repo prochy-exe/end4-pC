@@ -17,7 +17,7 @@ Singleton {
     property string query: ""
 
     function ensurePrefix(prefix) {
-        if ([Config.options.search.prefix.action, Config.options.search.prefix.app, Config.options.search.prefix.clipboard, Config.options.search.prefix.emojis, Config.options.search.prefix.symbols, Config.options.search.prefix.math, Config.options.search.prefix.shellCommand, Config.options.search.prefix.webSearch,].some(i => root.query.startsWith(i))) {
+        if ([Config.options.search.prefix.action, Config.options.search.prefix.app, Config.options.search.prefix.bitwarden, Config.options.search.prefix.clipboard, Config.options.search.prefix.emojis, Config.options.search.prefix.symbols, Config.options.search.prefix.math, Config.options.search.prefix.shellCommand, Config.options.search.prefix.webSearch,].some(i => root.query.startsWith(i))) {
             root.query = prefix + root.query.slice(1);
         } else {
             root.query = prefix + root.query;
@@ -311,6 +311,179 @@ Singleton {
                     blurImage: shouldBlurImage
                 });
             }).filter(Boolean);
+        } else if (root.query.startsWith(Config.options.search.prefix.bitwarden)) {
+            // Bitwarden
+            const _bwRev = Bitwarden.revision
+            const searchString = StringUtils.cleanPrefix(root.query, Config.options.search.prefix.bitwarden).trim();
+            Bitwarden.triggerSearch(searchString)
+
+            const buildBitwardenItemResult = (item, recent) => {
+                const itemId = item.id ?? ""
+                const itemName = item.name ?? "(unnamed)"
+                const username = item.username ?? ""
+                const hasTotp = item.hasTotp ?? false
+                return resultComp.createObject(null, {
+                    name: itemName,
+                    iconName: "password",
+                    iconType: LauncherSearchResult.IconType.Material,
+                    verb: recent ? Translation.tr("Recent - copy password") : Translation.tr("Copy password"),
+                    type: Translation.tr("Bitwarden"),
+                    comment: username,
+                    dismissOnExecute: Config.options.search.bitwardenDismissOnInteract,
+                    execute: () => {
+                        Bitwarden.setLastInteracted(item)
+                        Bitwarden.copyPassword(itemId)
+                    },
+                    actions: [
+                        resultComp.createObject(null, {
+                            name: Translation.tr("Copy username"),
+                            iconName: "person",
+                            iconType: LauncherSearchResult.IconType.Material,
+                            dismissOnExecute: Config.options.search.bitwardenDismissOnInteract,
+                            execute: () => {
+                                Bitwarden.setLastInteracted(item)
+                                Bitwarden.copyUsername(username)
+                            }
+                        }),
+                        resultComp.createObject(null, {
+                            name: Translation.tr("Copy password"),
+                            iconName: "key",
+                            iconType: LauncherSearchResult.IconType.Material,
+                            dismissOnExecute: Config.options.search.bitwardenDismissOnInteract,
+                            execute: () => {
+                                Bitwarden.setLastInteracted(item)
+                                Bitwarden.copyPassword(itemId)
+                            }
+                        }),
+                        hasTotp ? resultComp.createObject(null, {
+                            name: Translation.tr("Copy verification code"),
+                            iconName: "shield_lock",
+                            iconType: LauncherSearchResult.IconType.Material,
+                            dismissOnExecute: Config.options.search.bitwardenDismissOnInteract,
+                            execute: () => {
+                                Bitwarden.setLastInteracted(item)
+                                Bitwarden.copyTotp(itemId, hasTotp)
+                            }
+                        }) : null
+                    ].filter(Boolean)
+                })
+            }
+
+            if (Bitwarden.status === "checking") {
+                return [resultComp.createObject(null, {
+                    name: Translation.tr("Checking Bitwarden auth..."),
+                    iconName: "password",
+                    iconType: LauncherSearchResult.IconType.Material,
+                    verb: "",
+                    type: Translation.tr("Bitwarden"),
+                    shown: true,
+                    execute: () => {}
+                })]
+            }
+
+            if (Bitwarden.status === "searching" && Bitwarden.items.length === 0) {
+                return [resultComp.createObject(null, {
+                    name: Translation.tr("Loading Bitwarden vault..."),
+                    iconName: "password",
+                    iconType: LauncherSearchResult.IconType.Material,
+                    verb: "",
+                    type: Translation.tr("Bitwarden"),
+                    shown: true,
+                    execute: () => {}
+                })]
+            }
+
+            if (["locked", "unauthenticated", "missing-cli", "timeout", "error"].includes(Bitwarden.status)) {
+                const guidance = (() => {
+                    switch (Bitwarden.status) {
+                    case "locked":
+                        return Translation.tr("Vault locked")
+                    case "unauthenticated":
+                        return Translation.tr("Login required")
+                    case "missing-cli":
+                        return Translation.tr("Bitwarden CLI missing")
+                    case "timeout":
+                        return Translation.tr("Command timed out")
+                    default:
+                        return Translation.tr("Bitwarden error")
+                    }
+                })()
+
+                return [resultComp.createObject(null, {
+                    name: Bitwarden.lastError.length > 0 ? Bitwarden.lastError : Translation.tr("Bitwarden search failed"),
+                    iconName: "error",
+                    iconType: LauncherSearchResult.IconType.Material,
+                    verb: guidance,
+                    type: Translation.tr("Bitwarden"),
+                    shown: true,
+                    execute: () => {
+                        Bitwarden.showHelpForCurrentState()
+                    },
+                    actions: [
+                        resultComp.createObject(null, {
+                            name: Translation.tr("Unlock now"),
+                            iconName: "lock_open",
+                            iconType: LauncherSearchResult.IconType.Material,
+                            execute: () => {
+                                GlobalStates.overviewOpen = false
+                                Qt.callLater(() => Bitwarden.unlockFromMenu(true))
+                            }
+                        }),
+                        resultComp.createObject(null, {
+                            name: Translation.tr("Show help"),
+                            iconName: "help",
+                            iconType: LauncherSearchResult.IconType.Material,
+                            execute: () => {
+                                Bitwarden.showHelpForCurrentState()
+                            }
+                        }),
+                        resultComp.createObject(null, {
+                            name: Translation.tr("Copy bw unlock"),
+                            iconName: "key",
+                            iconType: LauncherSearchResult.IconType.Material,
+                            execute: () => {
+                                Bitwarden.copyUnlockCommand()
+                            }
+                        }),
+                        resultComp.createObject(null, {
+                            name: Translation.tr("Copy bw login"),
+                            iconName: "login",
+                            iconType: LauncherSearchResult.IconType.Material,
+                            execute: () => {
+                                Bitwarden.copyLoginCommand()
+                            }
+                        }),
+                        resultComp.createObject(null, {
+                            name: Translation.tr("Clear saved session"),
+                            iconName: "delete",
+                            iconType: LauncherSearchResult.IconType.Material,
+                            execute: () => {
+                                Bitwarden.clearSessionToken()
+                            }
+                        })
+                    ]
+                })]
+            }
+
+            if (searchString.length === 0) {
+                const rows = []
+                const recent = Bitwarden.lastInteractedItem ?? ({})
+                if ((recent.id ?? "").length > 0) {
+                    rows.push(buildBitwardenItemResult(recent, true))
+                }
+                rows.push(resultComp.createObject(null, {
+                    name: Translation.tr("Type to search Bitwarden vault"),
+                    iconName: "password",
+                    iconType: LauncherSearchResult.IconType.Material,
+                    verb: "",
+                    type: Translation.tr("Bitwarden"),
+                    shown: true,
+                    execute: () => {}
+                }))
+                return rows
+            }
+
+            return Bitwarden.items.map(item => buildBitwardenItemResult(item, false)).filter(Boolean)
         } else if (root.query.startsWith(Config.options.search.prefix.emojis)) {
             // Emojis
             const searchString = StringUtils.cleanPrefix(root.query, Config.options.search.prefix.emojis);

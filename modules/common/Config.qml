@@ -692,11 +692,13 @@ Singleton {
                 property list<string> excludedSites: ["quora.com", "facebook.com"]
                 property list<string> clipboardPinnedEntries: []
                 property bool clipboardVideoProcessing: true
+                property bool bitwardenDismissOnInteract: false
                 property bool sloppy: false // Uses levenshtein distance based scoring instead of fuzzy sort. Very weird.
                 property JsonObject prefix: JsonObject {
                     property bool showDefaultActionsWithoutPrefix: true
                     property string action: "/"
                     property string app: ">"
+                    property string bitwarden: "!"
                     property string clipboard: ";"
                     property string emojis: ":"
                     property string keybinds: "<"

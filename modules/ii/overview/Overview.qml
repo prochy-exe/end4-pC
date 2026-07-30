@@ -152,6 +152,17 @@ Scope {
         GlobalStates.overviewOpen = true;
     }
 
+    function toggleBitwarden() {
+        if (GlobalStates.overviewOpen && overviewScope.dontAutoCancelSearch) {
+            GlobalStates.overviewOpen = false;
+            return;
+        }
+        Bitwarden.prepareForBitwardenMode();
+        overviewScope.dontAutoCancelSearch = true;
+        panelWindow.setSearchingText(Config.options.search.prefix.bitwarden);
+        GlobalStates.overviewOpen = true;
+    }
+
     IpcHandler {
         target: "search"
 
@@ -172,6 +183,16 @@ Scope {
         }
         function clipboardToggle() {
             overviewScope.toggleClipboard();
+        }
+        function bitwardenToggle() {
+            overviewScope.toggleBitwarden();
+        }
+    }
+
+    Connections {
+        target: Bitwarden
+        function onReopenRequested() {
+            overviewScope.toggleBitwarden();
         }
     }
 
@@ -247,6 +268,15 @@ Scope {
 
         onPressed: {
             overviewScope.toggleSymbols();
+        }
+    }
+
+    GlobalShortcut {
+        name: "overviewBitwardenToggle"
+        description: "Toggle Bitwarden query on overview widget"
+
+        onPressed: {
+            overviewScope.toggleBitwarden();
         }
     }
 }
