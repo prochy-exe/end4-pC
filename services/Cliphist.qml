@@ -15,8 +15,11 @@ Singleton {
     property string pressPasteCommand: "ydotool key -d 1 29:1 47:1 47:0 29:0"
     property bool sloppySearch: Config.options?.search.sloppy ?? false
     property real scoreThreshold: 0.2
+    property bool videoProcessingEnabled: Config.options?.search?.clipboardVideoProcessing ?? true
     property list<string> entries: []
     property int pinRevision: 0
+    property int videoMetadataRevision: 0
+    property var videoMetadataByEntryKey: ({})
     readonly property list<string> pinnedEntryKeys: Config.options?.search?.clipboardPinnedEntries ?? []
     readonly property var preparedEntries: entries.map(a => ({
         name: Fuzzy.prepare(`${a.replace(/^\s*\S+\s+/, "")}`),
@@ -144,6 +147,81 @@ Singleton {
         return !!(/^\d+\tfile:\/\/\S+/.test(entry))
     }
 
+    function entryIsVideoFileUri(entry) {
+        if (!root.videoProcessingEnabled) return false
+        if (!root.entryIsFileUri(entry)) return false
+        const clean = StringUtils.cleanCliphistEntry(entry).toLowerCase().split(/[?#]/)[0]
+        return /\.(mp4|mkv|webm|mov|avi|m4v|wmv|flv|mpg|mpeg|ts|m2ts|3gp|ogv)$/.test(clean)
+    }
+
+    function fileUriFromEntry(entry) {
+        return StringUtils.cleanCliphistEntry(entry)
+    }
+
+    function decodedPathFromFileUri(fileUri) {
+        if (!fileUri || !fileUri.startsWith("file://")) return ""
+        return decodeURIComponent(fileUri.slice("file://".length))
+    }
+
+    function extensionFromEntry(entry) {
+        const uri = root.fileUriFromEntry(entry)
+        const path = root.decodedPathFromFileUri(uri).toLowerCase()
+        const dot = path.lastIndexOf(".")
+        if (dot < 0 || dot === path.length - 1) return "video"
+        return path.slice(dot + 1)
+    }
+
+    function getVideoEntryDisplay(entry) {
+        // Tie this binding to metadata updates.
+        const _videoRev = root.videoMetadataRevision
+        if (!root.entryIsVideoFileUri(entry))
+            return root.fileUriFromEntry(entry)
+
+        const key = root.entryKey(entry)
+        const meta = root.videoMetadataByEntryKey[key]
+        if (meta) {
+            return `[[binary data ${meta.sizeLabel} ${meta.ext} ${meta.width}x${meta.height}]]`
+        }
+        return `[[binary data ? ${root.extensionFromEntry(entry)} ?x?]]`
+    }
+
+    function formatBinarySize(bytesValue) {
+        const bytes = Number(bytesValue)
+        if (!Number.isFinite(bytes) || bytes < 0) return "?"
+        const kib = 1024
+        const mib = 1024 * 1024
+        if (bytes >= mib) {
+            return `${(bytes / mib).toFixed(1)}MiB`
+        }
+        return `${Math.max(1, Math.round(bytes / kib))}KiB`
+    }
+
+    function refreshVideoMetadataQueue() {
+        if (!root.videoProcessingEnabled) {
+            videoMetadataProbeProc.queue = []
+            return
+        }
+
+        const queue = root.entries
+            .filter(entry => root.entryIsVideoFileUri(entry))
+            .filter(entry => root.videoMetadataByEntryKey[root.entryKey(entry)] === undefined)
+
+        if (queue.length === 0) return
+        const existing = videoMetadataProbeProc.queue ?? []
+        const seen = new Set(existing.map(item => root.entryKey(item)))
+        const merged = existing.slice()
+        queue.forEach(item => {
+            const key = root.entryKey(item)
+            if (!seen.has(key)) {
+                seen.add(key)
+                merged.push(item)
+            }
+        })
+        videoMetadataProbeProc.queue = merged
+        if (!videoMetadataProbeProc.running)
+            videoMetadataProbeProc.runNext()
+    }
+
     function refresh() {
         readProc.buffer = []
         readProc.running = true
@@ -266,9 +344,82 @@ Singleton {
             if (exitCode === 0) {
                 root.entries = readProc.buffer
                 root.rebuildPinsFromCurrentEntries()
+                root.refreshVideoMetadataQueue()
             } else {
                 console.error("[Cliphist] Failed to refresh with code", exitCode, "and status", exitStatus)
             }
+        }
+    }
+
+    Process {
+        id: videoMetadataProbeProc
+        property list<string> queue: []
+        property string currentEntry: ""
+        property string buffer: ""
+
+        function runNext() {
+            if (videoMetadataProbeProc.queue.length === 0) return
+
+            videoMetadataProbeProc.currentEntry = videoMetadataProbeProc.queue.shift()
+            const fileUri = root.fileUriFromEntry(videoMetadataProbeProc.currentEntry)
+            const decodedPath = root.decodedPathFromFileUri(fileUri)
+            if (decodedPath.length === 0) {
+                runNext()
+                return
+            }
+
+            const pyScript = [
+                "import json, os, pathlib, subprocess, sys",
+                "p = sys.argv[1]",
+                "ext = pathlib.Path(p).suffix.lower().lstrip('.') or 'video'",
+                "size_bytes = int(os.path.getsize(p)) if os.path.exists(p) else 0",
+                "width = '?'",
+                "height = '?'",
+                "try:",
+                "    out = subprocess.check_output(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0:s=x', p], text=True).strip()",
+                "    if out and 'x' in out:",
+                "        w, h = out.split('x', 1)",
+                "        if w.isdigit() and h.isdigit():",
+                "            width, height = w, h",
+                "except Exception:",
+                "    pass",
+                "print(json.dumps({'sizeBytes': size_bytes, 'ext': ext, 'width': width, 'height': height}))"
+            ].join("\n")
+
+            videoMetadataProbeProc.buffer = ""
+            videoMetadataProbeProc.command = ["python3", "-c", pyScript, decodedPath]
+            videoMetadataProbeProc.running = true
+        }
+
+        stdout: SplitParser {
+            onRead: data => {
+                if (videoMetadataProbeProc.buffer.length > 0)
+                    videoMetadataProbeProc.buffer += "\n"
+                videoMetadataProbeProc.buffer += data
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0 && videoMetadataProbeProc.buffer.trim().length > 0) {
+                try {
+                    const parsed = JSON.parse(videoMetadataProbeProc.buffer.trim())
+                    const key = root.entryKey(videoMetadataProbeProc.currentEntry)
+                    const nextMap = Object.assign({}, root.videoMetadataByEntryKey)
+                    nextMap[key] = {
+                        sizeLabel: root.formatBinarySize(parsed.sizeBytes),
+                        ext: parsed.ext,
+                        width: parsed.width,
+                        height: parsed.height,
+                    }
+                    root.videoMetadataByEntryKey = nextMap
+                    root.videoMetadataRevision += 1
+                } catch (e) {
+                    console.error("[Cliphist] Failed to parse video metadata", e)
+                }
+            }
+
+            videoMetadataProbeProc.currentEntry = ""
+            videoMetadataProbeProc.runNext()
         }
     }
 

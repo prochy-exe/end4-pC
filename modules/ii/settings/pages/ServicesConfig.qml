@@ -172,6 +172,21 @@ ContentPage {
             }
 
             ContentSubsection {
+                title: Translation.tr("Clipboard history")
+
+                GroupedList {
+                    ConfigSwitch {
+                        buttonIcon: "movie"
+                        text: Translation.tr("Process video entries (thumbnail + metadata)")
+                        checked: Config.options.search.clipboardVideoProcessing
+                        onCheckedChanged: {
+                            Config.options.search.clipboardVideoProcessing = checked;
+                        }
+                    }
+                }
+            }
+
+            ContentSubsection {
                 title: Translation.tr("Prefixes")
 
                 GroupedList {

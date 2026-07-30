@@ -18,7 +18,11 @@ RippleButton {
     property string itemTags: entry?.comment ?? ""
     property bool entryShown: entry?.shown ?? true
     property string itemType: entry?.type ?? Translation.tr("App")
-    property string itemName: entry?.name ?? ""
+    property string itemName: {
+        if (root.cliphistRawString && Cliphist.entryIsVideoFileUri(root.cliphistRawString))
+            return Cliphist.getVideoEntryDisplay(root.cliphistRawString)
+        return entry?.name ?? ""
+    }
     property var iconType: entry?.iconType
     property string iconName: entry?.iconName ?? ""
     property var itemExecute: entry?.execute
@@ -245,6 +249,16 @@ RippleButton {
                     entry: root.cliphistRawString
                     maxWidth: contentColumn.width
                     maxHeight: 140
+                    blur: root.blurImage
+                }
+            }
+            Loader { // Clipboard video preview
+                active: root.cliphistRawString && Cliphist.entryIsVideoFileUri(root.cliphistRawString)
+                sourceComponent: CliphistVideo {
+                    Layout.fillWidth: true
+                    entry: root.cliphistRawString
+                    maxWidth: contentColumn.width
+                    maxHeight: 92
                     blur: root.blurImage
                 }
             }
