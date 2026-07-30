@@ -9,6 +9,15 @@ else
     RECORDING_DIR="$HOME/Videos"
 fi
 
+USE_RECORDING_INDICATOR=$(jq -r '(
+    (.bar.utilButtons.showScreenRecordingIndicator // false)
+    or ((.bar.utilButtons.order // []) | any(. == "recordingIndicator"))
+    or ((.bar.monitorSettings // []) | any(
+        (.values.utilButtons.showScreenRecordingIndicator == true)
+        or ((.values.utilButtons.order // []) | any(. == "recordingIndicator"))
+    ))
+)' "$CONFIG_FILE" 2>/dev/null)
+
 set_recording_state() {
     local state=$1
     local STATE_FILE="$HOME/.local/state/quickshell/states.json"
@@ -116,6 +125,14 @@ done
 
 build_audio_args
 
+to_file_uri() {
+    python3 - "$1" <<'PY'
+import pathlib
+import sys
+print(pathlib.Path(sys.argv[1]).resolve().as_uri())
+PY
+}
+
 if pgrep wf-recorder > /dev/null; then
     notify-send "Recording Stopped" "Stopped" -a 'Recorder' &
     pkill wf-recorder &
@@ -123,7 +140,9 @@ if pgrep wf-recorder > /dev/null; then
 else
     output_name="recording_$(getdate).mp4"
     if [[ $FULLSCREEN_FLAG -eq 1 ]]; then
-        show_recording_started_notification "$output_name"
+        if [[ "$USE_RECORDING_INDICATOR" != "true" ]]; then
+            show_recording_started_notification "$output_name"
+        fi
         set_recording_state true
         wf-recorder -o "$(getactivemonitor)" --pixel-format yuv420p -f "./$output_name" -t "${AUDIO_ARGS[@]}"
     else
@@ -135,13 +154,16 @@ else
                 exit 1
             fi
         fi
-        show_recording_started_notification "$output_name"
+        if [[ "$USE_RECORDING_INDICATOR" != "true" ]]; then
+            show_recording_started_notification "$output_name"
+        fi
         set_recording_state true
         wf-recorder --pixel-format yuv420p -f "./$output_name" -t --geometry "$region" "${AUDIO_ARGS[@]}"
     fi
     if [[ $COPY_AFTER_FLAG -eq 1 ]]; then
-        record_uri="file://$RECORDING_DIR/$output_name"
-        printf '%s\n' "${record_uri// /%20}" | wl-copy --type text/uri-list
+        record_path="$RECORDING_DIR/$output_name"
+        record_uri="$(to_file_uri "$record_path")"
+        printf '%s\r\n' "$record_uri" | wl-copy --type text/uri-list
     fi
     set_recording_state false
 fi

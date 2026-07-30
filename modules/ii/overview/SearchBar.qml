@@ -110,6 +110,19 @@ RowLayout {
     IconToolbarButton {
         Layout.topMargin: 4
         Layout.bottomMargin: 4
+        visible: root.searchPrefixType === SearchBar.SearchPrefixType.Clipboard
+        onClicked: {
+            Cliphist.wipe();
+        }
+        text: "mop"
+        StyledToolTip {
+            text: Translation.tr("Wipe clipboard (keep pinned)")
+        }
+    }
+
+    IconToolbarButton {
+        Layout.topMargin: 4
+        Layout.bottomMargin: 4
         onClicked: {
             GlobalStates.overviewOpen = false;
             Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "search"]);

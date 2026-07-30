@@ -177,7 +177,7 @@ Singleton {
         {
             action: "wipeclipboard",
             execute: () => {
-                Quickshell.execDetached(["bash", "-c", "rm -f ~/.cache/cliphist/db"]);
+                Cliphist.wipe();
             }
         },
         {
@@ -268,6 +268,7 @@ Singleton {
         ///////////// Special cases ///////////////
         if (root.query.startsWith(Config.options.search.prefix.clipboard)) {
             // Clipboard
+            const _pinRev = Cliphist.pinRevision
             const searchString = StringUtils.cleanPrefix(root.query, Config.options.search.prefix.clipboard);
             return Cliphist.fuzzyQuery(searchString).map((entry, index, array) => {
                 const mightBlurImage = Cliphist.entryIsImage(entry) && root.clipboardWorkSafetyActive;
@@ -276,13 +277,14 @@ Singleton {
                     shouldBlurImage = shouldBlurImage && (root.containsUnsafeLink(array[index - 1]) || root.containsUnsafeLink(array[index + 1]));
                 }
                 const type = `#${entry.match(/^\s*(\S+)/)?.[1] || ""}`;
+                const pinned = Cliphist.isPinned(entry);
                 return resultComp.createObject(null, {
                     rawValue: entry,
                     name: StringUtils.cleanCliphistEntry(entry),
                     verb: "",
                     type: type,
                     execute: () => {
-                        Cliphist.copy(entry);
+                        Cliphist.paste(entry);
                     },
                     actions: [resultComp.createObject(null, {
                             name: Translation.tr("Copy"),
@@ -290,6 +292,13 @@ Singleton {
                             iconType: LauncherSearchResult.IconType.Material,
                             execute: () => {
                                 Cliphist.copy(entry);
+                            }
+                        }), resultComp.createObject(null, {
+                            name: pinned ? Translation.tr("Unpin") : Translation.tr("Pin"),
+                            iconName: pinned ? "keep_off" : "push_pin",
+                            iconType: LauncherSearchResult.IconType.Material,
+                            execute: () => {
+                                Cliphist.togglePinEntry(entry);
                             }
                         }), resultComp.createObject(null, {
                             name: Translation.tr("Delete"),
@@ -312,10 +321,10 @@ Singleton {
                     name: entry.replace(/^\s*\S+\s+/, ""),
                     iconName: emoji,
                     iconType: LauncherSearchResult.IconType.Text,
-                    verb: Translation.tr("Copy"),
+                    verb: Translation.tr("Paste"),
                     type: Translation.tr("Emoji"),
                     execute: () => {
-                        Quickshell.clipboardText = entry.match(/^\s*(\S+)/)?.[1];
+                        Cliphist.pasteText(entry.match(/^\s*(\S+)/)?.[1] ?? "");
                     }
                 });
             }).filter(Boolean);
@@ -362,11 +371,11 @@ Singleton {
                     name: symName,
                     iconName: symName,
                     iconType: LauncherSearchResult.IconType.Material,
-                    verb: Translation.tr("Copy"),
+                    verb: Translation.tr("Paste"),
                     type: Translation.tr("Symbol"),
                     comment: symTags,
                     execute: () => {
-                        Quickshell.clipboardText = symName;
+                        Cliphist.pasteText(symName);
                     }
                 });
             }).filter(Boolean);
