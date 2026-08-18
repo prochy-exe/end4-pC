@@ -393,12 +393,17 @@ Singleton {
                 }
                 property list<string> screenList: [] 
                 property string wallpaperPath: ""
+                // "perMonitor" consults monitorWallpapers below; a monitor with
+                // no entry there falls back to wallpaperPath so it's never blank.
+                property string wallpaperMode: "shared" // "shared" | "perMonitor"
+                property list<var> monitorWallpapers: [] // [{ name, path }]
                 property bool centeredWallpaper: false
                 property string centeredWallpaperShape: "Cookie7Sided"
                 property int centeredWallpaperSize: 400
                 property string centeredWallpaperColor: "primaryContainer"
                 property bool centeredWallpaperOnlyWhenLocked: false
                 property string wallpaperAnimation: "magic"
+                property int transitionDuration: 1200 // ms, applies to every wallpaper animation
                 property bool enableWallpaperPreview: false
                 property string thumbnailPath: ""
                 property bool hideWhenFullscreen: true
@@ -410,6 +415,109 @@ Singleton {
                     property bool enableSidebar: true
                     property real widgetsFactor: 1.2
                 }
+                // Shader wallpaper: datamosh/pixel-sort effects that react to
+                // music. See modules/ii/background/wallpaperEffects/README.md.
+                //
+                // This block is the *ambient* effect, i.e. what happens to the
+                // wallpaper that is already set. The datamosh switch transition
+                // is not toggled here - it is one of the wallpaperAnimation
+                // choices ("datamosh"), alongside magic/stripes/etc.
+                property JsonObject effects: JsonObject {
+                    property bool enable: false
+                    property bool musicReactive: true
+                    // Which player the *wallpaper effect* reacts to: an MPRIS
+                    // identity / desktop entry, or "" for anything playing.
+                    // This only gates the wallpaper - the player cards and the
+                    // ticker always follow their own app, see AudioLevels.qml.
+                    property string player: ""
+                    // Where the effect runs: "all", "allButPrimary" (primary is
+                    // Config.options.hyprland.primaryMonitor), or a monitor name.
+                    property string screenMode: "all"
+                    // When true, each monitor's ambient look is picked
+                    // independently from the preset list (see
+                    // EffectPresets.qml) instead of every monitor sharing the
+                    // sliders below. monitorPresetAssignments is where each
+                    // monitor's pick is persisted, so it stays put across
+                    // restarts until rerolled.
+                    property bool randomizePerMonitor: false
+                    property list<var> monitorPresetAssignments: []
+                    // "synchronized" only takes effect when wallpaperAnimation
+                    // is "datamosh" - see Background.qml's transitionDirection.
+                    property string transitionMode: "independent" // "independent" | "synchronized"
+                    // The states saturate rather than stack, so each number is
+                    // the level that state actually reaches. All three at 0
+                    // makes the wallpaper a still image with no per-frame work.
+                    property real musicIntensity: 0.35 // continuous, scales with loudness
+                    property real beatIntensity: 0.75
+
+                    // Look of the ambient effect. The "datamosh" transition
+                    // deliberately ignores all of these and rerolls its own
+                    // character on every switch - only transitionDuration above
+                    // applies to it. Audio scales these up.
+                    property real pointCloud: 0.6    // sparse point dissolve
+                    property int pointSpacing: 10     // point grid spacing, px
+                    property real melt: 0.7          // drip / melt strength
+                    property real meltReach: 0.55     // how high the spectrum curve climbs
+                    property int meltWidth: 14        // paint-run width, px
+                    property real feedback: 0.6
+                    property real pixelSort: 0.5
+                    property real sortThreshold: 0.65
+                    property real sortLength: 0.1
+                    // One axis for melt, block slide and pixel sort alike:
+                    // "vertical", "horizontal", or "random" (each wallpaper
+                    // switch rolls its own; the ambient effect stays vertical).
+                    property string glitchDirection: "random"
+                    property int blockSize: 8
+                    property real blockCorruption: 0.7
+                    property real chromaticAberration: 0.35
+                    property real noise: 0.25
+
+                    // The wallpaper switch has its own look, separate from the
+                    // ambient effect above, and deliberately no monitor option:
+                    // a switch happens on every screen, with the same seed, so
+                    // it looks identical everywhere.
+                    property JsonObject transition: JsonObject {
+                        // Roll the strengths per switch instead of using the
+                        // values below. The spatial character (which blocks
+                        // detach when, how far they slide, debris size) is
+                        // always seeded either way.
+                        property bool randomize: true
+                        property string glitchDirection: "random"
+                        property real melt: 0.80
+                        property real pointCloud: 0.55
+                        property real pixelSort: 0.70
+                        property real feedback: 0.70
+                        property real blockCorruption: 0.60
+                        property real chromaticAberration: 0.40
+                        property real noise: 0.40
+                    }
+
+                    // Passed straight through to qs-audiotap. The analysis all
+                    // happens there, so these are the only reactivity knobs.
+                    property JsonObject audio: JsonObject {
+                        // Keep qs-audiotap running even when nothing is drawing
+                        // a visualiser, so the first beat after one appears is
+                        // not lost to process start + PipeWire connect. Costs
+                        // ~0.6% of one core. Never auto-starts the microphone
+                        // tap - that one still only runs when it is on screen.
+                        property bool autoStart: true
+                        property int updateRate: 90        // max output lines/sec
+                        property int beatDecay: 100        // ms, beat envelope fall
+                        property int beatMinInterval: 110  // ms between beats
+                        property real beatSensitivity: 1.35 // x above running average
+                        property real beatFloor: 0.15      // bass below this is never a beat
+                        property real gainRelease: 0.9995  // auto gain release per hop
+                        property real barDecay: 0.035      // spectrum fall per hop
+                        property int bars: 50
+                        property int rangeLow: 50
+                        property int rangeHigh: 16000
+                    }
+                }
+                // User-saved looks for the shader wallpaper - same shape as
+                // the built-in ones in EffectPresets.qml (name + the same 14
+                // ambient effect values), so both are applied and matched
+                // the same way.
+                property list<var> customEffectPresets: []
             }
 
             property JsonObject bar: JsonObject {
@@ -457,6 +565,10 @@ Singleton {
                 property list<var> monitorLayouts: []
                 property list<var> monitorSettings: []
                 property list<var> monitorVisibility: []
+                // User-defined toggle buttons shown alongside CPU/RAM/etc in the bar's
+                // resources area. Each: {id, name, mode: "command"|"service", command,
+                // serviceName, iconOn, iconOff}. See services/CustomBarResources.qml.
+                property list<var> customResources: []
                 property JsonObject utilButtons: JsonObject {
                     property list<string> order: ["screenSnip", "keyboardToggle", "darkModeToggle"]
                     property bool showScreenSnip: true
@@ -497,11 +609,17 @@ Singleton {
                     property bool clickToShow: false
                 }
                 property JsonObject media: JsonObject {
-                    property string preferredPlayer: ""
                     property bool alwaysVisible: false
                     property bool onlyTitle: false
                     property int maxWidth: 280
                     property int minWidth: 100
+                }
+                property JsonObject visualizer: JsonObject {
+                    // outputSource: "auto" follows whichever app is playing,
+                    // "app:<name>" pins one application, anything else is a
+                    // PipeWire node name. inputSource is a node name or "auto".
+                    property string outputSource: "auto"
+                    property string inputSource: "auto"
                 }
             }
 
@@ -586,6 +704,13 @@ Singleton {
                 property bool showWidgets: false
                 property bool showMedia: true
                 property bool showToolbars: true
+                // Idle timeout (seconds) before the lock screen activates,
+                // and how much longer after that before the system sleeps -
+                // written into hypridle.conf, which has no live-reload, so
+                // changing these restarts the hypridle process (see
+                // scripts/hypridle/set_timeouts.sh).
+                property int idleTimeoutSec: 300
+                property int sleepAfterLockTimeoutSec: 600
                 property JsonObject blur: JsonObject {
                     property bool enable: true
                     property real radius: 100
@@ -604,6 +729,57 @@ Singleton {
             property JsonObject media: JsonObject {
                 // Attempt to remove dupes (the aggregator playerctl one and browsers' native ones when there's plasma browser integration)
                 property bool filterDuplicatePlayers: true
+                // Player identifiers (desktopEntry/identity, lowercased), most-preferred first.
+                // The first entry that matches a currently-open player wins control of media
+                // keys/the active-player display, regardless of which player is actually playing.
+                property list<string> priorityOrder: []
+                // When true, whichever prioritized player is actually playing wins over
+                // strict rank - priority order only breaks ties between multiple playing
+                // players, or applies when none of them are playing at all.
+                property bool priorityPreferActive: false
+                // Which control elements show in the Super+M menu, and in what order.
+                // Valid ids: visualizer, progressBar, skipButtons, playPauseButton,
+                // lyricsToggle, volumeBar.
+                property list<string> menuElements: ["visualizer", "progressBar", "skipButtons", "playPauseButton", "lyricsToggle"]
+                // The ticker is a fixed, minimal Player card: album art,
+                // title/artist, and the visualizer background - no buttons,
+                // no progress bar, nothing clickable to fumble in a popup
+                // you can't interact with without dismissing it.
+                property bool tickerEnabled: true
+                property int tickerTimeout: 2000
+                // "bar" (default, hugs whichever edge the bar is on), a fixed
+                // corner/edge/center: top_left, top_center, top_right,
+                // center_left, center, center_right, bottom_left,
+                // bottom_center, bottom_right, or "custom" (tickerCustomX/Y).
+                property string tickerPosition: "bar"
+                // Also flashes the ticker when the track changes without any
+                // key/bind press (e.g. a song ending and the next one
+                // starting on its own).
+                property bool tickerOnTrackChange: false
+                // "focused" follows whichever monitor currently has input
+                // focus; "specific" pins to tickerMonitorName regardless.
+                property string tickerMonitorMode: "focused"
+                property string tickerMonitorName: ""
+                // Normalized (0-1) anchor within the assigned monitor, only
+                // used when tickerPosition is "custom". X is always the
+                // item's LEFT edge; Y is whichever edge tickerCustomAnchor
+                // names ("top" | "bottom"):
+                // - "top": Y is the top edge - item grows downward.
+                // - "bottom": Y is the bottom edge - item grows upward.
+                //
+                // tickerCustomAnchor is NOT a user setting. The popup editor
+                // derives it from where the item is dropped - top half of the
+                // screen anchors the top, bottom half anchors the bottom (see
+                // PopupPlacement.inferCustomAnchor()) - because the only
+                // thing it decides is which edge stays put while the item
+                // grows, and that follows from where it sits. A third
+                // "center" value used to be exposed; it pinned the centre, so
+                // a growing notification stack pushed itself off the top of
+                // the screen. Configs still carrying it are converted on load
+                // by PopupPlacement.migrateCenterAnchors().
+                property real tickerCustomX: 0.5
+                property real tickerCustomY: 0.5
+                property string tickerCustomAnchor: "top"
             }
 
             property JsonObject networking: JsonObject {
@@ -613,12 +789,31 @@ Singleton {
             property JsonObject notifications: JsonObject {
                 property int timeout: 7000
                 property string position: "top_right"
-                property string monitorMode: "primary" // "primary" or "specific"
+                // "focused" follows whichever monitor currently has input
+                // focus; "specific" pins to monitorName regardless.
+                property string monitorMode: "focused"
                 property string monitorName: ""
+                // Normalized (0-1) anchor within the assigned monitor, only
+                // used when position is "custom" - see media.tickerCustomAnchor
+                // for what customAnchor changes.
+                property real customX: 0.7
+                property real customY: 0.7
+                property string customAnchor: "top"
             }
 
             property JsonObject osd: JsonObject {
                 property int timeout: 1000
+                // Same preset vocabulary as media.tickerPosition (including
+                // "bar" and "custom"). Default "bar" preserves the OSD's
+                // original hardcoded look (hugs the bar edge, centered).
+                property string position: "bar"
+                // "focused" follows whichever monitor currently has input
+                // focus; "specific" pins to monitorName regardless.
+                property string monitorMode: "focused"
+                property string monitorName: ""
+                property real customX: 0.5
+                property real customY: 0.5
+                property string customAnchor: "top"
             }
 
             property JsonObject osk: JsonObject {
@@ -655,7 +850,6 @@ Singleton {
                     property bool showLabel: false
                     property real opacity: 0.3
                     property real contentRegionOpacity: 0.8
-                    property int selectionPadding: 5
                 }
                 property JsonObject rect: JsonObject {
                     property bool showAimLines: true
@@ -693,7 +887,24 @@ Singleton {
                 property list<string> excludedSites: ["quora.com", "facebook.com"]
                 property list<string> clipboardPinnedEntries: []
                 property bool clipboardVideoProcessing: true
+                property JsonObject clipboardSmartPaste: JsonObject {
+                    property bool enable: true
+                    property bool autoRewriteClipboardOnCopy: true
+                    property bool stripTrackingParams: true
+                    property bool rewriteSocialEmbeds: true
+                    property bool rewriteXTwitter: true
+                    property string xTwitterReplacementDomain: "fxtwitter.com"
+                    property bool rewriteInstagram: true
+                    property string instagramReplacementDomain: "vxinstagram.com"
+                }
                 property bool bitwardenDismissOnInteract: false
+                property JsonObject bitwardenTotp: JsonObject {
+                    property bool showCountdown: true
+                    property bool autoClearClipboard: false
+                    property int autoClearSeconds: 20
+                    property bool protectRecentClipboard: true
+                    property int protectRecentClipboardSeconds: 8
+                }
                 property bool sloppy: false // Uses levenshtein distance based scoring instead of fuzzy sort. Very weird.
                 property JsonObject prefix: JsonObject {
                     property bool showDefaultActionsWithoutPrefix: true
@@ -783,6 +994,7 @@ Singleton {
                 property string savePath: Directories.videos.replace("file://","") // strip "file://"
                 property bool recordSystemAudio: false
                 property bool recordMicAudio: false
+                property int frameRate: 30
             }
 
             property JsonObject screenSnip: JsonObject {
