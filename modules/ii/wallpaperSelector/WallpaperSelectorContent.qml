@@ -65,6 +65,17 @@ MouseArea {
                     GlobalStates.wallpaperSelectorTarget = "wallpaper";
                     GlobalStates.wallpaperSelectorOpen = false;
                 });
+            } else if (GlobalStates.wallpaperSelectorTarget.startsWith("monitor:")) {
+                const monitorName = GlobalStates.wallpaperSelectorTarget.slice(8);
+                Wallpapers.select(filePath, root.useDarkMode, finalPath => {
+                    const list = (Config.options.background.monitorWallpapers ?? []).slice();
+                    const index = list.findIndex(m => m.name === monitorName);
+                    const entry = { name: monitorName, path: finalPath };
+                    if (index >= 0) list[index] = entry; else list.push(entry);
+                    Config.options.background.monitorWallpapers = list;
+                    GlobalStates.wallpaperSelectorTarget = "wallpaper";
+                    GlobalStates.wallpaperSelectorOpen = false;
+                });
             } else {
                 // Stop preview FIRST so wallpaperPath reverts to the old wallpaper,
                 // then select() sets confirmedPath to the new one — this causes
