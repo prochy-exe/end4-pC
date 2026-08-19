@@ -9,6 +9,10 @@ Item {
     id: root
 
     property var model: []
+    // Optional caption per model index (e.g. which monitor/slot an item is
+    // for) - parallel array, same length as model. Empty entry or index
+    // beyond its length just shows no caption for that item.
+    property var labels: []
     property Component delegate: null
     property bool showCurrentIndicator: true
     property real largeItemWidthRatio: 0.52
@@ -108,6 +112,28 @@ Item {
                     property var modelData: itemRoot.modelData
                     property real fixedWidth: root.width * root.largeItemWidthRatio
                     property real fixedHeight: listView.height
+                }
+
+                Rectangle {
+                    id: captionPill
+                    visible: (root.labels[itemRoot.index] ?? "") !== ""
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        margins: 8
+                    }
+                    width: captionText.implicitWidth + 16
+                    height: captionText.implicitHeight + 8
+                    radius: height / 2
+                    color: Qt.rgba(0, 0, 0, 0.55)
+
+                    StyledText {
+                        id: captionText
+                        anchors.centerIn: parent
+                        text: root.labels[itemRoot.index] ?? ""
+                        color: "white"
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                    }
                 }
 
                 Rectangle { // later I'll see if I remove it

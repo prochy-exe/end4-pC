@@ -169,6 +169,13 @@ ContentPage {
                                     : Config.options.background.wallpaperPath
                             )
                         ])
+                        // Mirrors model's own construction/order exactly, so
+                        // the caption always lines up with the slot it names -
+                        // no other way to tell monitors' slots apart otherwise.
+                        labels: (Config.options.background.wallpaperMode === "shared"
+                            ? [Translation.tr("Desktop")]
+                            : Quickshell.screens.map(s => s.name)
+                        ).concat([Translation.tr("Lock screen")])
                         wheelEnabled: false
                         dragEnabled: false
                         clickAction: (index, modelData) => {
