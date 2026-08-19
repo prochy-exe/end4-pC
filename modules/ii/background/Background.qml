@@ -148,6 +148,32 @@ Variants {
         // datamosh transition is a wallpaperAnimation choice, not its own toggle.
         property bool datamoshTransition: bgRoot.wallpaperAnimation === "datamosh"
 
+        // Compass direction from this monitor toward the centroid of every
+        // other connected monitor, live off Hyprland's own geometry (not the
+        // Settings-page snapshot) so it tracks reconnects/rearranges. Only
+        // computed when synchronized mode + datamosh are both active - "" means
+        // "no override, use today's per-switch random axis".
+        property string transitionDirection: {
+            if (Config.options.background.effects.transitionMode !== "synchronized" || !bgRoot.datamoshTransition)
+                return "";
+            const mine = Hyprland.monitors.values.find(m => m.name === bgRoot.screen.name);
+            const others = Hyprland.monitors.values.filter(m => m.name !== bgRoot.screen.name);
+            if (!mine || others.length === 0)
+                return "";
+            const centerOf = m => ({ x: m.x + m.width / 2, y: m.y + m.height / 2 });
+            const c = centerOf(mine);
+            let cx = 0, cy = 0;
+            for (const m of others) {
+                const oc = centerOf(m);
+                cx += oc.x / others.length;
+                cy += oc.y / others.length;
+            }
+            const dx = cx - c.x, dy = cy - c.y;
+            if (Math.abs(dx) > Math.abs(dy))
+                return dx > 0 ? "right" : "left";
+            return dy > 0 ? "down" : "up";
+        }
+
         // Which monitors the shader wallpaper is allowed on. "all",
         // "allButPrimary", or an explicit monitor name.
         //
@@ -384,6 +410,7 @@ Variants {
                     // out of a monitor the "Show on" picker excluded.
                     ambientAllowedHere: bgRoot.effectAllowedHere
                     monitorName: bgRoot.screen.name
+                    transitionDirection: bgRoot.transitionDirection
                 }
             }
 
