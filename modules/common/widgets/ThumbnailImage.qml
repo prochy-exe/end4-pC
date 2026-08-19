@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
@@ -23,6 +24,7 @@ StyledImage {
         return `${Directories.genericCache}/thumbnails/${thumbnailSizeName}/${md5Hash}.png`;
     }
     source: thumbnailPath
+    property bool showingFallback: false
 
     asynchronous: true
     smooth: true
@@ -37,6 +39,26 @@ StyledImage {
         if (!root.generateThumbnail) return;
         thumbnailGeneration.running = false;
         thumbnailGeneration.running = true;
+    }
+    onStatusChanged: {
+        if (status === Image.Error && !showingFallback) {
+            showingFallback = true
+            source = Qt.resolvedUrl(sourcePath)
+        }
+    }
+
+    Connections {
+        target: Wallpapers
+        function onThumbnailGenerated(directory) {
+            if (!root.showingFallback || FileUtils.parentDirectory(root.sourcePath) !== FileUtils.trimFileProtocol(directory)) return
+            root.showingFallback = false
+            root.source = root.thumbnailPath
+        }
+        function onThumbnailGeneratedFile(filePath) {
+            if (!root.showingFallback || Qt.resolvedUrl(root.sourcePath) !== Qt.resolvedUrl(filePath)) return
+            root.showingFallback = false
+            root.source = root.thumbnailPath
+        }
     }
     Process {
         id: thumbnailGeneration

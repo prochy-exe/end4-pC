@@ -30,6 +30,7 @@ import qs.modules.ii.background.widgets.notes
 Variants {
     id: root
     model: Quickshell.screens
+    property var monitorThemes: MonitorThemes
 
     function getShapeFromName(name) {
         switch (name) {
@@ -122,8 +123,16 @@ Variants {
         property HyprlandMonitor monitor: Hyprland.monitorFor(modelData)
 
         property string effectiveWallpaperPath: {
-            if (GlobalStates.screenLocked && Config.options.background.lockWall !== "")
-                return Config.options.background.lockWall;
+            if (GlobalStates.screenLocked) {
+                if (Config.options.background.lockWallpaperMode === "perMonitor") {
+                    const lockOverride = (Config.options.background.lockMonitorWallpapers ?? [])
+                        .find(m => m.name === bgRoot.screen.name);
+                    if (lockOverride?.path)
+                        return lockOverride.path;
+                }
+                if (Config.options.background.lockWall !== "")
+                    return Config.options.background.lockWall;
+            }
             if (Config.options.background.wallpaperMode === "perMonitor") {
                 const override = (Config.options.background.monitorWallpapers ?? [])
                     .find(m => m.name === bgRoot.screen.name);
@@ -603,9 +612,8 @@ Variants {
                     }
                 }
                 FadeLoader {
-                    shown: Config.options.background.widgets.visualizer.enable
-                        && (Config.options.background.screenList.length === 0
-                            || Config.options.background.screenList.includes(bgRoot.screen.name))
+                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "visualizer", Config.options.background.widgets.visualizer.enable)
+                        && Config.backgroundWidgetsShown(bgRoot.screen.name)
                     sourceComponent: VisualizerWidget {
                         screenWidth: bgRoot.screen.width
                         screenHeight: bgRoot.screen.height
@@ -615,9 +623,8 @@ Variants {
                     }
                 }
                 FadeLoader {
-                    shown: Config.options.background.widgets.customImage.enable
-                        && (Config.options.background.screenList.length === 0
-                            || Config.options.background.screenList.includes(bgRoot.screen.name))
+                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "customImage", Config.options.background.widgets.customImage.enable)
+                        && Config.backgroundWidgetsShown(bgRoot.screen.name)
                     sourceComponent: CustomImage {
                         screenWidth:        bgRoot.screen.width
                         screenHeight:       bgRoot.screen.height
@@ -627,9 +634,8 @@ Variants {
                     }
                 }
                 FadeLoader {
-                    shown: Config.options.background.widgets.calendar.enable
-                        && (Config.options.background.screenList.length === 0
-                            || Config.options.background.screenList.includes(bgRoot.screen.name))
+                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "calendar", Config.options.background.widgets.calendar.enable)
+                        && Config.backgroundWidgetsShown(bgRoot.screen.name)
                     sourceComponent: CalendarWidget {
                         screenWidth: bgRoot.screen.width
                         screenHeight: bgRoot.screen.height
@@ -639,9 +645,8 @@ Variants {
                     }
                 }
                 FadeLoader {
-                    shown: Config.options.background.widgets.weather.enable
-                        && (Config.options.background.screenList.length === 0
-                            || Config.options.background.screenList.includes(bgRoot.screen.name))
+                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "weather", Config.options.background.widgets.weather.enable)
+                        && Config.backgroundWidgetsShown(bgRoot.screen.name)
                     sourceComponent: WeatherWidget {
                         screenWidth: bgRoot.screen.width
                         screenHeight: bgRoot.screen.height
@@ -651,10 +656,9 @@ Variants {
                     }
                 }
                 FadeLoader {
-                    shown: Config.options.background.widgets.clock.enable
+                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "clock", Config.options.background.widgets.clock.enable)
                         && (GlobalStates.screenLocked
-                            || Config.options.background.screenList.length === 0
-                            || Config.options.background.screenList.includes(bgRoot.screen.name))
+                            || Config.backgroundWidgetsShown(bgRoot.screen.name))
                     sourceComponent: ClockWidget {
                         screenWidth: bgRoot.screen.width
                         screenHeight: bgRoot.screen.height
@@ -665,9 +669,8 @@ Variants {
                     }
                 }
                 FadeLoader {
-                    shown: Config.options.background.widgets.notes.enable
-                        && (Config.options.background.screenList.length === 0
-                            || Config.options.background.screenList.includes(bgRoot.screen.name))
+                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "notes", Config.options.background.widgets.notes.enable)
+                        && Config.backgroundWidgetsShown(bgRoot.screen.name)
                     sourceComponent: NotesWidget {
                         screenWidth: bgRoot.screen.width
                         screenHeight: bgRoot.screen.height
@@ -679,9 +682,8 @@ Variants {
                 FadeLoader {
                     id: mediaLoader
                     property bool enableLoading: true
-                    shown: Config.options.background.widgets.media.enable && enableLoading
-                        && (Config.options.background.screenList.length === 0
-                            || Config.options.background.screenList.includes(bgRoot.screen.name))
+                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "media", Config.options.background.widgets.media.enable) && enableLoading
+                        && Config.backgroundWidgetsShown(bgRoot.screen.name)
                     sourceComponent: MediaWidget {
                         screenWidth: bgRoot.screen.width
                         screenHeight: bgRoot.screen.height
@@ -699,9 +701,8 @@ Variants {
                     }
                 }
                 FadeLoader {
-                    shown: Config.options.background.widgets.images.enable
-                        && (Config.options.background.screenList.length === 0
-                            || Config.options.background.screenList.includes(bgRoot.screen.name))
+                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "images", Config.options.background.widgets.images.enable)
+                        && Config.backgroundWidgetsShown(bgRoot.screen.name)
                     sourceComponent: ImageConverterWidget {
                         screenWidth:        bgRoot.screen.width
                         screenHeight:       bgRoot.screen.height
@@ -711,9 +712,8 @@ Variants {
                     }
                 }
                 FadeLoader {
-                    shown: Config.options.background.widgets.resources.enable
-                        && (Config.options.background.screenList.length === 0
-                            || Config.options.background.screenList.includes(bgRoot.screen.name))
+                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "resources", Config.options.background.widgets.resources.enable)
+                        && Config.backgroundWidgetsShown(bgRoot.screen.name)
                     sourceComponent: ResourcesWidget {
                         screenWidth:        bgRoot.screen.width
                         screenHeight:       bgRoot.screen.height
@@ -723,9 +723,8 @@ Variants {
                     }
                 }
                 FadeLoader {
-                    shown: Config.options.background.widgets.worldClock.enable
-                        && (Config.options.background.screenList.length === 0
-                            || Config.options.background.screenList.includes(bgRoot.screen.name))
+                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "worldClock", Config.options.background.widgets.worldClock.enable)
+                        && Config.backgroundWidgetsShown(bgRoot.screen.name)
                     sourceComponent: WorldClockWidget {
                         screenWidth: bgRoot.screen.width
                         screenHeight: bgRoot.screen.height
@@ -735,9 +734,8 @@ Variants {
                     }
                 }
                 FadeLoader {
-                    shown: Config.options.background.widgets.userCard.enable
-                        && (Config.options.background.screenList.length === 0
-                            || Config.options.background.screenList.includes(bgRoot.screen.name))
+                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "userCard", Config.options.background.widgets.userCard.enable)
+                        && Config.backgroundWidgetsShown(bgRoot.screen.name)
                     sourceComponent: UserCardWidget {
                         screenWidth: bgRoot.screen.width
                         screenHeight: bgRoot.screen.height

@@ -46,6 +46,18 @@ MouseArea {
         Qt.callLater(() => Wallpapers.generateThumbnail(thumbnailSizeName));
     }
 
+    Component.onCompleted: Qt.callLater(() => root.updateThumbnails())
+
+    function wallpaperPathForScreen() {
+        const screenName = root.QsWindow?.window?.screen?.name ?? "";
+        if (Config.options.background.wallpaperMode === "perMonitor") {
+            const override = (Config.options.background.monitorWallpapers ?? [])
+                .find(entry => entry.name === screenName)?.path;
+            if (override) return override;
+        }
+        return Config.options.background.wallpaperPath;
+    }
+
     function handleFilePasting(event) {
         const currentClipboardEntry = Cliphist.entries[0];
         if (/^\d+\tfile:\/\/\S+/.test(currentClipboardEntry)) {
@@ -73,6 +85,17 @@ MouseArea {
                     const entry = { name: monitorName, path: finalPath };
                     if (index >= 0) list[index] = entry; else list.push(entry);
                     Config.options.background.monitorWallpapers = list;
+                    GlobalStates.wallpaperSelectorTarget = "wallpaper";
+                    GlobalStates.wallpaperSelectorOpen = false;
+                });
+            } else if (GlobalStates.wallpaperSelectorTarget.startsWith("lockMonitor:")) {
+                const monitorName = GlobalStates.wallpaperSelectorTarget.slice(12);
+                Wallpapers.select(filePath, root.useDarkMode, finalPath => {
+                    const list = (Config.options.background.lockMonitorWallpapers ?? []).slice();
+                    const index = list.findIndex(m => m.name === monitorName);
+                    const entry = { name: monitorName, path: finalPath };
+                    if (index >= 0) list[index] = entry; else list.push(entry);
+                    Config.options.background.lockMonitorWallpapers = list;
                     GlobalStates.wallpaperSelectorTarget = "wallpaper";
                     GlobalStates.wallpaperSelectorOpen = false;
                 });
@@ -193,7 +216,7 @@ MouseArea {
                 anchors.fill: parent
                 visible: Config.options.wallpaperSelector.showBlurBackground
                 fillMode: Image.PreserveAspectCrop
-                source: Config.options.background.wallpaperPath
+                source: root.wallpaperPathForScreen()
                 cache: false
                 layer.enabled: true
                 layer.effect: OpacityMask {

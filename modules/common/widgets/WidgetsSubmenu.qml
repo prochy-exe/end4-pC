@@ -6,10 +6,36 @@ import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 
 Item {
     id: root
     implicitHeight: col.implicitHeight + 16
+    property string monitorName: ""
+
+    readonly property bool widgetsShownOnMonitor: Quickshell.screens.length <= 1
+        || (Config.options.background.screenList ?? []).includes(root.monitorName)
+
+    function setWidgetsShownOnMonitor(shown) {
+        if (Quickshell.screens.length <= 1 || root.monitorName === "") return
+        const activeNames = Quickshell.screens.map(screen => screen.name).filter(name => name !== "")
+        let screens = (Config.options.background.screenList ?? []).slice()
+
+        // An empty screen list means every monitor. Expand it before removing
+        // one monitor, otherwise turning this off would silently remain "all".
+        if (screens.length === 0)
+            screens = activeNames.slice()
+        else
+            screens = screens.filter(name => activeNames.includes(name))
+
+        if (shown) {
+            if (!screens.includes(root.monitorName)) screens.push(root.monitorName)
+        } else {
+            screens = screens.filter(name => name !== root.monitorName)
+        }
+
+        Config.options.background.screenList = screens.length === activeNames.length ? [] : screens
+    }
 
     readonly property var widgetList: [
         { key: "visualizer",  icon: "graphic_eq",         name: Translation.tr("Visualizer") },
@@ -37,6 +63,21 @@ Item {
         spacing: 2
 
         ConfigSwitch {
+            id: showWidgetsSwitch
+            Layout.fillWidth: true
+            buttonIcon: "widgets"
+            text: Translation.tr("Show widgets on this monitor")
+            onClicked: root.setWidgetsShownOnMonitor(!root.widgetsShownOnMonitor)
+
+            Binding {
+                target: showWidgetsSwitch
+                property: "checked"
+                value: root.widgetsShownOnMonitor
+                restoreMode: Binding.RestoreBinding
+            }
+        }
+
+        ConfigSwitch {
             Layout.fillWidth: true
             buttonIcon: "lock"
             text: Translation.tr("Lock widget positions")
@@ -56,12 +97,26 @@ Item {
         Repeater {
             model: root.widgetList
             delegate: ConfigSwitch {
+                id: widgetSwitch
                 required property var modelData
                 Layout.fillWidth: true
                 buttonIcon: modelData.icon
                 text: modelData.name
-                checked: Config.options.background.widgets[modelData.key].enable
-                onCheckedChanged: Config.options.background.widgets[modelData.key].enable = checked
+                enabled: root.widgetsShownOnMonitor
+                onClicked: {
+                    if (!root.widgetsShownOnMonitor) return
+                    const enabled = Config.getBackgroundWidgetSetting(
+                        root.monitorName, modelData.key, Config.options.background.widgets[modelData.key].enable)
+                    Config.setBackgroundWidgetSetting(root.monitorName, modelData.key, !enabled)
+                }
+
+                Binding {
+                    target: widgetSwitch
+                    property: "checked"
+                    value: root.widgetsShownOnMonitor && Config.getBackgroundWidgetSetting(
+                        root.monitorName, modelData.key, Config.options.background.widgets[modelData.key].enable)
+                    restoreMode: Binding.RestoreBinding
+                }
             }
         }
     }

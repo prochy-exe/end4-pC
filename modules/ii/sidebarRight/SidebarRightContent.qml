@@ -34,6 +34,16 @@ Item {
     property bool editMode: false
     property bool showIconPickerDialog: false
 
+    function wallpaperPathForScreen() {
+        const screenName = root.QsWindow?.window?.screen?.name ?? "";
+        if (Config.options.background.wallpaperMode === "perMonitor") {
+            const override = (Config.options.background.monitorWallpapers ?? [])
+                .find(entry => entry.name === screenName)?.path;
+            if (override) return override;
+        }
+        return Config.options.background.wallpaperPath;
+    }
+
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
 
     Connections {
@@ -125,7 +135,7 @@ Item {
                                     fillMode: Image.PreserveAspectCrop
                                     source: Config.options.sidebar.bannerImage !== "" 
                                         ? Config.options.sidebar.bannerImage 
-                                        : Config.options.background.wallpaperPath
+                                        : root.wallpaperPathForScreen()
                                     cache: false
                                     antialiasing: true
                                     sourceSize.width: wallpaperRect.width * 2

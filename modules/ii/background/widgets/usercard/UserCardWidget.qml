@@ -17,7 +17,7 @@ AbstractBackgroundWidget {
     implicitHeight: 252
 
     property int cardWidth: 276
-    property int blurMargin: 18   
+    property int blurMargin: 18
     property int avatarSize: 64
     property string hostname: SystemInfo.hostname
     property string username: Config.options.profile.displayName === "" ? SystemInfo.username : Config.options.profile.displayName
@@ -28,7 +28,25 @@ AbstractBackgroundWidget {
         return SystemInfo.usernameDisplay
     }
     property var currentQuip: weatherQuip()
-    
+
+    function wallpaperPathForScreen() {
+        const screenName = root.QsWindow?.window?.screen?.name ?? "";
+        if (GlobalStates.screenLocked) {
+            if (Config.options.background.lockWallpaperMode === "perMonitor") {
+                const lockOverride = (Config.options.background.lockMonitorWallpapers ?? [])
+                    .find(entry => entry.name === screenName)?.path;
+                if (lockOverride) return lockOverride;
+            }
+            if (Config.options.background.lockWall !== "") return Config.options.background.lockWall;
+        }
+        if (Config.options.background.wallpaperMode === "perMonitor") {
+            const override = (Config.options.background.monitorWallpapers ?? [])
+                .find(entry => entry.name === screenName)?.path;
+            if (override) return override;
+        }
+        return Config.options.background.wallpaperPath;
+    }
+
 
     function weatherQuip() {
         const desc = (Weather.data?.description ?? "").toLowerCase();
@@ -50,7 +68,7 @@ AbstractBackgroundWidget {
 
     Item {
         id: outerRect
-        implicitWidth: root.cardWidth 
+        implicitWidth: root.cardWidth
         implicitHeight: 252
 
         Item {
@@ -58,9 +76,7 @@ AbstractBackgroundWidget {
             anchors.fill: parent
             visible: false
 
-            property string effectiveSource: "file://" + (GlobalStates.screenLocked && Config.options.background.lockWall !== ""
-                ? Config.options.background.lockWall
-                : Config.options.background.wallpaperPath)
+            property string effectiveSource: "file://" + root.wallpaperPathForScreen()
 
             Image {
                 id: bgImageA
@@ -123,7 +139,7 @@ AbstractBackgroundWidget {
         Rectangle {
             anchors.fill: blurredBg
             radius: Appearance.rounding?.verylarge ?? 30
-            color: Appearance.colors.colScrim
+            color: MonitorThemes.shellColorForItem(root, "colScrim", Appearance.colors.colScrim)
             opacity: 0.1
         }
 
@@ -132,7 +148,7 @@ AbstractBackgroundWidget {
             x: root.blurMargin
             y: root.avatarSize / 2 + root.blurMargin + 30
             width: 240
-            color: Appearance.colors.colPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
             radius: Appearance.rounding.large
             implicitHeight: contentColumn.implicitHeight + 30
 
@@ -161,7 +177,7 @@ AbstractBackgroundWidget {
                         Layout.topMargin: 2
                         iconSize: Appearance.font.pixelSize.normal
                         text: root.currentQuip.icon
-                        color: Appearance.colors.colOnPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         opacity: 0.85
                     }
 
@@ -169,11 +185,11 @@ AbstractBackgroundWidget {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         font.pixelSize: Appearance.font.pixelSize.small
-                        color: Appearance.colors.colOnPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         opacity: 0.85
                         text: root.currentQuip.text
                     }
-                } 
+                }
 
                 RowLayout {
                     Layout.fillWidth: true
@@ -184,7 +200,7 @@ AbstractBackgroundWidget {
                         Layout.fillWidth: true
                         implicitHeight: 40
                         radius: Appearance.rounding.full
-                        color: Appearance.colors.colOnPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
 
                         RowLayout {
                             anchors.centerIn: parent
@@ -192,12 +208,12 @@ AbstractBackgroundWidget {
                             MaterialSymbol {
                                 iconSize: Appearance.font.pixelSize.normal
                                 text: "lock"
-                                color: Appearance.colors.colPrimaryContainer
+                                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                             }
                             StyledText {
                                 font.pixelSize: Appearance.font.pixelSize.small
                                 font.weight: Font.DemiBold
-                                color: Appearance.colors.colPrimaryContainer
+                                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                                 text: GlobalStates.screenLocked ? "Locked" : "Lock"
                             }
                         }
@@ -214,12 +230,12 @@ AbstractBackgroundWidget {
                         radius: 20
                         color: "transparent"
                         border.width: 1
-                        border.color: Appearance.colors.colOnPrimaryContainer
+                        border.color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         MaterialSymbol {
                             anchors.centerIn: parent
                             iconSize: Appearance.font.pixelSize.normal
                             text: "settings"
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -234,12 +250,12 @@ AbstractBackgroundWidget {
                         radius: 20
                         color: "transparent"
                         border.width: 1
-                        border.color: Appearance.colors.colOnPrimaryContainer
+                        border.color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         MaterialSymbol {
                             anchors.centerIn: parent
                             iconSize: Appearance.font.pixelSize.normal
                             text: "power_settings_new"
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -258,9 +274,9 @@ AbstractBackgroundWidget {
             width: root.avatarSize + 10
             height: root.avatarSize + 10
             radius: width / 2
-            color: Appearance.colors.colPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
             border.width: 3
-            border.color: Appearance.colors.colLayer1
+            border.color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
             z: 2
 
             Image {
@@ -291,7 +307,7 @@ AbstractBackgroundWidget {
                 anchors.centerIn: parent
                 text: "account_circle"
                 iconSize: 32
-                color: Appearance.colors.colOnPrimaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                 visible: avatarImage.status === Image.Error
             }
         }
@@ -301,18 +317,18 @@ AbstractBackgroundWidget {
             y: avatarRect.y + (avatarRect.height - implicitHeight) / 2 + 20
             spacing: 0
             z: 2
-            
+
 
             StyledText {
                 text: root.userDisplay
                 font.pixelSize: Appearance.font.pixelSize.small
                 font.weight: Font.DemiBold
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             }
             StyledText {
                 text: "Up • " + DateTime.uptime
                 font.pixelSize: Appearance.font.pixelSize.smaller
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 opacity: 0.6
             }
         }

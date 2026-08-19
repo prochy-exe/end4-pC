@@ -189,16 +189,29 @@ ContentPage {
                             implicitHeight: 160
                             largeItemWidthRatio: 1
                             itemSpacing: 0
-                            model: [page.displayPathFor(
-                                Config.options.background.lockWall !== ""
-                                    ? Config.options.background.lockWall
-                                    : Config.options.background.wallpaperPath
-                            )]
-                            labels: [Translation.tr("Lock screen")]
+                            model: Config.options.background.lockWallpaperMode === "perMonitor"
+                                ? Quickshell.screens.map(s => page.displayPathFor(
+                                    (Config.options.background.lockMonitorWallpapers ?? []).find(m => m.name === s.name)?.path
+                                        ?? Config.options.background.wallpaperPath
+                                ))
+                                : [page.displayPathFor(
+                                    Config.options.background.lockWall !== ""
+                                        ? Config.options.background.lockWall
+                                        : Config.options.background.wallpaperPath
+                                )]
+                            labels: Config.options.background.lockWallpaperMode === "perMonitor"
+                                ? Quickshell.screens.map(s => s.name)
+                                : [Translation.tr(
+                                    Config.options.background.lockWall === ""
+                                        ? "All lock screens (same as desktop)"
+                                        : "All lock screens (separate wallpaper)"
+                                )]
                             wheelEnabled: false
                             dragEnabled: false
-                            clickAction: () => {
-                                GlobalStates.wallpaperSelectorTarget = "lockWall";
+                            clickAction: (index) => {
+                                GlobalStates.wallpaperSelectorTarget = Config.options.background.lockWallpaperMode === "perMonitor"
+                                    ? "lockMonitor:" + Quickshell.screens[index].name
+                                    : "lockWall";
                                 GlobalStates.wallpaperSelectorOpen = true;
                             }
                         }
@@ -212,12 +225,24 @@ ContentPage {
                 ConfigSwitch {
                     id: syncWallpaperSwitch
                     buttonIcon: "sync"
-                    text: Translation.tr("Use same wallpaper for both")
+                    text: Translation.tr("Use desktop wallpaper on the lock screen")
                     checked: Config.options.background.lockWall === ""
+                        && Config.options.background.lockWallpaperMode === "shared"
                     onCheckedChanged: {
                         if (checked) {
                             Config.options.background.lockWall = "";
+                            Config.options.background.lockWallpaperMode = "shared";
                         }
+                    }
+                }
+
+                ConfigSwitch {
+                    buttonIcon: "devices"
+                    text: Translation.tr("Use a different lock wallpaper on each monitor")
+                    checked: Config.options.background.lockWallpaperMode === "perMonitor"
+                    onClicked: {
+                        Config.options.background.lockWallpaperMode =
+                            Config.options.background.lockWallpaperMode === "perMonitor" ? "shared" : "perMonitor";
                     }
                 }
 
@@ -295,7 +320,12 @@ ContentPage {
             Connections {
                 target: Config.options.background
                 function onLockWallChanged() {
-                    syncWallpaperSwitch.checked = Qt.binding(() => Config.options.background.lockWall === "")
+                    syncWallpaperSwitch.checked = Qt.binding(() => Config.options.background.lockWall === ""
+                        && Config.options.background.lockWallpaperMode === "shared")
+                }
+                function onLockWallpaperModeChanged() {
+                    syncWallpaperSwitch.checked = Qt.binding(() => Config.options.background.lockWall === ""
+                        && Config.options.background.lockWallpaperMode === "shared")
                 }
             }
 

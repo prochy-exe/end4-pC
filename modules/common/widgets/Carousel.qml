@@ -178,14 +178,13 @@ Item {
 
     Component {
         id: defaultImageDelegate
-        StyledImage {
+        ThumbnailImage {
             id: img
             property real fixedWidth: parent?.fixedWidth ?? width
             property real fixedHeight: parent?.fixedHeight ?? height
-            source: "file://" + FileUtils.trimFileProtocol(modelData)
+            sourcePath: FileUtils.trimFileProtocol(modelData)
             fillMode: Image.PreserveAspectCrop
             cache: true
-            asynchronous: true
             sourceSize.width: fixedWidth * 1.5
             sourceSize.height: fixedHeight * 1.5
         }

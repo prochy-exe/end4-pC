@@ -37,6 +37,56 @@ ContentPage {
         }
     }
 
+    function quickPreviewLayout() {
+        const screens = Quickshell.screens.map((screen, index) => {
+            const monitor = Hyprland.monitorFor(screen) ?? HyprlandData.monitors.find(m => m.name === screen.name) ?? screen;
+            return {
+                screen: screen,
+                monitor: monitor,
+                layoutX: Number.isFinite(Number(monitor.x)) ? Number(monitor.x) : index,
+                layoutY: Number.isFinite(Number(monitor.y)) ? Number(monitor.y) : 0,
+                layoutWidth: Number.isFinite(Number(monitor.width)) ? Number(monitor.width) : 1
+            };
+        }).sort((a, b) => a.layoutY - b.layoutY || a.layoutX - b.layoutX);
+        const rows = [];
+        for (const entry of screens) {
+            let row = rows.find(r => {
+                const verticallyAligned = Math.abs(r.y - entry.layoutY) < 100;
+                const horizontallySeparate = r.entries.every(other =>
+                    entry.layoutX >= other.layoutX + other.layoutWidth
+                    || other.layoutX >= entry.layoutX + entry.layoutWidth
+                );
+                return verticallyAligned || horizontallySeparate;
+            });
+            if (!row) {
+                row = { y: entry.layoutY, entries: [] };
+                rows.push(row);
+            }
+            row.entries.push(entry);
+        }
+        rows.sort((a, b) => a.y - b.y);
+        const layout = [];
+        rows.forEach((row, rowIndex) => row.entries
+            .sort((a, b) => a.layoutX - b.layoutX)
+            .forEach((entry, columnIndex) => layout.push({
+                screen: entry.screen,
+                x: columnIndex / row.entries.length,
+                y: rowIndex / rows.length,
+                width: 1 / row.entries.length,
+                height: 1 / rows.length
+            })));
+        return layout;
+    }
+
+    function quickPreviewWallpaperPath(screen) {
+        if (Config.options.background.wallpaperMode === "perMonitor") {
+            const monitorPath = (Config.options.background.monitorWallpapers ?? [])
+                .find(m => m.name === screen.name)?.path;
+            if (monitorPath) return monitorPath;
+        }
+        return Config.options.background.wallpaperPath;
+    }
+
     component SmallLightDarkPreferenceButton: RippleButton {
         id: smallLightDarkPreferenceButton
         required property bool dark
@@ -87,27 +137,41 @@ ContentPage {
                 spacing: 4
 
                 Rectangle {
+                    id: quickPreview
                     Layout.preferredWidth: 420
                     Layout.preferredHeight: 280
                     radius: Appearance.rounding.large - 3
                     color: Appearance.colors.colLayer2
                     clip: true
 
-                    StyledImage {
-                        anchors.fill: parent
-                        sourceSize.width: 420
-                        sourceSize.height: 280
-                        fillMode: Image.PreserveAspectCrop
-                        source: /\.(mp4|webm|mkv|avi|mov)$/i.test(Config.options.background.wallpaperPath)
-                            ? Config.options.background.thumbnailPath
-                            : Config.options.background.wallpaperPath
-                        cache: false
-                        layer.enabled: true
-                        layer.effect: OpacityMask {
-                            maskSource: Rectangle {
-                                width: 420; height: 280
-                                radius: Appearance.rounding.large - 3
+                    Repeater {
+                        model: page.quickPreviewLayout()
+                        delegate: Item {
+                            required property var modelData
+                            x: modelData.x * quickPreview.width
+                            y: modelData.y * quickPreview.height
+                            width: modelData.width * quickPreview.width
+                            height: modelData.height * quickPreview.height
+                            clip: true
+
+                            StyledImage {
+                                anchors.fill: parent
+                                sourceSize.width: parent.width
+                                sourceSize.height: parent.height
+                                fillMode: Image.PreserveAspectCrop
+                                source: /\.(mp4|webm|mkv|avi|mov)$/i.test(page.quickPreviewWallpaperPath(modelData.screen))
+                                    ? Config.options.background.thumbnailPath
+                                    : page.quickPreviewWallpaperPath(modelData.screen)
+                                cache: false
                             }
+                        }
+                    }
+
+                    layer.enabled: true
+                    layer.effect: OpacityMask {
+                        maskSource: Rectangle {
+                            width: 420; height: 280
+                            radius: Appearance.rounding.large - 3
                         }
                     }
 
