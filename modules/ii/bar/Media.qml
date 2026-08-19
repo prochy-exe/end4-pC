@@ -15,22 +15,13 @@ import Quickshell.Services.Mpris
 
 Item {
     id: root
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
     
     property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
     property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
-    readonly property MprisPlayer activePlayer: {
-        const preferred = Config.getBarSetting(root.monitorName, ["media", "preferredPlayer"], Config.options.bar.media.preferredPlayer).trim().toLowerCase()
-        if (preferred.length === 0) return MprisController.activePlayer
-        const _ = MprisController.players.count
-        for (const p of MprisController.players) {
-            if ((p.identity ?? "").toLowerCase().includes(preferred) ||
-                (p.desktopEntry ?? "").toLowerCase().includes(preferred))
-                return p
-        }
-        return MprisController.activePlayer
-    }
+    readonly property bool alwaysVisible: Config.getBarSetting(root.monitorName, ["media", "alwaysVisible"], Config.options.bar.media.alwaysVisible)
+    readonly property MprisPlayer activePlayer: MprisController.activePlayer
 
     readonly property string cleanedTitle: StringUtils.cleanMusicTitle(activePlayer?.trackTitle) || Translation.tr("No media")
 
@@ -66,6 +57,8 @@ Item {
         artDownloader.running = true
     }
 
+    readonly property bool shouldShow: root.alwaysVisible || !!root.activePlayer
+
     Process {
         id: artDownloader
         property string targetFile:  root.artUrl
@@ -76,15 +69,16 @@ Item {
     }
 
     Layout.fillHeight: true
-    implicitWidth: vertical 
-        ? Appearance.sizes.verticalBarWidth 
-        : (isMaterial 
-            ? materialRow.implicitWidth 
+    visible: root.shouldShow
+    implicitWidth: !root.shouldShow ? 0 : (vertical
+        ? Appearance.sizes.verticalBarWidth
+        : (isMaterial
+            ? materialRow.implicitWidth
             : Math.max(
                 Config.getBarSetting(root.monitorName, ["media", "minWidth"], Config.options.bar.media.minWidth),
                 Math.min(rowLayout.implicitWidth + 8, Config.getBarSetting(root.monitorName, ["media", "maxWidth"], Config.options.bar.media.maxWidth))
-            ))
-    implicitHeight: vertical ? (isMaterial ? 32 : mediaCircProg.implicitHeight) : Appearance.sizes.barHeight
+            )))
+    implicitHeight: !root.shouldShow ? 0 : (vertical ? (isMaterial ? 32 : mediaCircProg.implicitHeight) : Appearance.sizes.barHeight)
 
     Timer {
         running: activePlayer?.playbackState == MprisPlaybackState.Playing

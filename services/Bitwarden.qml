@@ -30,12 +30,50 @@ Singleton {
     property list<var> allItems: []
     property string runtimeSessionToken: ""
     property bool reopenMenuAfterUnlock: false
+    property real clipboardLastChangedMs: 0
+    property real lastBitwardenClipboardWriteMs: 0
+    property string lastBitwardenClipboardText: ""
+    property string pendingTotpClipboardText: ""
+    property int totpSecondsRemaining: 30
     readonly property string sessionToken: root.runtimeSessionToken.length > 0
         ? root.runtimeSessionToken
         : (KeyringStorage.keyringData?.bitwarden?.session ?? "")
 
-    function copyText(text) {
+    readonly property var totpConfig: Config.options.search.bitwardenTotp
+
+    function updateTotpCountdown() {
+        const now = Math.floor(Date.now() / 1000)
+        const remainder = now % 30
+        const remaining = remainder === 0 ? 30 : (30 - remainder)
+        root.totpSecondsRemaining = remaining
+    }
+
+    function canOverwriteClipboardForTotp() {
+        if (!(root.totpConfig?.protectRecentClipboard ?? true))
+            return true
+
+        const thresholdSec = Math.max(1, root.totpConfig?.protectRecentClipboardSeconds ?? 8)
+        const elapsedMs = Date.now() - root.clipboardLastChangedMs
+        if (elapsedMs >= thresholdSec * 1000)
+            return true
+
+        const current = `${Quickshell.clipboardText ?? ""}`
+        const recentlyBitwardenOwned = (Date.now() - root.lastBitwardenClipboardWriteMs) < thresholdSec * 1000
+            && current === root.lastBitwardenClipboardText
+        return recentlyBitwardenOwned || current.length === 0
+    }
+
+    function trackBitwardenClipboardWrite(text) {
         const safe = `${text ?? ""}`
+        root.lastBitwardenClipboardText = safe
+        root.lastBitwardenClipboardWriteMs = Date.now()
+        root.clipboardLastChangedMs = root.lastBitwardenClipboardWriteMs
+    }
+
+    function copyText(text, fromBitwarden) {
+        const safe = `${text ?? ""}`
+        if (!!fromBitwarden)
+            root.trackBitwardenClipboardWrite(safe)
         Quickshell.execDetached(["bash", "-c", `printf '%s' '${StringUtils.shellSingleQuoteEscape(safe)}' | wl-copy`])
     }
 
@@ -60,17 +98,17 @@ Singleton {
     }
 
     function copyUnlockCommand() {
-        root.copyText("bw unlock")
+        root.copyText("bw unlock", false)
         Quickshell.execDetached(["notify-send", Translation.tr("Bitwarden"), Translation.tr("Copied: bw unlock"), "-a", "Shell"])
     }
 
     function copyLoginCommand() {
-        root.copyText("bw login")
+        root.copyText("bw login", false)
         Quickshell.execDetached(["notify-send", Translation.tr("Bitwarden"), Translation.tr("Copied: bw login"), "-a", "Shell"])
     }
 
     function copyUsername(username) {
-        root.copyText(username)
+        root.copyText(username, false)
     }
 
     function setLastInteracted(item) {
@@ -133,12 +171,25 @@ Singleton {
             Quickshell.execDetached(["notify-send", Translation.tr("Bitwarden"), Translation.tr("Missing item id"), "-a", "Shell"])
             return
         }
-        const sid = StringUtils.shellSingleQuoteEscape(root.sessionToken)
-        const item = StringUtils.shellSingleQuoteEscape(itemId)
-        const cmd = root.sessionToken.length > 0
-            ? `export BW_SESSION='${sid}'; bw get totp '${item}' | wl-copy`
-            : `bw get totp '${item}' | wl-copy`
-        Quickshell.execDetached(["bash", "-c", cmd])
+        if (!root.canOverwriteClipboardForTotp()) {
+            const protectWindow = Math.max(1, root.totpConfig?.protectRecentClipboardSeconds ?? 8)
+            Quickshell.execDetached(["notify-send", Translation.tr("Bitwarden"), Translation.tr("Clipboard was updated recently (< %1s). TOTP copy skipped.").arg(protectWindow), "-a", "Shell"])
+            return
+        }
+
+        if (totpProc.running) {
+            Quickshell.execDetached(["notify-send", Translation.tr("Bitwarden"), Translation.tr("Already fetching verification code"), "-a", "Shell"])
+            return
+        }
+
+        totpProc.itemId = itemId
+        totpProc.buffer = ""
+        totpProc.errBuffer = ""
+        const envObject = root.sessionToken.length > 0 ? ({ BW_SESSION: root.sessionToken }) : ({})
+        totpProc.exec({
+            command: ["bw", "get", "totp", itemId],
+            environment: envObject
+        })
     }
 
     function triggerSearch(query) {
@@ -279,6 +330,37 @@ Singleton {
     Component.onCompleted: {
         if (!KeyringStorage.loaded)
             KeyringStorage.fetchKeyringData()
+        root.clipboardLastChangedMs = Date.now()
+        root.updateTotpCountdown()
+    }
+
+    Connections {
+        target: Quickshell
+        function onClipboardTextChanged() {
+            root.clipboardLastChangedMs = Date.now()
+        }
+    }
+
+    Timer {
+        id: totpCountdownTimer
+        interval: 1000
+        repeat: true
+        running: true
+        onTriggered: root.updateTotpCountdown()
+    }
+
+    Timer {
+        id: totpAutoClearTimer
+        interval: 20000
+        repeat: false
+        onTriggered: {
+            const clipboardNow = `${Quickshell.clipboardText ?? ""}`
+            if (clipboardNow === root.pendingTotpClipboardText && clipboardNow.length > 0) {
+                root.copyText("", true)
+                Quickshell.execDetached(["notify-send", Translation.tr("Bitwarden"), Translation.tr("Cleared copied verification code from clipboard"), "-a", "Shell"])
+            }
+            root.pendingTotpClipboardText = ""
+        }
     }
 
     Timer {
@@ -560,6 +642,48 @@ Singleton {
             root.status = "error"
             root.reopenMenuAfterUnlock = false
             root.revision += 1
+        }
+    }
+
+    Process {
+        id: totpProc
+        property string itemId: ""
+        property string buffer: ""
+        property string errBuffer: ""
+
+        stdout: SplitParser {
+            onRead: data => {
+                if (totpProc.buffer.length > 0)
+                    totpProc.buffer += "\n"
+                totpProc.buffer += data
+            }
+        }
+
+        stderr: SplitParser {
+            onRead: data => {
+                if (totpProc.errBuffer.length > 0)
+                    totpProc.errBuffer += "\n"
+                totpProc.errBuffer += data
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            const code = `${totpProc.buffer ?? ""}`.trim()
+            const err = `${totpProc.errBuffer ?? ""}`.trim()
+
+            if (exitCode !== 0 || code.length === 0) {
+                Quickshell.execDetached(["notify-send", Translation.tr("Bitwarden"), err.length > 0 ? err : Translation.tr("Failed to fetch verification code"), "-a", "Shell"])
+                return
+            }
+
+            root.copyText(code, true)
+
+            if (root.totpConfig?.autoClearClipboard ?? false) {
+                const clearSeconds = Math.max(1, root.totpConfig?.autoClearSeconds ?? 20)
+                root.pendingTotpClipboardText = code
+                totpAutoClearTimer.interval = clearSeconds * 1000
+                totpAutoClearTimer.restart()
+            }
         }
     }
 }

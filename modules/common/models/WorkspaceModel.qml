@@ -8,12 +8,19 @@ NestableObject {
     id: root
 
     required property HyprlandMonitor monitor
+    readonly property string monitorName: monitor?.name ?? ""
     readonly property var liveMonitorData: HyprlandData.monitors.find(m => m.id === monitor?.id)
     readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
-    readonly property int activeWorkspace: monitor?.activeWorkspace?.id ?? 1
+    // Hyprland can (rarely, e.g. a monitor reconnecting after DPMS wake with
+    // no bound workspace) hand back a garbage id near INT32_MAX for a
+    // monitor's active workspace. That id feeds group/getWorkspaceId's
+    // arithmetic below, which would otherwise render as a wall of huge
+    // overlapping numbers - clamp it back to a sane fallback instead.
+    readonly property int rawActiveWorkspace: monitor?.activeWorkspace?.id ?? 1
+    readonly property int activeWorkspace: (rawActiveWorkspace > 0 && rawActiveWorkspace < 100000) ? rawActiveWorkspace : 1
     readonly property bool currentWorkspaceNotFake: activeWindow?.activated ?? false // Active empty workspace = fake. At least, that's how I like to call it.
     readonly property int fakeWorkspace: currentWorkspaceNotFake ? -9999 : activeWorkspace
-    readonly property int shownCount: C.Config.options.bar.workspaces.shown
+    readonly property int shownCount: C.Config.getBarSetting(root.monitorName, ["workspaces", "shown"], C.Config.options.bar.workspaces.shown)
     readonly property int group: Math.floor((activeWorkspace - 1) / shownCount)
     readonly property var specialWorkspace: liveMonitorData?.specialWorkspace
     readonly property string specialWorkspaceName: specialWorkspace?.name.replace("special:", "") ?? "special"

@@ -9,7 +9,7 @@ import QtQuick.Layouts
 MouseArea {
     id: root
     property bool hovered: false
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
     property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
 

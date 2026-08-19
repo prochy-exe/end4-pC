@@ -4,6 +4,7 @@ import Quickshell
 import qs.modules.common
 import qs.modules.ii.background
 import qs.modules.ii.bar
+import qs.modules.ii.cheatsheet
 import qs.modules.ii.dock
 import qs.modules.ii.lock
 import qs.modules.ii.mediaControls
@@ -12,6 +13,7 @@ import qs.modules.ii.onScreenDisplay
 import qs.modules.ii.onScreenKeyboard
 import qs.modules.ii.overview
 import qs.modules.ii.polkit
+import qs.modules.ii.popupEditor
 import qs.modules.ii.settings
 import qs.modules.ii.regionSelector
 import qs.modules.ii.screenCorners
@@ -28,14 +30,17 @@ import qs.modules.ii.dropover
 Scope {
     PanelLoader { component: Bar {} }
     PanelLoader { component: Background {} }
+    PanelLoader { component: Cheatsheet {} }
     PanelLoader { extraCondition: Config.options.dock.enable; component: Dock {} }
     PanelLoader { component: Lock {} }
     PanelLoader { component: MediaControls {} }
     PanelLoader { component: NotificationPopup {} }
+    PanelLoader { component: OnScreenDisplay {} }
     PanelLoader { component: OnScreenKeyboard {} }
     PanelLoader { component: Overlay {} }
     PanelLoader { component: Overview {} }
     PanelLoader { component: Polkit {} }
+    PanelLoader { component: PopupEditorOverlay {} }
     PanelLoader { component: RegionSelector {} }
     PanelLoader { component: ScreenCorners {} }
     PanelLoader { component: ScreenTranslator {} }

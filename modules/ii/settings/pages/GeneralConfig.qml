@@ -41,7 +41,73 @@ ContentPage {
         property string locale: ""
         command: [Directories.aiTranslationScriptPath, translationProc.locale]
     }
+    property bool appleFnModeSupported: false
+    property int appleFnModeCurrent: Config.options.hyprland.input.appleFnMode
+    property int appleFnModeDraft: Config.options.hyprland.input.appleFnMode
 
+    function refreshAppleFnMode() {
+        appleFnModeReadProc.running = true
+    }
+
+    function setAppleFnMode(value) {
+        if (!page.appleFnModeSupported || appleFnModeWriteProc.running) return
+        const nextValue = Math.max(0, Math.min(4, Number(value)))
+        if (nextValue === page.appleFnModeCurrent) return
+
+        appleFnModeWriteProc.pendingValue = nextValue
+        const applyAndPersistScript = [
+            "set -e",
+            `printf '%s' '${nextValue}' > /sys/module/hid_apple/parameters/fnmode`,
+            "mkdir -p /etc/modprobe.d",
+            `printf '%s\\n' 'options hid_apple fnmode=${nextValue}' > /etc/modprobe.d/hid_apple.conf`
+        ].join("; ")
+        appleFnModeWriteProc.command = ["pkexec", "bash", "-c", applyAndPersistScript]
+        appleFnModeWriteProc.running = true
+    }
+
+    Component.onCompleted: page.refreshAppleFnMode()
+    Process {
+        id: appleFnModeReadProc
+        command: ["bash", "-c", "cat /sys/module/hid_apple/parameters/fnmode 2>/dev/null || true"]
+        stdout: StdioCollector {
+            id: appleFnModeReadCollector
+            onStreamFinished: {
+                const text = appleFnModeReadCollector.text.trim()
+                if (!/^\d+$/.test(text)) {
+                    page.appleFnModeSupported = false
+                    return
+                }
+
+                const parsed = Number(text)
+                if (parsed < 0 || parsed > 4) {
+                    page.appleFnModeSupported = false
+                    return
+                }
+
+                page.appleFnModeSupported = true
+                page.appleFnModeCurrent = parsed
+                page.appleFnModeDraft = parsed
+                Config.options.hyprland.input.appleFnMode = parsed
+            }
+        }
+    }
+
+    Process {
+        id: appleFnModeWriteProc
+        property int pendingValue: 2
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode === 0) {
+                page.appleFnModeSupported = true
+                page.appleFnModeCurrent = appleFnModeWriteProc.pendingValue
+                page.appleFnModeDraft = appleFnModeWriteProc.pendingValue
+                Config.options.hyprland.input.appleFnMode = appleFnModeWriteProc.pendingValue
+                Quickshell.execDetached(["notify-send", Translation.tr("Input settings"), Translation.tr("Apple Fn mode applied now and persisted for next boot"), "-a", "Shell"])
+                page.refreshAppleFnMode()
+            } else {
+                Quickshell.execDetached(["notify-send", Translation.tr("Input settings"), Translation.tr("Failed to apply and persist Apple Fn mode"), "-a", "Shell"])
+            }
+        }
+    }
     ColumnLayout {
         id: mainLayout 
         Layout.fillWidth: true   
@@ -175,354 +241,203 @@ ContentPage {
                 }
             }
         }
-
         ContentSection {
-            icon: "splitscreen_left"
-            shape: MaterialShape.Shape.Clover4Leaf
-            title: Translation.tr("Left Sidebar")
-
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 8
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    implicitHeight: mediaCol.implicitHeight + 24
-                    radius: Appearance.rounding.normal
-                    color: Appearance.colors.colLayer1
-                    border.width: 1
-                    border.color: "transparent"
-
-                    ColumnLayout {
-                        id: mediaCol
-                        anchors { fill: parent; margins: 12 }
-                        spacing: 8
-
-                        MaterialSymbol {
-                            text: "music_note_2"
-                            iconSize: Appearance.font.pixelSize.huge
-                            color: Appearance.colors.colPrimary
-                        }
-                        StyledText {
-                            text: Translation.tr("Media Player")
-                            font.pixelSize: Appearance.font.pixelSize.normal
-                            font.weight: Font.Medium
-                            color: Appearance.colors.colOnLayer1
-                        }
-                        Item { Layout.fillHeight: true }
-                        GroupedList {
-                            Layout.fillWidth: true
-                            bgcolor: Appearance.colors.colLayer2
-                            ConfigSwitch {
-                                buttonIcon: "check"
-                                text: Translation.tr("Enable")
-                                checked: Config.options.sidebar.media.enable
-                                onCheckedChanged: { Config.options.sidebar.media.enable = checked }
-                            }
-                            ConfigSwitch {
-                                buttonIcon: "radio_button_partial"
-                                text: Translation.tr("Follow Album Colors")
-                                checked: Config.options.sidebar.media.artColors
-                                onCheckedChanged: { Config.options.sidebar.media.artColors = checked }
-                            }
-                        }
-                    }
-                }
-
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        implicitHeight: aiCol.implicitHeight + 24
-                        radius: Appearance.rounding.normal
-                        color: Appearance.colors.colLayer1
-                        border.width: 1
-                        border.color: "transparent"
-
-                        ColumnLayout {
-                            id: aiCol
-                            anchors { fill: parent; margins: 12 }
-                            spacing: 8
-
-                            MaterialSymbol {
-                                text: "smart_toy"
-                                iconSize: Appearance.font.pixelSize.huge
-                                color: Appearance.colors.colPrimary
-                            }
-                            StyledText {
-                                text: Translation.tr("AI")
-                                font.pixelSize: Appearance.font.pixelSize.normal
-                                font.weight: Font.Medium
-                                color: Appearance.colors.colOnLayer1
-                            }
-                            ConfigSelectionArray {
-                                Layout.fillWidth: false
-                                Layout.alignment: Qt.AlignRight
-                                currentValue: Config.options.policies.ai
-                                onSelected: newValue => { Config.options.policies.ai = newValue }
-                                options: [
-                                    { displayName: Translation.tr("No"), icon: "close", value: 0 },
-                                    { displayName: Translation.tr("Yes"), icon: "check", value: 1 },
-                                    { displayName: Translation.tr("Local"), icon: "sync_saved_locally", value: 2 }
-                                ]
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        implicitHeight: weebCol.implicitHeight + 24
-                        radius: Appearance.rounding.normal
-                        color: Appearance.colors.colLayer1
-                        border.width: 1
-                        border.color: "transparent"
-
-                        ColumnLayout {
-                            id: weebCol
-                            anchors { fill: parent; margins: 12 }
-                            spacing: 8
-
-                            MaterialSymbol {
-                                text: "playing_cards"
-                                iconSize: Appearance.font.pixelSize.huge
-                                color: Appearance.colors.colPrimary
-                            }
-                            StyledText {
-                                text: Translation.tr("Weeb")
-                                font.pixelSize: Appearance.font.pixelSize.normal
-                                font.weight: Font.Medium
-                                color: Appearance.colors.colOnLayer1
-                            }
-                            ConfigSelectionArray {
-                                Layout.fillWidth: false
-                                Layout.alignment: Qt.AlignRight
-                                currentValue: Config.options.policies.weeb
-                                onSelected: newValue => { Config.options.policies.weeb = newValue }
-                                options: [
-                                    { displayName: Translation.tr("No"), icon: "close", value: 0 },
-                                    { displayName: Translation.tr("Yes"), icon: "check", value: 1 },
-                                    { displayName: Translation.tr("Closet"), icon: "ev_shadow", value: 2 }
-                                ]
-                            }
-                        }
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.topMargin: 4
-                implicitHeight: translatorCol.implicitHeight + 24
-                radius: Appearance.rounding.normal
-                color: Appearance.colors.colLayer1
-                border.width: 1
-                border.color: "transparent"
-
-                ColumnLayout {
-                    id: translatorCol
-                    anchors { fill: parent; margins: 12 }
-                    spacing: 8
-
-                    RowLayout {
-                        spacing: 8
-                        ConfigSwitch {
-                            buttonIcon: "translate"
-                            text: Translation.tr("Enable Translator")
-                            checked: Config.options.sidebar.translator.enable
-                            onCheckedChanged: { Config.options.sidebar.translator.enable = checked }
-                        }
-                    }
-                }
-            }
-        }
-
-        ContentSection {
-            icon: "splitscreen_right"
-            shape: MaterialShape.Shape.Slanted
-            title: Translation.tr("Right Sidebar")
-
-            GroupedList {
-                ConfigSwitch {
-                    buttonIcon: "planner_banner_ad_pt"
-                    text: Translation.tr('Banner')
-                    checked: Config.options.sidebar.banner
-                    onCheckedChanged: {
-                        Config.options.sidebar.banner = checked;
-                    }
-                }
-
-                ConfigSwitch {
-                    buttonIcon: "music_note"
-                    text: Translation.tr('Media Player')
-                    checked: Config.options.sidebar.mediaPlayer
-                    onCheckedChanged: {
-                        Config.options.sidebar.mediaPlayer = checked;
-                    }
-                }
-
-                ConfigSwitch {
-                    buttonIcon: "memory"
-                    text: Translation.tr('Keep right sidebar loaded')
-                    checked: Config.options.sidebar.keepRightSidebarLoaded
-                    onCheckedChanged: {
-                        Config.options.sidebar.keepRightSidebarLoaded = checked;
-                    }
-                }
-            }
+            icon: "trackpad_input"
+            shape: MaterialShape.Shape.Pentagon
+            title: Translation.tr("Input")
 
             ContentSubsection {
-                title: Translation.tr("Quick toggles")
+                title: Translation.tr("Keyboard")
+
                 GroupedList {
-                    ConfigSelectionArray {
-                        text: Translation.tr("Style")
-                        icon: "toggle_on"
-                        Layout.fillWidth: false
-                        currentValue: Config.options.sidebar.quickToggles.style
-                        onSelected: newValue => {
-                            Config.options.sidebar.quickToggles.style = newValue;
-                        }
-                        options: [
-                            {
-                                displayName: Translation.tr("Classic"),
-                                icon: "password_2",
-                                value: "classic"
-                            },
-                            {
-                                displayName: Translation.tr("Android"),
-                                icon: "action_key",
-                                value: "android"
+                    ConfigTextArea {
+                        id: kbLayoutField
+                        Layout.fillWidth: true
+                        buttonIcon: "keyboard"
+                        text: Translation.tr("Keyboard layout")
+                        placeholderText: Translation.tr("e.g., us, es, latam")
+                        Component.onCompleted: value = Config.options.hyprland.input.kbLayout
+                        onValueChanged: kbLayoutDebounceTimer.restart()
+
+                        Timer {
+                            id: kbLayoutDebounceTimer
+                            interval: 1000
+                            repeat: false
+                            onTriggered: {
+                                Config.options.hyprland.input.kbLayout = kbLayoutField.value
+                                HyprlandConfig.set("input:kb_layout", kbLayoutField.value)
                             }
-                        ]
+                        }
                     }
+                    ConfigSwitch {
+                        buttonIcon: "numbers"
+                        text: Translation.tr("Numlock by default")
+                        checked: Config.options.hyprland.input.numlock
+                        onCheckedChanged: {
+                            if (checked === Config.options.hyprland.input.numlock) return
+                            Config.options.hyprland.input.numlock = checked
+                            HyprlandConfig.set("input:numlock_by_default", checked ? 1 : 0)
+                        }
+                    }
+
                     ConfigSpinBox {
-                        enabled: Config.options.sidebar.quickToggles.style === "android"
-                        icon: "add_column_left"
-                        text: Translation.tr("Columns")
-                        value: Config.options.sidebar.quickToggles.android.columns
-                        from: 1
-                        to: 8
+                        icon: "keyboard_keys"
+                        enabled: page.appleFnModeSupported
+                        text: page.appleFnModeSupported
+                            ? Translation.tr("Apple Fn mode")
+                            : Translation.tr("Apple Fn mode (not available)")
+                        value: page.appleFnModeDraft
+                        from: 0
+                        to: 4
                         stepSize: 1
                         onValueChanged: {
-                            Config.options.sidebar.quickToggles.android.columns = value;
+                            page.appleFnModeDraft = value
                         }
+                    }
+
+                    RowLayout {
+                        Layout.leftMargin: 40
+                        Layout.rightMargin: 8
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        RippleButtonWithIcon {
+                            materialIcon: "save"
+                            mainText: Translation.tr("Apply now + persist")
+                            enabled: page.appleFnModeSupported
+                                && !appleFnModeWriteProc.running
+                                && page.appleFnModeDraft !== page.appleFnModeCurrent
+                            onClicked: {
+                                page.setAppleFnMode(page.appleFnModeDraft)
+                            }
+                        }
+
+                        RippleButtonWithIcon {
+                            materialIcon: "restart_alt"
+                            mainText: Translation.tr("Reset")
+                            enabled: page.appleFnModeSupported
+                                && !appleFnModeWriteProc.running
+                                && page.appleFnModeDraft !== page.appleFnModeCurrent
+                            onClicked: {
+                                page.appleFnModeDraft = page.appleFnModeCurrent
+                            }
+                        }
+                    }
+
+                    StyledText {
+                        Layout.leftMargin: 40
+                        Layout.rightMargin: 8
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        color: Appearance.colors.colSubtext
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        text: page.appleFnModeSupported
+                            ? Translation.tr("0: disabled, 1: media keys first, 2: function keys first, 3: auto, 4: function keys disabled. Choose a value, then click Apply.")
+                            : Translation.tr("hid_apple fnmode sysfs parameter was not found on this system")
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "short_text"
+                        text: Translation.tr("Bar keyboard layout: show variant")
+                        checked: Config.options.hyprland.input.showLayoutVariantInBar
+                        onCheckedChanged: {
+                            if (checked === Config.options.hyprland.input.showLayoutVariantInBar) return
+                            Config.options.hyprland.input.showLayoutVariantInBar = checked
+                        }
+                    }
+
+                    ConfigSpinBox {
+                        icon: "keyboard_return"
+                        text: Translation.tr("Repeat delay (ms)")
+                        value: Config.options.hyprland.input.repeatDelay
+                        from: 100; to: 1000; stepSize: 10
+                        onValueChanged: {
+                            if (value === Config.options.hyprland.input.repeatDelay) return
+                            Config.options.hyprland.input.repeatDelay = value
+                            HyprlandConfig.set("input:repeat_delay", value)
+                        }
+                    }
+
+                    ConfigSpinBox {
+                        icon: "speed"
+                        text: Translation.tr("Repeat rate")
+                        value: Config.options.hyprland.input.repeatRate
+                        from: 10; to: 100; stepSize: 1
+                        onValueChanged: {
+                            if (value === Config.options.hyprland.input.repeatRate) return
+                            Config.options.hyprland.input.repeatRate = value
+                            HyprlandConfig.set("input:repeat_rate", value)
+                        }
+                    }
+                    ConfigSelectionArray {
+                        text: Translation.tr("Follow mouse")
+                        icon: "mouse"
+                        currentValue: Config.options.hyprland.input.followMouse
+                        onSelected: newValue => {
+                            Config.options.hyprland.input.followMouse = newValue
+                            HyprlandConfig.set("input:follow_mouse", newValue)
+                        }
+                        options: [
+                            { displayName: Translation.tr("Disabled"), icon: "mouse",     value: 0 },
+                            { displayName: Translation.tr("Full"),     icon: "open_with",  value: 1 },
+                            { displayName: Translation.tr("Loose"),    icon: "drag_pan",   value: 2 },
+                            { displayName: Translation.tr("Explicit"), icon: "ads_click",  value: 3 },
+                        ]
                     }
                 }
             }
 
             ContentSubsection {
-                title: Translation.tr("Sliders")
+                title: Translation.tr("Touchpad")
                 GroupedList {
                     ConfigSwitch {
-                        buttonIcon: "check"
-                        text: Translation.tr("Enable")
-                        checked: Config.options.sidebar.quickSliders.enable
+                        buttonIcon: "swap_vert"
+                        text: Translation.tr("Natural scroll")
+                        checked: Config.options.hyprland.input.touchpad.naturalScroll
                         onCheckedChanged: {
-                            Config.options.sidebar.quickSliders.enable = checked;
+                            if (checked === Config.options.hyprland.input.touchpad.naturalScroll) return
+                            Config.options.hyprland.input.touchpad.naturalScroll = checked
+                            HyprlandConfig.set("input:touchpad:natural_scroll", checked ? 1 : 0)
                         }
                     }
 
                     ConfigSwitch {
-                        buttonIcon: "brightness_6"
-                        text: Translation.tr("Brightness")
-                        enabled: Config.options.sidebar.quickSliders.enable
-                        checked: Config.options.sidebar.quickSliders.showBrightness
+                        buttonIcon: "keyboard_hide"
+                        text: Translation.tr("Disable while typing")
+                        checked: Config.options.hyprland.input.touchpad.disableWhileTyping
                         onCheckedChanged: {
-                            Config.options.sidebar.quickSliders.showBrightness = checked;
+                            if (checked === Config.options.hyprland.input.touchpad.disableWhileTyping) return
+                            Config.options.hyprland.input.touchpad.disableWhileTyping = checked
+                            HyprlandConfig.set("input:touchpad:disable_while_typing", checked ? 1 : 0)
                         }
                     }
 
                     ConfigSwitch {
-                        buttonIcon: "volume_up"
-                        text: Translation.tr("Volume")
-                        enabled: Config.options.sidebar.quickSliders.enable
-                        checked: Config.options.sidebar.quickSliders.showVolume
+                        buttonIcon: "touch_app"
+                        text: Translation.tr("Clickfinger behavior")
+                        checked: Config.options.hyprland.input.touchpad.clickfingerBehavior
                         onCheckedChanged: {
-                            Config.options.sidebar.quickSliders.showVolume = checked;
+                            if (checked === Config.options.hyprland.input.touchpad.clickfingerBehavior) return
+                            Config.options.hyprland.input.touchpad.clickfingerBehavior = checked
+                            HyprlandConfig.set("input:touchpad:clickfinger_behavior", checked ? 1 : 0)
                         }
                     }
 
-                    ConfigSwitch {
-                        buttonIcon: "mic"
-                        text: Translation.tr("Microphone")
-                        enabled: Config.options.sidebar.quickSliders.enable
-                        checked: Config.options.sidebar.quickSliders.showMic
-                        onCheckedChanged: {
-                            Config.options.sidebar.quickSliders.showMic = checked;
-                        }
-                    }
-                }
-            }
-
-            ContentSubsection {
-                title: Translation.tr("Corner open")
-
-                GroupedList {
-                    ConfigSwitch {
-                        buttonIcon: "check"
-                        text: Translation.tr("Enable")
-                        checked: Config.options.sidebar.cornerOpen.enable
-                        onCheckedChanged: { Config.options.sidebar.cornerOpen.enable = checked }
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "highlight_mouse_cursor"
-                        text: Translation.tr("Hover to trigger")
-                        checked: Config.options.sidebar.cornerOpen.clickless
-                        onCheckedChanged: { Config.options.sidebar.cornerOpen.clickless = checked }
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "vertical_align_bottom"
-                        text: Translation.tr("Place at bottom")
-                        checked: Config.options.sidebar.cornerOpen.bottom
-                        onCheckedChanged: { Config.options.sidebar.cornerOpen.bottom = checked }
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "unfold_more_double"
-                        text: Translation.tr("Value scroll")
-                        checked: Config.options.sidebar.cornerOpen.valueScroll
-                        onCheckedChanged: { Config.options.sidebar.cornerOpen.valueScroll = checked }
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "visibility"
-                        text: Translation.tr("Visualize region")
-                        checked: Config.options.sidebar.cornerOpen.visualize
-                        onCheckedChanged: { Config.options.sidebar.cornerOpen.visualize = checked }
-                    }
-                    ConfigSwitch {
-                        enabled: Config.options.sidebar.cornerOpen.clickless
-                        buttonIcon: "ads_click"
-                        text: Translation.tr("Force hover at absolute corner")
-                        checked: Config.options.sidebar.cornerOpen.clicklessCornerEnd
-                        onCheckedChanged: { Config.options.sidebar.cornerOpen.clicklessCornerEnd = checked }
-                    }
                     ConfigSpinBox {
-                        enabled: Config.options.sidebar.cornerOpen.clickless
-                        icon: "arrow_cool_down"
-                        text: Translation.tr("Vertical offset")
-                        value: Config.options.sidebar.cornerOpen.clicklessCornerVerticalOffset
-                        from: 0; to: 20; stepSize: 1
-                        onValueChanged: { Config.options.sidebar.cornerOpen.clicklessCornerVerticalOffset = value }
-                    }
-                    ConfigSpinBox {
-                        icon: "arrow_range"
-                        text: Translation.tr("Region width")
-                        value: Config.options.sidebar.cornerOpen.cornerRegionWidth
-                        from: 1; to: 300; stepSize: 1
-                        onValueChanged: { Config.options.sidebar.cornerOpen.cornerRegionWidth = value }
-                    }
-                    ConfigSpinBox {
-                        icon: "height"
-                        text: Translation.tr("Region height")
-                        value: Config.options.sidebar.cornerOpen.cornerRegionHeight
-                        from: 1; to: 300; stepSize: 1
-                        onValueChanged: { Config.options.sidebar.cornerOpen.cornerRegionHeight = value }
+                        icon: "swipe"
+                        text: Translation.tr("Scroll factor")
+                        value: Math.round(Config.options.hyprland.input.touchpad.scrollFactor * 10)
+                        from: 1; to: 30; stepSize: 1
+                        onValueChanged: {
+                            const newVal = value / 10.0
+                            if (newVal === Config.options.hyprland.input.touchpad.scrollFactor) return
+                            Config.options.hyprland.input.touchpad.scrollFactor = newVal
+                            HyprlandConfig.set("input:touchpad:scroll_factor", newVal)
+                        }
                     }
                 }
             }
         }
-
         ContentSection {
             icon: "battery_android_full"
             shape: MaterialShape.Shape.SemiCircle
@@ -736,6 +651,14 @@ ContentPage {
                     }
                 }
             }
+        }
+        ContentSection {
+            icon: "app_registration"
+            shape: MaterialShape.Shape.Sunny
+            title: Translation.tr("Autostart Apps")
+            Layout.fillWidth: true
+
+            AutostartApps { stickyParent: page }
         }
     }
 }

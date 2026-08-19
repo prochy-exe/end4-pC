@@ -152,7 +152,11 @@ Item { // Wrapper
 
             Rectangle {
                 // Separator
-                visible: root.showResults
+                // root.showResults alone means "there's a query" - for prefixed
+                // modes like Bitwarden ("!") the field is never actually empty
+                // even with nothing typed past the prefix, so that alone isn't
+                // "there's something to list below the search bar".
+                visible: root.showResults && appResults.count > 0
                 Layout.fillWidth: true
                 height: 1
                 color: Appearance.colors.colOutlineVariant
@@ -160,7 +164,7 @@ Item { // Wrapper
 
             ListView { // App results
                 id: appResults
-                visible: root.showResults
+                visible: root.showResults && appResults.count > 0
                 Layout.fillWidth: true
                 implicitHeight: Math.min(600, appResults.contentHeight + topMargin + bottomMargin)
                 clip: true

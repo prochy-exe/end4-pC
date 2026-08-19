@@ -6,16 +6,16 @@ import QtQuick.Layouts
 
 Item {
     id: root
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
     required property string iconName
     required property double percentage
     property bool vertical: false
     property int warningThreshold: 100
     property bool shown: true
     clip: !vertical
-    visible: vertical ? true : width > 0 && height > 0
-    implicitWidth:  vertical ? Appearance.sizes.verticalBarWidth : (resourceRowLayout.x < 0 ? 0 : resourceRowLayout.implicitWidth)
-    implicitHeight: vertical ? resourceProgress.implicitHeight : Appearance.sizes.barHeight
+    visible: shown
+    implicitWidth: !shown ? 0 : (vertical ? Appearance.sizes.verticalBarWidth : resourceRowLayout.implicitWidth)
+    implicitHeight: !shown ? 0 : (vertical ? resourceProgress.implicitHeight : Appearance.sizes.barHeight)
     property bool warning: percentage * 100 >= warningThreshold
 
     Component {
@@ -119,7 +119,7 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         acceptedButtons: Qt.NoButton
-        enabled: vertical ? root.visible : (resourceRowLayout.x >= 0 && root.width > 0 && root.visible)
+        enabled: root.shown && root.visible
     }
 
     Behavior on implicitWidth {

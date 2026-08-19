@@ -13,7 +13,7 @@ MouseArea {
     id: root
     required property SystemTrayItem item
     property bool targetMenuOpen: false
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
     readonly property bool currentVertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     readonly property bool currentBottom: Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom)
 

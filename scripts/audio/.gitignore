@@ -1,0 +1,4 @@
+# Build artifacts - qs-audiotap is compiled per machine by build.sh
+qs-audiotap
+qs-audiotap.*
+.build.lock

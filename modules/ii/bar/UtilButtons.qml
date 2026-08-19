@@ -1,4 +1,5 @@
 import qs
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
@@ -11,7 +12,7 @@ import Quickshell.Services.UPower
 
 Item {
     id: root
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
     property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
     property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
@@ -109,6 +110,19 @@ Item {
                 active: root.isActionVisible(modelData)
                 visible: active
                 sourceComponent: root.componentForAction(modelData)
+            }
+        }
+
+        Repeater {
+            model: CustomBarResources.definitions
+            delegate: UtilButton {
+                required property var modelData
+                iconText: CustomBarResources.isRunning(modelData.id) ? (modelData.iconOn || "check_circle") : (modelData.iconOff || "circle")
+                forceHovered: CustomBarResources.isRunning(modelData.id)
+                onClicked: CustomBarResources.toggle(modelData.id)
+                StyledToolTip {
+                    text: modelData.name || Translation.tr("Custom resource")
+                }
             }
         }
 

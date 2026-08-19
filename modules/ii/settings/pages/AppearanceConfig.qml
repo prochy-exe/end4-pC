@@ -148,97 +148,58 @@ ContentPage {
                         }
                     }
 
-                    Carousel {
+                    ContentSubsection {
+                        title: Translation.tr("Desktop wallpapers")
                         Layout.fillWidth: true
-                        implicitHeight: 280
-                        largeItemWidthRatio: 0.5
-                        mediumItemWidthRatio: 0.485
-                        itemSpacing: 8
-                        // "Same for all": one Desktop slot + Lock screen, as before.
-                        // Per-monitor: one slot per real output + Lock screen.
-                        model: (Config.options.background.wallpaperMode === "shared"
-                            ? [page.displayPathFor(Config.options.background.wallpaperPath)]
-                            : Quickshell.screens.map(s => page.displayPathFor(
-                                (Config.options.background.monitorWallpapers ?? []).find(m => m.name === s.name)?.path
-                                    ?? Config.options.background.wallpaperPath
-                            ))
-                        ).concat([
-                            page.displayPathFor(
-                                Config.options.background.lockWall !== ""
-                                    ? Config.options.background.lockWall
-                                    : Config.options.background.wallpaperPath
-                            )
-                        ])
-                        // Mirrors model's own construction/order exactly, so
-                        // the caption always lines up with the slot it names -
-                        // no other way to tell monitors' slots apart otherwise.
-                        labels: (Config.options.background.wallpaperMode === "shared"
-                            ? [Translation.tr("Desktop")]
-                            : Quickshell.screens.map(s => s.name)
-                        ).concat([Translation.tr("Lock screen")])
-                        wheelEnabled: false
-                        dragEnabled: false
-                        clickAction: (index, modelData) => {
-                            const lockIndex = Config.options.background.wallpaperMode === "shared"
-                                ? 1 : Quickshell.screens.length;
-                            if (index === lockIndex) {
-                                GlobalStates.wallpaperSelectorTarget = "lockWall";
-                            } else if (Config.options.background.wallpaperMode === "shared") {
-                                GlobalStates.wallpaperSelectorTarget = "wallpaper";
-                            } else {
-                                GlobalStates.wallpaperSelectorTarget = "monitor:" + Quickshell.screens[index].name;
+
+                        Carousel {
+                            Layout.fillWidth: true
+                            implicitHeight: 220
+                            largeItemWidthRatio: 0.5
+                            mediumItemWidthRatio: 0.485
+                            itemSpacing: 8
+                            // Shared mode has one desktop preview; per-monitor
+                            // mode has one named preview for every output.
+                            model: Config.options.background.wallpaperMode === "shared"
+                                ? [page.displayPathFor(Config.options.background.wallpaperPath)]
+                                : Quickshell.screens.map(s => page.displayPathFor(
+                                    (Config.options.background.monitorWallpapers ?? []).find(m => m.name === s.name)?.path
+                                        ?? Config.options.background.wallpaperPath
+                                ))
+                            labels: Config.options.background.wallpaperMode === "shared"
+                                ? [Translation.tr("All monitors")]
+                                : Quickshell.screens.map(s => s.name)
+                            wheelEnabled: false
+                            dragEnabled: false
+                            clickAction: (index, modelData) => {
+                                GlobalStates.wallpaperSelectorTarget = Config.options.background.wallpaperMode === "shared"
+                                    ? "wallpaper"
+                                    : "monitor:" + Quickshell.screens[index].name;
+                                GlobalStates.wallpaperSelectorOpen = true;
                             }
-                            GlobalStates.wallpaperSelectorOpen = true
                         }
                     }
 
-                    RowLayout {
+                    ContentSubsection {
+                        title: Translation.tr("Lock screen wallpaper")
                         Layout.fillWidth: true
-                        spacing: 8
 
-                        Rectangle {
+                        Carousel {
                             Layout.fillWidth: true
-                            implicitHeight: 24
-                            radius: Appearance.rounding.normal
-                            color: "transparent"
-
-                            RowLayout {
-                                anchors.centerIn: parent
-                                spacing: 8
-                                MaterialSymbol {
-                                    text: "desktop_windows"
-                                    iconSize: Appearance.font.pixelSize.larger
-                                    color: Appearance.colors.colPrimary
-                                }
-                                StyledText {
-                                    text: Translation.tr("Desktop")
-                                    font.pixelSize: Appearance.font.pixelSize.normal
-                                    font.weight: Font.Medium
-                                    color: Appearance.colors.colOnLayer1
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            implicitHeight: 24
-                            radius: Appearance.rounding.normal
-                            color: "transparent"
-
-                            RowLayout {
-                                anchors.centerIn: parent
-                                spacing: 8
-                                MaterialSymbol {
-                                    text: "lock"
-                                    iconSize: Appearance.font.pixelSize.larger
-                                    color: Appearance.colors.colPrimary
-                                }
-                                StyledText {
-                                    text: Translation.tr("Lockscreen")
-                                    font.pixelSize: Appearance.font.pixelSize.normal
-                                    font.weight: Font.Medium
-                                    color: Appearance.colors.colOnLayer1
-                                }
+                            implicitHeight: 160
+                            largeItemWidthRatio: 1
+                            itemSpacing: 0
+                            model: [page.displayPathFor(
+                                Config.options.background.lockWall !== ""
+                                    ? Config.options.background.lockWall
+                                    : Config.options.background.wallpaperPath
+                            )]
+                            labels: [Translation.tr("Lock screen")]
+                            wheelEnabled: false
+                            dragEnabled: false
+                            clickAction: () => {
+                                GlobalStates.wallpaperSelectorTarget = "lockWall";
+                                GlobalStates.wallpaperSelectorOpen = true;
                             }
                         }
                     }

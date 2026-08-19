@@ -58,6 +58,22 @@ Scope {
             }
         }
 
+        // The window rule picker (Settings > Window Rules) hands focus to
+        // slurp's own input-grabbing overlay while waiting for a click -
+        // without this, HyprlandFocusGrab sees focus leave the settings
+        // window and treats it exactly like a click-outside dismiss,
+        // closing Settings out from under the picker.
+        Connections {
+            target: WindowRuleManager
+            function onPickingActiveChanged() {
+                if (WindowRuleManager.pickingActive) {
+                    GlobalFocusGrab.removeDismissable(panelWindow);
+                } else if (GlobalStates.settingsOpen) {
+                    GlobalFocusGrab.addDismissable(panelWindow);
+                }
+            }
+        }
+
         Rectangle {
             anchors.fill: parent
             color: "transparent"

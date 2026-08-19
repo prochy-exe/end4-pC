@@ -14,7 +14,22 @@ Scope { // Scope
     property bool pin: false
     property Component contentComponent: SidebarLeftContent {}
     property Item sidebarContent
+    property string pendingTabName: ""
+    property string pendingTranslatorPrefill: ""
     readonly property bool centerOnly: Config.options.bar.layouts.leftLayout.length === 0 && Config.options.bar.layouts.rightLayout.length === 0 && !Config.options.bar.vertical
+
+    function forceTab(tabName) {
+        const tab = `${tabName ?? ""}`.trim().toLowerCase()
+        if (tab.length === 0 || !root.sidebarContent)
+            return false
+        if (typeof root.sidebarContent.tabIndexForRequest !== "function")
+            return false
+        const index = root.sidebarContent.tabIndexForRequest(tab)
+        if (index < 0)
+            return false
+        root.sidebarContent.currentTabIndex = index
+        return root.sidebarContent.currentTabIndex === index
+    }
 
     function toggleDetach() {
         root.detach = !root.detach;
@@ -50,6 +65,45 @@ Scope { // Scope
         stdout: StdioCollector {
             onStreamFinished: {
                 pinWithFunnyHyprlandWorkaroundProc.hook(text);
+            }
+        }
+    }
+
+    Timer {
+        id: pendingTabApplyTimer
+        interval: 140
+        repeat: false
+        onTriggered: {
+            if (!root.pendingTabName || root.pendingTabName.length === 0)
+                return
+            if (!root.forceTab(root.pendingTabName)) {
+                // One extra retry for slow content/tab initialization paths.
+                pendingTabApplyRetryTimer.restart()
+                return
+            }
+            if (root.pendingTabName === "translator" && root.sidebarContent
+                && typeof root.sidebarContent.forceTranslatorPrefill === "function") {
+                if (root.sidebarContent.forceTranslatorPrefill(root.pendingTranslatorPrefill))
+                    root.pendingTranslatorPrefill = ""
+            }
+            root.pendingTabName = ""
+        }
+    }
+
+    Timer {
+        id: pendingTabApplyRetryTimer
+        interval: 260
+        repeat: false
+        onTriggered: {
+            if (!root.pendingTabName || root.pendingTabName.length === 0)
+                return
+            if (root.forceTab(root.pendingTabName)) {
+                if (root.pendingTabName === "translator" && root.sidebarContent
+                    && typeof root.sidebarContent.forceTranslatorPrefill === "function") {
+                    if (root.sidebarContent.forceTranslatorPrefill(root.pendingTranslatorPrefill))
+                        root.pendingTranslatorPrefill = ""
+                }
+                root.pendingTabName = ""
             }
         }
     }
@@ -101,8 +155,8 @@ Scope { // Scope
             exclusiveZone: root.pin ? sidebarWidth : 0
             implicitWidth: Appearance.sizes.sidebarWidthExtended + Appearance.sizes.elevationMargin
             WlrLayershell.namespace: "quickshell:sidebarLeft"
-            // Hyprland 0.49: OnDemand is Exclusive, Exclusive just breaks click-outside-to-close
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+            // Request keyboard focus only while visible to avoid stale focus state churn.
+            WlrLayershell.keyboardFocus: GlobalStates.sidebarLeftOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
             color: "transparent"
 
             anchors {
@@ -223,10 +277,48 @@ Scope { // Scope
 
         function close(): void {
             GlobalStates.sidebarLeftOpen = false
+            root.pendingTranslatorPrefill = ""
         }
 
         function open(): void {
             GlobalStates.sidebarLeftOpen = true
+        }
+
+        function openTab(tabName: string): void {
+            const tab = `${tabName ?? ""}`.trim().toLowerCase()
+            if (tab.length === 0) return
+            GlobalStates.sidebarLeftRequestedTab = tab
+            GlobalStates.sidebarLeftOpen = true
+            root.pendingTabName = tab
+            if (!root.forceTab(tab))
+                pendingTabApplyTimer.restart()
+        }
+
+        function openTranslator(prefillText: string): void {
+            let text = `${prefillText ?? ""}`
+            if (text.trim().length === 0)
+                text = `${GlobalStates.lastOcrText ?? ""}`
+            if (text.trim().length === 0)
+                text = `${Quickshell.clipboardText ?? ""}`
+            GlobalStates.sidebarLeftRequestedTab = "translator"
+            GlobalStates.sidebarLeftTranslatorPrefill = text
+            GlobalStates.sidebarLeftOpen = true
+            root.pendingTabName = "translator"
+            root.pendingTranslatorPrefill = text
+            const switched = root.forceTab("translator")
+            if (root.sidebarContent && typeof root.sidebarContent.forceTranslatorPrefill === "function")
+                if (root.sidebarContent.forceTranslatorPrefill(text))
+                    root.pendingTranslatorPrefill = ""
+            if (!switched)
+                pendingTabApplyTimer.restart()
+        }
+
+        function openIntelligence(): void {
+            GlobalStates.sidebarLeftRequestedTab = "intelligence"
+            GlobalStates.sidebarLeftOpen = true
+            root.pendingTabName = "intelligence"
+            if (!root.forceTab("intelligence"))
+                pendingTabApplyTimer.restart()
         }
     }
 

@@ -50,7 +50,7 @@ Item {
     }
 
     onCurrentPageChanged: {
-        if (currentPage === 7) {
+        if (root.pages[currentPage]?.name === Translation.tr("About")) {
             if (SystemInfo.cpu === "") SystemInfo.refresh()
             Updates.refresh()
         }
@@ -59,11 +59,11 @@ Item {
     property var pages: [
         { name: Translation.tr("Quick"),      icon: "instant_mix",    component: Qt.resolvedUrl("pages/QuickConfig.qml") },
         { name: Translation.tr("General"),    icon: "browse",         component: Qt.resolvedUrl("pages/GeneralConfig.qml") },
-        { name: Translation.tr("Bar"),        icon: "toast",          iconRotation: 180, component: Qt.resolvedUrl("pages/BarConfig.qml") },
-        { name: Translation.tr("Desktop"),    icon: "texture",        component: Qt.resolvedUrl("pages/BackgroundConfig.qml") },
+        { name: Translation.tr("Appearance"), icon: "palette",        component: Qt.resolvedUrl("pages/AppearanceConfig.qml") },
         { name: Translation.tr("Interface"),  icon: "bottom_app_bar", component: Qt.resolvedUrl("pages/InterfaceConfig.qml") },
         { name: Translation.tr("Services"),   icon: "settings",       component: Qt.resolvedUrl("pages/ServicesConfig.qml") },
-        { name: Translation.tr("Hyprland"),   icon: "select_window_2",   component: Qt.resolvedUrl("pages/HyprlandConfig.qml") },
+        { name: Translation.tr("Windows"),    icon: "select_window_2", component: Qt.resolvedUrl("pages/WindowsConfig.qml") },
+        { name: Translation.tr("Keybinds"),   icon: "keyboard",       component: Qt.resolvedUrl("pages/KeybindsConfig.qml") },
         { name: Translation.tr("About"),      icon: "info",           component: Qt.resolvedUrl("pages/About.qml") }
     ]
 
@@ -227,25 +227,37 @@ Item {
                         }
                     }
 
-                    NavigationRailTabArray {
-                        currentIndex: root.currentPage
-                        expanded: navRail.expanded
-                        colToggled: root.showingProfile ? "transparent" : Appearance.colors.colSecondaryContainer
-                        Repeater {
-                            model: root.pages
-                            NavigationRailButton {
-                                required property var index
-                                required property var modelData
-                                toggled: root.currentPage === index && !root.showingProfile
-                                onPressed: {
-                                    root.currentPage = index
-                                    root.showingProfile = false
+                    StyledFlickable {
+                        id: navRailScroll
+                        Layout.topMargin: 25
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        contentWidth: width
+                        contentHeight: tabArray.implicitHeight
+
+                        NavigationRailTabArray {
+                            id: tabArray
+                            width: navRailScroll.width
+                            currentIndex: root.currentPage
+                            expanded: navRail.expanded
+                            colToggled: root.showingProfile ? "transparent" : Appearance.colors.colSecondaryContainer
+                            Repeater {
+                                model: root.pages
+                                NavigationRailButton {
+                                    required property var index
+                                    required property var modelData
+                                    toggled: root.currentPage === index && !root.showingProfile
+                                    onPressed: {
+                                        root.currentPage = index
+                                        root.showingProfile = false
+                                    }
+                                    expanded: navRail.expanded
+                                    buttonIcon: modelData.icon
+                                    buttonIconRotation: modelData.iconRotation || 0
+                                    buttonText: modelData.name
+                                    showToggledHighlight: false
                                 }
-                                expanded: navRail.expanded
-                                buttonIcon: modelData.icon
-                                buttonIconRotation: modelData.iconRotation || 0
-                                buttonText: modelData.name
-                                showToggledHighlight: false
                             }
                         }
                     }

@@ -17,6 +17,18 @@ ColumnLayout {
     width: parent.width
     spacing: 4
 
+    // Item to reparent the app-picker dialog onto so it covers the whole
+    // settings page's visible viewport instead of just this widget's own
+    // (usually much smaller) bounds - pass the page's ContentPage id in.
+    // Falls back to staying local if the caller doesn't provide one.
+    property Item stickyParent: null
+    property bool appPickerOpen: false
+    property int appPickerTargetIndex: -1
+    function openAppPicker(index) {
+        root.appPickerTargetIndex = index
+        root.appPickerOpen = true
+    }
+
     function addEntry() {
         let list = []
         for (let i = 0; i < Config.options.hyprland.autostartApps.apps.length; i++) {
@@ -145,6 +157,23 @@ ColumnLayout {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
 
+                RippleButton {
+                    width: 36
+                    height: 36
+                    buttonRadius: width / 2
+                    colBackground: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.85)
+                    colBackgroundHover: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.6)
+                    colRipple: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.5)
+                    onClicked: root.openAppPicker(entryRow.index)
+                    contentItem: MaterialSymbol {
+                        anchors.centerIn: parent
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "search"
+                        iconSize: Appearance.font.pixelSize.normal
+                        color: Appearance.colors.colPrimary
+                    }
+                }
+
                 ConfigSpinBox {
                     width: 118
                     value: entryRow.modelData.workspace ?? 1
@@ -234,6 +263,48 @@ ColumnLayout {
             visible: Config.options.hyprland.autostartApps.enable
             iconText: "add"
             onClicked: root.addEntry()
+        }
+    }
+
+    // App-picker dialog - reparented onto stickyParent (the settings page,
+    // when provided) so it covers the whole visible page instead of just
+    // this widget's own bounds. Mirrors the ToggleDialog pattern in
+    // SidebarRightContent.qml: activate the Loader first, THEN flip show
+    // true, so WindowDialog's open animation actually plays.
+    Loader {
+        id: appPickerLoader
+        parent: root.stickyParent ?? root
+        // anchors.fill: parent does NOT resolve here - anchoring right after
+        // reassigning this item's own parent in the same declaration doesn't
+        // take effect (ends up 0x0), so size/position explicitly instead.
+        x: 0
+        y: 0
+        width: (root.stickyParent ?? root).width
+        height: (root.stickyParent ?? root).height
+        z: 2000
+        active: root.appPickerOpen
+        sourceComponent: AppPickerDialog {
+            onPicked: entry => {
+                if (root.appPickerTargetIndex >= 0)
+                    root.updateEntry(root.appPickerTargetIndex, "cmd", (entry.command ?? []).join(" "))
+            }
+        }
+        onActiveChanged: {
+            if (active) {
+                item.show = true
+                item.forceActiveFocus()
+            }
+        }
+        Connections {
+            target: appPickerLoader.item
+            function onDismiss() {
+                appPickerLoader.item.show = false
+                root.appPickerOpen = false
+            }
+            function onVisibleChanged() {
+                if (appPickerLoader.item && !appPickerLoader.item.visible && !root.appPickerOpen)
+                    appPickerLoader.active = false
+            }
         }
     }
 }

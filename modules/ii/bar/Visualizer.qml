@@ -9,7 +9,7 @@ import qs.modules.common.widgets
 
 Item {
     id: root
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
     property string sourceType: "output" // output | input
     property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3

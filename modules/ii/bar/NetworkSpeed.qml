@@ -6,7 +6,7 @@ import qs.modules.common.widgets
 
 MouseArea {
     id: root
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
 
     property bool vertical: false
     property real downloadBytesPerSecond: 0

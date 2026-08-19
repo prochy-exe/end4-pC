@@ -17,6 +17,10 @@ Scope {
     // These properties are in the context and not individual lock surfaces
     // so all surfaces can share the same state.
     property string currentText: ""
+    // Session-memory-only (never persisted) password from the last successful
+    // typed-password unlock, used as a fallback for keyring unlock when the
+    // current unlock was via fingerprint (which never sees the password).
+    property string lastKnownPassword: ""
     property bool unlockInProgress: false
     property bool showFailure: false
     property bool fingerprintsConfigured: false
@@ -108,6 +112,10 @@ Scope {
         // pam_unix won't send any important messages so all we need is the completion status.
         onCompleted: result => {
             if (result == PamResult.Success) {
+                // Kept in memory only (never written to disk) so keyring unlock has
+                // something to use later even if you unlock via fingerprint next time,
+                // since fingerprint auth never sees the actual password.
+                if (root.currentText.length > 0) root.lastKnownPassword = root.currentText;
                 root.unlocked(root.targetAction);
                 stopFingerPam();
             } else {

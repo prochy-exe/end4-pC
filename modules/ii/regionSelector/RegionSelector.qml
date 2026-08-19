@@ -32,6 +32,7 @@ Scope {
     function dismiss() {
         GlobalStates.regionSelectorOpen = false
         root.postMode = false
+        root.activeMonitorName = ""
     }
 
     function currentFocusedMonitorName() {
@@ -54,9 +55,33 @@ Scope {
     property bool recordMicAudio: Config.options.screenRecord.recordMicAudio
     property string controlsMonitorName: ""
     property string hoveredMonitorName: ""
+    // Name of the monitor whose RegionSelection window currently has a locked
+    // selection, if any - only that window should hold exclusive keyboard
+    // focus while multiple per-monitor windows are open. Empty = unclaimed.
+    property string activeMonitorName: ""
+    // Bumped whenever any monitor's window catches Ctrl+C, so the one actually
+    // holding the locked selection (which may not be the one that caught the
+    // key) knows to confirm it. See RegionSelection.qml's confirmRequested.
+    property int confirmSelectionSignal: 0
     property real cursorGlobalX: -1
     property real cursorGlobalY: -1
     property bool postMode: false
+
+    function triggerSidebarTranslator(text) {
+        const payload = `${text ?? ""}`
+        if (payload.trim().length === 0)
+            return
+        Quickshell.execDetached([
+            "qs",
+            "-p",
+            Quickshell.shellPath(""),
+            "ipc",
+            "call",
+            "sidebarLeft",
+            "openTranslator",
+            payload
+        ])
+    }
 
     Process {
         id: cursorPosProc
@@ -100,6 +125,7 @@ Scope {
             sourceComponent: RegionSelection {
                 screen: regionSelectorLoader.modelData
                 onDismiss: root.dismiss()
+                onOcrTranslateRequested: text => root.triggerSidebarTranslator(text)
                 onRecordingStarted: root.postMode = true
                 onSelectionModeChanged: root.selectionMode = selectionMode
                 onActionChanged: root.action = action
@@ -113,6 +139,18 @@ Scope {
                 cursorGlobalX: root.cursorGlobalX
                 cursorGlobalY: root.cursorGlobalY
                 postMode: root.postMode
+                keyboardFocusAllowed: root.activeMonitorName === "" || root.activeMonitorName === regionSelectorLoader.modelData.name
+                isActiveMonitor: regionSelectorLoader.modelData.name === root.activeMonitorName
+                anySelectionLocked: root.activeMonitorName !== ""
+                confirmSelectionSignal: root.confirmSelectionSignal
+                onConfirmRequested: root.confirmSelectionSignal++
+                onSelectionLockedChanged: {
+                    if (selectionLocked) {
+                        root.activeMonitorName = regionSelectorLoader.modelData.name
+                    } else if (root.activeMonitorName === regionSelectorLoader.modelData.name) {
+                        root.activeMonitorName = ""
+                    }
+                }
             }
         }
     }

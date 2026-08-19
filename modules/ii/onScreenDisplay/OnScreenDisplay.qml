@@ -13,7 +13,22 @@ import Quickshell.Hyprland
 Scope {
     id: root
     property string protectionMessage: ""
-    property var focusedScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name)
+
+    // Same preset/anchor scheme as the media ticker (MediaControls.qml) -
+    // "bar" hugs whichever edge the bar is on (default, matches the OSD's
+    // original hardcoded look), corner/edge/center presets are independent
+    // of the bar, "custom" is anchored top+left, or bottom+left if
+    // osdCustomAnchor is "bottom", with free positioning expressed through
+    // pixel margins alone. PopupPlacement.qml is the single source of truth
+    // for this (also used by the popup editor/preview so they can't
+    // silently drift from what actually renders); "true" here (unlike the
+    // ticker) means the OSD's "bar" preset also hugs a vertical bar's edge,
+    // not just a horizontal one.
+    readonly property string osdPosition: Config.options.osd.position
+    readonly property bool osdIsCustom: root.osdPosition === "custom"
+    readonly property real osdEdgeGap: Appearance.sizes.hyprlandGapsOut
+    readonly property string osdCustomAnchor: Config.options.osd.customAnchor
+    readonly property var osdAnchors: PopupPlacement.barAnchors(root.osdPosition, true, true, root.osdCustomAnchor)
 
     property string currentIndicator: "volume"
     property var indicators: [
@@ -99,34 +114,56 @@ Scope {
         sourceComponent: PanelWindow {
             id: osdRoot
             color: "transparent"
-
-            Connections {
-                target: root
-                function onFocusedScreenChanged() {
-                    osdRoot.screen = root.focusedScreen;
-                }
-            }
+            screen: PopupPlacement.resolveScreen(Config.options.osd.monitorMode, Config.options.osd.monitorName)
+            readonly property var osdMargins: PopupPlacement.barMargins(root.osdPosition, true, root.osdAnchors, root.osdEdgeGap,
+                Config.options.osd.customX, Config.options.osd.customY,
+                osdRoot.screen?.width ?? 0, osdRoot.screen?.height ?? 0,
+                root.osdCustomAnchor, osdRoot.implicitWidth, osdRoot.implicitHeight,
+                PopupPlacement.usableRectFor(osdRoot.screen))
 
             WlrLayershell.namespace: "quickshell:onScreenDisplay"
             WlrLayershell.layer: WlrLayer.Overlay
             anchors {
-                top: !Config.options.bar.bottom
-                bottom: Config.options.bar.bottom
+                top: root.osdAnchors.top
+                bottom: root.osdAnchors.bottom
+                left: root.osdAnchors.left
+                right: root.osdAnchors.right
             }
             mask: Region {
                 item: osdValuesWrapper
             }
 
-            exclusionMode: ExclusionMode.Ignore
+            // See MediaControls.qml's tickerWindow.exclusionMode for why
+            // this is conditional: "bar" hugs the bar with an already-exact
+            // margin and shouldn't also be pushed by its exclusive zone;
+            // named presets should respect it, matching NotificationPopup.qml.
+            // "custom" ALSO ignores it, since a freely-dragged position
+            // needs pixel-exact placement - letting the compositor silently
+            // shift it away from the bar's reserved zone would put it
+            // dozens of px from wherever it was actually dropped.
+            exclusionMode: (root.osdPosition === "bar" || root.osdIsCustom) ? ExclusionMode.Ignore : ExclusionMode.Normal
             exclusiveZone: 0
             margins {
-                top: Appearance.sizes.barHeight
-                bottom: Appearance.sizes.barHeight
+                top: osdRoot.osdMargins.top
+                bottom: osdRoot.osdMargins.bottom
+                left: osdRoot.osdMargins.left
+                right: osdRoot.osdMargins.right
             }
 
             implicitWidth: columnLayout.implicitWidth
             implicitHeight: columnLayout.implicitHeight
             visible: osdLoader.active
+
+            // Real size -> popup editor, so its dot sits on the real OSD
+            // rather than on PopupPlacement's static estimate of it. See
+            // PopupPlacement.reportFootprint() for why the estimate being a
+            // little off turns into a permanently offset drag target.
+            function reportFootprint() {
+                PopupPlacement.reportFootprint("osd", osdRoot.implicitWidth, osdRoot.implicitHeight)
+            }
+            onImplicitWidthChanged: osdRoot.reportFootprint()
+            onImplicitHeightChanged: osdRoot.reportFootprint()
+            Component.onCompleted: osdRoot.reportFootprint()
 
             ColumnLayout {
                 id: columnLayout
@@ -164,6 +201,20 @@ Scope {
                             anchors.horizontalCenter: parent.horizontalCenter
                             implicitHeight: protectionMessageBackground.implicitHeight
                             implicitWidth: protectionMessageBackground.implicitWidth
+                            // visible (not just opacity) so an inactive
+                            // protection message doesn't leave invisible
+                            // padding below the real slider - Column still
+                            // counts a zero-opacity child's full height, and
+                            // that extra padding was silently pulling the
+                            // OSD's "center" custom-anchor mode down by
+                            // ~25px from its real visual center (found by
+                            // measuring a real screenshot against the new
+                            // center-mode math - the math was exact, the
+                            // window just had hidden content below it).
+                            // No opacity Behavior exists here to fade
+                            // through, so flipping visible has no animation
+                            // to interrupt.
+                            visible: root.protectionMessage !== ""
                             opacity: root.protectionMessage !== "" ? 1 : 0
 
                             StyledRectangularShadow {

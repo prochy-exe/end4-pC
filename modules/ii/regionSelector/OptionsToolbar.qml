@@ -23,6 +23,8 @@ Toolbar {
     property bool recordSystemAudio: false
     property bool recordMicAudio: false
     property bool copyToClipboard: true
+    property bool allMonitorsMode: false
+    property bool socialMode: false
     // Signals
     signal dismiss()
     signal selectMonitor()
@@ -39,10 +41,22 @@ Toolbar {
             {"icon": "image_search", "name": Translation.tr("Google Lens")},
             {"icon": "document_scanner", "name": Translation.tr("OCR")}
         ]
-        currentIndex: root.action === RegionSelection.SnipAction.Record ? 1
-            : root.action === RegionSelection.SnipAction.Search ? 2
-            : root.action === RegionSelection.SnipAction.CharRecognition ? 3
-            : 0
+
+        function indexForAction() {
+            return root.action === RegionSelection.SnipAction.Record ? 1
+                : root.action === RegionSelection.SnipAction.Search ? 2
+                : root.action === RegionSelection.SnipAction.CharRecognition ? 3
+                : 0
+        }
+        Component.onCompleted: mediaTabBar.currentIndex = mediaTabBar.indexForAction()
+        // currentIndex isn't a live binding to root.action (see selectionTabBar
+        // below for why) - push root -> tab bar explicitly instead.
+        Connections {
+            target: root
+            function onActionChanged() {
+                mediaTabBar.currentIndex = mediaTabBar.indexForAction()
+            }
+        }
         onCurrentIndexChanged: {
             if (currentIndex === 0) {
                 root.action = RegionSelection.SnipAction.Copy;
@@ -63,8 +77,25 @@ Toolbar {
             {"icon": "gesture", "name": Translation.tr("Circle")},
             {"icon": "monitor", "name": Translation.tr("Monitor")}
         ]
-        currentIndex: root.selectionMode === RegionSelection.SelectionMode.RectCorners ? 0
-            : root.selectionMode === RegionSelection.SelectionMode.Circle ? 1 : 2
+
+        function indexForSelectionMode() {
+            return root.selectionMode === RegionSelection.SelectionMode.RectCorners ? 0
+                : root.selectionMode === RegionSelection.SelectionMode.Circle ? 1 : 2
+        }
+        Component.onCompleted: selectionTabBar.currentIndex = selectionTabBar.indexForSelectionMode()
+        // currentIndex used to be a live binding to root.selectionMode, but
+        // onCurrentIndexChanged below also writes root.selectionMode back -
+        // Qt detected that as a binding loop (the binding re-evaluating
+        // itself within the same tick as the writeback). Pushing the value
+        // explicitly in both directions instead gets the same two-way sync
+        // without a persistent binding for Qt to flag: once both sides
+        // agree, the property writes become no-ops and the chain stops.
+        Connections {
+            target: root
+            function onSelectionModeChanged() {
+                selectionTabBar.currentIndex = selectionTabBar.indexForSelectionMode()
+            }
+        }
         onCurrentIndexChanged: {
             if (currentIndex === 0) {
                 root.selectionMode = RegionSelection.SelectionMode.RectCorners;
@@ -88,6 +119,18 @@ Toolbar {
             text: recordingMode
                 ? (root.copyToClipboard ? Translation.tr("Copy recording path to clipboard") : Translation.tr("Do not copy recording path"))
                 : (root.copyToClipboard ? Translation.tr("Copy screenshot to clipboard") : Translation.tr("Do not copy screenshot"))
+        }
+    }
+
+    IconToolbarButton {
+        visible: (recordingMode || screenshotMode) && root.selectionMode === RegionSelection.SelectionMode.Monitor
+        text: "web_asset"
+        toggled: root.allMonitorsMode
+        onClicked: root.allMonitorsMode = !root.allMonitorsMode
+        StyledToolTip {
+            text: recordingMode
+                ? Translation.tr("Record all monitors (click a monitor to start)")
+                : Translation.tr("Screenshot all monitors (click a monitor to capture)")
         }
     }
 
@@ -130,6 +173,18 @@ Toolbar {
         }
         StyledToolTip {
             text: Translation.tr("Microphone")
+        }
+    }
+
+    IconToolbarButton {
+        visible: recordingMode
+        text: "share"
+        toggled: root.socialMode
+        onClicked: {
+            root.socialMode = !root.socialMode;
+        }
+        StyledToolTip {
+            text: Translation.tr("Social mode (smaller file size for sharing)")
         }
     }
 }

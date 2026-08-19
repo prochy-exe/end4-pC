@@ -85,14 +85,14 @@ Singleton {
     property var settingsKeywordsCache: ({})
 
     property var settingsIndex: [
-        { page: "General",   path: "GeneralConfig.qml" },
-        { page: "Bar",       path: "BarConfig.qml" },
-        { page: "Desktop",   path: "BackgroundConfig.qml" },
-        { page: "Interface", path: "InterfaceConfig.qml" },
-        { page: "Services",  path: "ServicesConfig.qml" },
-        { page: "Hyprland",  path: "HyprlandConfig.qml" },
-        { page: "About",     path: "About.qml" },
-        { page: "Quick",     path: "QuickConfig.qml" },
+        { page: "General",    path: "GeneralConfig.qml" },
+        { page: "Appearance", path: "AppearanceConfig.qml" },
+        { page: "Interface",  path: "InterfaceConfig.qml" },
+        { page: "Services",   path: "ServicesConfig.qml" },
+        { page: "Windows",    path: "WindowsConfig.qml" },
+        { page: "Keybinds",   path: "KeybindsConfig.qml" },
+        { page: "About",      path: "About.qml" },
+        { page: "Quick",      path: "QuickConfig.qml" },
     ]
 
     // Load user action scripts from ~/.config/illogical-impulse/actions/
@@ -178,6 +178,49 @@ Singleton {
             action: "wipeclipboard",
             execute: () => {
                 Cliphist.wipe();
+            }
+        },
+        {
+            action: "ocrcopy",
+            execute: () => {
+                const text = `${GlobalStates.lastOcrText ?? ""}`.trim();
+                if (text.length === 0) {
+                    Quickshell.execDetached(["notify-send", "OCR", Translation.tr("No cached OCR text yet"), "-a", "Shell"]);
+                    return;
+                }
+                Quickshell.clipboardText = text;
+                Quickshell.execDetached(["notify-send", "OCR", Translation.tr("Copied cached OCR text"), "-a", "Shell"]);
+            }
+        },
+        {
+            action: "ocrtranslate",
+            execute: () => {
+                const text = `${GlobalStates.lastOcrText ?? ""}`.trim();
+                if (text.length === 0) {
+                    Quickshell.execDetached(["notify-send", "OCR", Translation.tr("No cached OCR text yet"), "-a", "Shell"]);
+                    return;
+                }
+                Quickshell.execDetached([
+                    "qs",
+                    "-p",
+                    Quickshell.shellPath(""),
+                    "ipc",
+                    "call",
+                    "sidebarLeft",
+                    "openTranslator",
+                    text,
+                ]);
+            }
+        },
+        {
+            action: "ocrreplace",
+            execute: () => {
+                const text = `${GlobalStates.lastOcrText ?? ""}`.trim();
+                if (text.length === 0) {
+                    Quickshell.execDetached(["notify-send", "OCR", Translation.tr("No cached OCR text yet"), "-a", "Shell"]);
+                    return;
+                }
+                Cliphist.pasteText(text);
             }
         },
         {
@@ -314,6 +357,7 @@ Singleton {
         } else if (root.query.startsWith(Config.options.search.prefix.bitwarden)) {
             // Bitwarden
             const _bwRev = Bitwarden.revision
+            const _bwTotpRemaining = Bitwarden.totpSecondsRemaining
             const searchString = StringUtils.cleanPrefix(root.query, Config.options.search.prefix.bitwarden).trim();
             Bitwarden.triggerSearch(searchString)
 
@@ -356,7 +400,9 @@ Singleton {
                             }
                         }),
                         hasTotp ? resultComp.createObject(null, {
-                            name: Translation.tr("Copy verification code"),
+                            name: (Config.options.search.bitwardenTotp?.showCountdown ?? true)
+                                ? Translation.tr("Copy verification code (%1s left)").arg(Bitwarden.totpSecondsRemaining)
+                                : Translation.tr("Copy verification code"),
                             iconName: "shield_lock",
                             iconType: LauncherSearchResult.IconType.Material,
                             dismissOnExecute: Config.options.search.bitwardenDismissOnInteract,
@@ -369,28 +415,17 @@ Singleton {
                 })
             }
 
+            // "checking" and "searching with nothing fetched yet" are shown as a
+            // loading indicator in the search bar itself (see SearchBar.qml),
+            // not as a fake, unselectable result row - a single no-op entry was
+            // still keyboard-focusable/highlighted like a real result, which
+            // looked broken when nothing was actually there yet.
             if (Bitwarden.status === "checking") {
-                return [resultComp.createObject(null, {
-                    name: Translation.tr("Checking Bitwarden auth..."),
-                    iconName: "password",
-                    iconType: LauncherSearchResult.IconType.Material,
-                    verb: "",
-                    type: Translation.tr("Bitwarden"),
-                    shown: true,
-                    execute: () => {}
-                })]
+                return []
             }
 
             if (Bitwarden.status === "searching" && Bitwarden.items.length === 0) {
-                return [resultComp.createObject(null, {
-                    name: Translation.tr("Loading Bitwarden vault..."),
-                    iconName: "password",
-                    iconType: LauncherSearchResult.IconType.Material,
-                    verb: "",
-                    type: Translation.tr("Bitwarden"),
-                    shown: true,
-                    execute: () => {}
-                })]
+                return []
             }
 
             if (["locked", "unauthenticated", "missing-cli", "timeout", "error"].includes(Bitwarden.status)) {
@@ -466,20 +501,15 @@ Singleton {
             }
 
             if (searchString.length === 0) {
+                // The "type to search" hint lives in the search bar's placeholder
+                // text (see SearchBar.qml) rather than as a fake result row - a
+                // no-op row was still keyboard-focusable/highlighted like a real
+                // result, which looked broken when there was nothing to select.
                 const rows = []
                 const recent = Bitwarden.lastInteractedItem ?? ({})
                 if ((recent.id ?? "").length > 0) {
                     rows.push(buildBitwardenItemResult(recent, true))
                 }
-                rows.push(resultComp.createObject(null, {
-                    name: Translation.tr("Type to search Bitwarden vault"),
-                    iconName: "password",
-                    iconType: LauncherSearchResult.IconType.Material,
-                    verb: "",
-                    type: Translation.tr("Bitwarden"),
-                    shown: true,
-                    execute: () => {}
-                }))
                 return rows
             }
 

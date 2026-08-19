@@ -44,6 +44,18 @@ NestableObject {
         for (let i = 0; i < workspaces.length; i++)
             lines.push(`hl.workspace_rule({ workspace = "${workspaces[i]}", monitor = "${primaryMonitor}" })`)
 
+        // Every other active monitor gets one workspace each, continuing
+        // right after the primary's range (e.g. primary 1-5 -> next monitor
+        // gets 6, the one after that 7, ...) - without a binding here, an
+        // unbound monitor reconnecting (e.g. waking from sleep) can make
+        // Hyprland improvise a workspace id instead of using a real one.
+        let nextWorkspace = root.primaryWorkspaceRange().end + 1
+        const otherMonitors = root._activeMonitorNames().filter(name => name !== primaryMonitor)
+        for (const name of otherMonitors) {
+            lines.push(`hl.workspace_rule({ workspace = "${nextWorkspace}", monitor = "${name}" })`)
+            nextWorkspace++
+        }
+
         return lines.join("\n")
     }
 
@@ -127,16 +139,20 @@ NestableObject {
             .filter(entry => activeNames.includes(entry.name))
     }
 
-    function isBarEnabled(name) {
-        const screenList = Config.options.bar.screenList ?? []
-        return screenList.length === 0 || screenList.includes(name)
+    // Generic "does this monitor show up in a screenList-style toggle" pair -
+    // an empty list conventionally means "all monitors". Shared by the bar's
+    // screenList (below) and anything else with the same per-monitor
+    // enable/disable shape (e.g. Interface's "Show widgets on this monitor").
+    function isNameInScreenList(screenList, name) {
+        const list = screenList ?? []
+        return list.length === 0 || list.includes(name)
     }
 
-    function setBarEnabled(name, enabled) {
+    function setNameInScreenList(configEntry, name, enabled) {
         const activeMonitorNames = root.monitors
             .filter(m => !m.disabled)
             .map(m => m.name)
-        let screenList = (Config.options.bar.screenList ?? []).slice()
+        let screenList = (configEntry.screenList ?? []).slice()
 
         if (screenList.length === 0)
             screenList = activeMonitorNames.slice()
@@ -150,7 +166,15 @@ NestableObject {
             screenList = screenList.filter(monitorName => monitorName !== name)
         }
 
-        Config.options.bar.screenList = screenList.length === activeMonitorNames.length ? [] : screenList
+        configEntry.screenList = screenList.length === activeMonitorNames.length ? [] : screenList
+    }
+
+    function isBarEnabled(name) {
+        return root.isNameInScreenList(Config.options.bar.screenList, name)
+    }
+
+    function setBarEnabled(name, enabled) {
+        root.setNameInScreenList(Config.options.bar, name, enabled)
     }
 
     function save() {

@@ -10,7 +10,7 @@ import qs.modules.common.functions
 
 Item {
     id: root
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
     property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
     property bool showDate: Config.getBarSetting(root.monitorName, ["verbose"], Config.options.bar.verbose)
     property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)

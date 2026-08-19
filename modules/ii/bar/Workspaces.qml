@@ -15,15 +15,16 @@ ButtonMouseArea {
     id: root
 
     readonly property HyprlandMonitor monitor: Hyprland.monitorFor(root.QsWindow.window?.screen)
+    readonly property string monitorName: root.monitor?.name ?? ""
     WorkspaceModel {
         id: wsModel
         monitor: root.monitor
     }
 
-    property bool vertical: Config.getBarSetting(root.monitor?.name ?? "", ["vertical"], Config.options.bar.vertical)
+    property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     property bool superPressAndHeld: false // Relevant modifications at bottom of file
 
-    property real workspaceButtonWidth: Config.getBarSetting(root.monitor?.name ?? "", ["cornerStyle"], Config.options.bar.cornerStyle) === 3 ? 30 : 26
+    property real workspaceButtonWidth: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3 ? 30 : 26
     property real activeWorkspaceMargin: 2
     property real activeWorkspaceSize: workspaceButtonWidth - activeWorkspaceMargin * 2
     property real workspaceIconSize: workspaceButtonWidth * 0.69
@@ -31,6 +32,10 @@ ButtonMouseArea {
     property real workspaceIconOpacityShrinked: 1
     property real workspaceIconMarginShrinked: -4
     property int workspaceIndexInGroup: (monitor?.activeWorkspace?.id - 1) % wsModel.shownCount
+        function wsSetting(path, fallbackValue) {
+            return Config.getBarSetting(root.monitorName, ["workspaces"].concat(path), fallbackValue)
+        }
+
     property real specialTextSize: workspaceButtonWidth * 0.5
 
     Layout.alignment: vertical ? Qt.AlignHCenter : Qt.AlignVCenter
@@ -214,7 +219,7 @@ ButtonMouseArea {
 
                     AppIcon {
                         id: appIcon
-                        property real cornerMargin: (!root.superPressAndHeld && Config.getBarSetting(root.monitor?.name ?? "", ["workspaces", "showAppIcons"], Config.options.bar.workspaces.showAppIcons) && wsApp.biggestWindow) ? (root.workspaceButtonWidth - root.workspaceIconSize) / 2 : root.workspaceIconMarginShrinked
+                        property real cornerMargin: (!root.superPressAndHeld && root.wsSetting(["showAppIcons"], Config.options.bar.workspaces.showAppIcons) && wsApp.biggestWindow) ? (root.workspaceButtonWidth - root.workspaceIconSize) / 2 : root.workspaceIconMarginShrinked
                         anchors {
                             bottom: parent.bottom
                             right: parent.right
@@ -250,13 +255,13 @@ ButtonMouseArea {
                             implicitWidth: appIcon.implicitWidth
                             implicitHeight: appIcon.implicitHeight
                             colorizationColor: Appearance.m3colors.darkmode ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnPrimary
-                            colorization: Config.getBarSetting(root.monitor?.name ?? "", ["workspaces", "monochromeIcons"], Config.options.bar.workspaces.monochromeIcons) ? 0.8 : 0.5
+                            colorization: root.wsSetting(["monochromeIcons"], Config.options.bar.workspaces.monochromeIcons) ? 0.8 : 0.5
                             brightness: 0
                             source: appIcon
 
-                            opacity: !Config.getBarSetting(root.monitor?.name ?? "", ["workspaces", "showAppIcons"], Config.options.bar.workspaces.showAppIcons) ? 0 : (wsApp.biggestWindow && !root.superPressAndHeld && Config.getBarSetting(root.monitor?.name ?? "", ["workspaces", "showAppIcons"], Config.options.bar.workspaces.showAppIcons)) ? 1 : wsApp.biggestWindow ? root.workspaceIconOpacityShrinked : 0
+                            opacity: !root.wsSetting(["showAppIcons"], Config.options.bar.workspaces.showAppIcons) ? 0 : (wsApp.biggestWindow && !root.superPressAndHeld && root.wsSetting(["showAppIcons"], Config.options.bar.workspaces.showAppIcons)) ? 1 : wsApp.biggestWindow ? root.workspaceIconOpacityShrinked : 0
                             visible: opacity > 0
-                            scale: ((!root.superPressAndHeld && Config.getBarSetting(root.monitor?.name ?? "", ["workspaces", "showAppIcons"], Config.options.bar.workspaces.showAppIcons)) ? root.workspaceIconSize : root.workspaceIconSizeShrinked) / root.workspaceIconSize
+                            scale: ((!root.superPressAndHeld && root.wsSetting(["showAppIcons"], Config.options.bar.workspaces.showAppIcons)) ? root.workspaceIconSize : root.workspaceIconSizeShrinked) / root.workspaceIconSize
 
                             Behavior on opacity {
                                 animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
@@ -368,7 +373,8 @@ ButtonMouseArea {
                 return true;
             if (GlobalStates.screenLocked)
                 return false;
-            if (Config.options?.bar.workspaces.alwaysShowNumbers && (!Config.options?.bar.workspaces.showAppIcons || !wsNum.hasBiggestWindow))
+            if (root.wsSetting(["alwaysShowNumbers"], Config.options.bar.workspaces.alwaysShowNumbers)
+                && (!root.wsSetting(["showAppIcons"], Config.options.bar.workspaces.showAppIcons) || !wsNum.hasBiggestWindow))
                 return true;
             return false;
         }
@@ -378,7 +384,7 @@ ButtonMouseArea {
             anchors.centerIn: parent
             Loader {
                 anchors.centerIn: parent
-                sourceComponent: (Config.options?.bar.workspaces.indicatorStyle ?? "dot") === "icon" ? iconComponent : dotComponent
+                sourceComponent: root.wsSetting(["indicatorStyle"], Config.options.bar.workspaces.indicatorStyle ?? "dot") === "icon" ? iconComponent : dotComponent
 
                 Component {
                     id: dotComponent
@@ -421,10 +427,10 @@ ButtonMouseArea {
                 anchors.centerIn: parent
                 font {
                     pixelSize: Appearance.font.pixelSize.small - ((text.length - 1) * (text !== "10") * 2)
-                    family: Config.options?.bar.workspaces.useNerdFont ? Appearance.font.family.iconNerd : defaultFont
+                    family: root.wsSetting(["useNerdFont"], Config.options.bar.workspaces.useNerdFont) ? Appearance.font.family.iconNerd : defaultFont
                 }
                 color: wsNum.contentColor
-                text: Config.options?.bar.workspaces.numberMap[wsNum.wsId - 1] || wsNum.wsId
+                text: (root.wsSetting(["numberMap"], Config.options.bar.workspaces.numberMap) ?? [])[wsNum.wsId - 1] || wsNum.wsId
             }
         }
     }

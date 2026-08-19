@@ -5,7 +5,7 @@ import qs.modules.common.widgets
 
 MaterialSymbol {
     id: root
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
     readonly property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     readonly property bool showUnreadCount: Config.getBarSetting(root.monitorName, ["indicators", "notifications", "showUnreadCount"], Config.options.bar.indicators.notifications.showUnreadCount)
     text: Notifications.silent ? "notifications_paused" : "notifications"

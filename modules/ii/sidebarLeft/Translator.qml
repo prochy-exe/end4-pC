@@ -24,11 +24,32 @@ Item {
     property bool translationFor: false
     property string translatedText: ""
     property list<string> languages: []
+    property string backend: "trans"
 
     // Options
     property string targetLanguage: Config.options.language.translator.targetLanguage
     property string sourceLanguage: Config.options.language.translator.sourceLanguage
     property string hostLanguage: targetLanguage
+
+    function translateCommand(text, sourceLanguage, targetLanguage) {
+        const source = StringUtils.shellSingleQuoteEscape(`${sourceLanguage ?? "auto"}`)
+        const target = StringUtils.shellSingleQuoteEscape(`${targetLanguage ?? "en"}`)
+        const payload = StringUtils.shellSingleQuoteEscape(`${text ?? ""}`)
+
+        switch (root.backend) {
+        case "trans":
+        default:
+            return ["bash", "-c", `trans -brief -no-bidi -source '${source}' -target '${target}' '${payload}'`]
+        }
+    }
+
+    function listLanguagesCommand() {
+        switch (root.backend) {
+        case "trans":
+        default:
+            return ["trans", "-list-languages", "-no-bidi"]
+        }
+    }
 
     // States
     property bool showLanguageSelector: false
@@ -48,8 +69,62 @@ Item {
         translateTimer.restart();
     }
 
+    function applyPrefillText(text) {
+        const clean = `${text ?? ""}`
+        if (clean.trim().length === 0)
+            return
+        if (!root.inputField)
+            return
+        root.inputField.text = clean
+        root.inputField.readOnly = false
+        root.inputField.enabled = true
+        root.inputField.forceActiveFocus()
+        translateTimer.restart()
+    }
+
+    function focusInputField() {
+        if (!root.inputField)
+            return
+        root.inputField.readOnly = false
+        root.inputField.enabled = true
+        root.inputField.forceActiveFocus()
+        focusRetryTimer.restart()
+    }
+
+    function clearInputText() {
+        if (root.inputField)
+            root.inputField.text = ""
+        root.translatedText = ""
+    }
+
     onFocusChanged: (focus) => {
-        if (focus) {
+        if (focus)
+            root.focusInputField()
+    }
+
+    onInputFieldChanged: {
+        root.focusInputField()
+    }
+
+    Connections {
+        target: GlobalStates
+        function onSidebarLeftTranslatorPrefillNonceChanged() {
+            root.applyPrefillText(GlobalStates.sidebarLeftTranslatorPrefill)
+        }
+        function onSidebarLeftTranslatorResetNonceChanged() {
+            root.clearInputText()
+        }
+    }
+
+    Timer {
+        id: focusRetryTimer
+        interval: 80
+        repeat: false
+        onTriggered: {
+            if (!root.inputField)
+                return
+            root.inputField.readOnly = false
+            root.inputField.enabled = true
             root.inputField.forceActiveFocus()
         }
     }
@@ -71,10 +146,11 @@ Item {
 
     Process {
         id: translateProc
-        command: ["bash", "-c", `trans -brief -no-bidi`
-            + ` -source '${StringUtils.shellSingleQuoteEscape(root.sourceLanguage)}'`
-            + ` -target '${StringUtils.shellSingleQuoteEscape(root.targetLanguage)}'`
-            + ` '${StringUtils.shellSingleQuoteEscape(root.inputField.text.trim())}'`]
+        command: root.translateCommand(
+            root.inputField.text.trim(),
+            root.sourceLanguage,
+            root.targetLanguage
+        )
         property string buffer: ""
         stdout: SplitParser {
             onRead: data => {
@@ -88,7 +164,7 @@ Item {
 
     Process {
         id: getLanguagesProc
-        command: ["trans", "-list-languages", "-no-bidi"]
+        command: root.listLanguagesCommand()
         property list<string> bufferList: ["auto"]
         running: true
         stdout: SplitParser {

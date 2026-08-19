@@ -165,7 +165,7 @@ Scope {
 
                     BarContent {
                         id: barContent
-                        
+                        monitorName: barRoot.currentMonitorName
                         implicitHeight: Appearance.sizes.barHeight
                         anchors {
                             right: parent.right

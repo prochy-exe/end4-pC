@@ -29,6 +29,25 @@ Item {
     property int visualizerSmoothing: 2
     property real radius
     property bool showLyrics: false
+    // null = legacy fixed layout/always-shown visualizer (sidebar player).
+    // Non-null = an explicit element list (e.g. Config.options.media.menuElements,
+    // or a fixed list like the ticker's ["visualizer"]); the visualizer only
+    // shows when "visualizer" is in that list.
+    property var controlElements: null
+    // Passed straight through to PlayerControls - 1.0 = unchanged.
+    property real contentScale: 1.0
+    // The full-card blurred art backdrop is cropped independently from the
+    // sharp thumbnail inside PlayerControls - at a normal card's proportions
+    // that's unnoticeable, but at the ticker's small/wide shape the two
+    // crops don't line up and the blurred one reads as off-center.
+    property bool showBlurredArt: true
+    // Passed straight through to PlayerControls - false = unchanged.
+    property bool centerContent: false
+    // The ticker's window is sized to exactly this card's bounds with no
+    // slack for a shadow to bleed into - it was getting clipped unevenly by
+    // the mask/window edge instead of rendering as a clean, even shadow,
+    // which read as lopsided top/bottom padding.
+    property bool showShadow: true
 
     property string displayedArtFilePath: {
         if (!root.downloaded) return ""
@@ -83,6 +102,7 @@ Item {
     }
 
     StyledRectangularShadow {
+        visible: root.showShadow
         target: background
     }
 
@@ -104,6 +124,7 @@ Item {
 
         Image {
             id: blurredArt
+            visible: root.showBlurredArt
             anchors.fill: parent
             source: root.displayedArtFilePath
             sourceSize.width: background.width
@@ -128,6 +149,7 @@ Item {
         WaveVisualizer {
             id: visualizerCanvas
             anchors.fill: parent
+            visible: root.controlElements === null || root.controlElements.includes("visualizer")
             live: root.player?.isPlaying
             points: root.visualizerPoints
             maxVisualizerValue: root.maxVisualizerValue
@@ -148,6 +170,9 @@ Item {
                     blendedColors: root.blendedColors
                     displayedArtFilePath: root.displayedArtFilePath
                     radius: root.radius
+                    controlElements: root.controlElements
+                    contentScale: root.contentScale
+                    centerContent: root.centerContent
                     onToggleLyrics: root.showLyrics = !root.showLyrics
                 }
             }

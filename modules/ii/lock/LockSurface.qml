@@ -22,17 +22,7 @@ MouseArea {
     property bool capsLockOn: false
     property bool numLockOn: false
     readonly property bool requirePasswordToPower: Config.options.lock.security.requirePasswordToPower
-    readonly property MprisPlayer activePlayer: {
-        const preferred = Config.options.bar.media.preferredPlayer.trim().toLowerCase()
-        if (preferred.length === 0) return MprisController.activePlayer
-        const _ = MprisController.players.count
-        for (const p of MprisController.players) {
-            if ((p.identity ?? "").toLowerCase().includes(preferred) ||
-                (p.desktopEntry ?? "").toLowerCase().includes(preferred))
-                return p
-        }
-        return MprisController.activePlayer
-    }
+    readonly property MprisPlayer activePlayer: MprisController.activePlayer
 
     property var    artUrl:      activePlayer?.trackArtUrl ?? ""
 
@@ -40,10 +30,26 @@ MouseArea {
     function forceFieldFocus() {
         passwordBox.forceActiveFocus();
     }
+    // Forces Qt to schedule a fresh frame for this surface. After waking from
+    // suspend, an output that was powered off can be left showing whatever
+    // stale buffer it had before sleeping until the compositor is prompted to
+    // recomposite it - a focus change alone doesn't reliably do that if
+    // nothing focus-dependent is visibly different.
+    function nudgeRepaint() {
+        root.opacity = 0.999
+        repaintNudgeTimer.restart()
+    }
+    Timer {
+        id: repaintNudgeTimer
+        interval: 16
+        onTriggered: root.opacity = 1.0
+    }
     Connections {
         target: context
         function onShouldReFocus() {
+            console.warn(`[WakeRefocus DEBUG] LockSurface onShouldReFocus screen=${root.QsWindow?.window?.screen?.name ?? "unknown"} at ${new Date().toISOString()}`)
             forceFieldFocus();
+            nudgeRepaint();
         }
     }
     hoverEnabled: true

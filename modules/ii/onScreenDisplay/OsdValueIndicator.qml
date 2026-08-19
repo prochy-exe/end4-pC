@@ -17,14 +17,23 @@ Item {
     implicitWidth: Appearance.sizes.osdWidth + 4 * Appearance.sizes.elevationMargin + 80
     implicitHeight: valueIndicator.implicitHeight + 2 * Appearance.sizes.elevationMargin
 
+    // Card styling to match NotificationGroup.qml/Player.qml (rounding.normal
+    // + a real shadow) instead of the old fully-rounded, flat, shadowless
+    // pill - the three real popups should read as one visual family. Doesn't
+    // touch implicitWidth/Height above - OSD's size was already fixed/exact,
+    // this is purely cosmetic.
+    StyledRectangularShadow {
+        target: valueIndicator
+    }
+
     Rectangle {
         id: valueIndicator
         anchors {
             fill: parent
             margins: Appearance.sizes.elevationMargin
         }
-        radius: Appearance.rounding.full
-        color: Appearance.colors.colLayer0
+        radius: Appearance.rounding.normal
+        color: Appearance.colors.colBackgroundSurfaceContainer
         implicitWidth: valueRow.implicitWidth
         implicitHeight: valueRow.implicitHeight
 

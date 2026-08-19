@@ -12,6 +12,12 @@ Canvas { // Visualizer
     property int smoothing: 2
     property bool live: true
     property color color: Appearance.m3colors.m3primary
+    // Defaults match the original hardcoded values (Player.qml's card
+    // background) - callers rendering this small (e.g. the ticker's
+    // progress bar) want less blur/more opacity, or the wave gets crushed
+    // into what just looks like a flat fill.
+    property real fillOpacity: 0.15
+    property real blurAmount: 7
 
     onPointsChanged: () => {
         root.requestPaint()
@@ -57,7 +63,7 @@ Canvas { // Visualizer
             root.color.r,
             root.color.g,
             root.color.b,
-            0.15
+            root.fillOpacity
         );
         ctx.fill();
     }
@@ -66,8 +72,8 @@ Canvas { // Visualizer
     layer.effect: MultiEffect { // Blur a bit to obscure away the points
         source: root
         saturation: 0.2
-        blurEnabled: true
-        blurMax: 7
+        blurEnabled: root.blurAmount > 0
+        blurMax: root.blurAmount
         blur: 1
     }
 }

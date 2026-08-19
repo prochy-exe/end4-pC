@@ -18,7 +18,44 @@ Singleton {
 	id: root;
 	property list<MprisPlayer> players: Mpris.players.values.filter(player => isRealPlayer(player));
 	property MprisPlayer trackedPlayer: null;
-	property MprisPlayer activePlayer: trackedPlayer ?? Mpris.players.values[0] ?? null;
+	// User-defined priority (Settings > Services > Media) always wins over the
+	// "most recently playing" heuristic below - e.g. if Spotify outranks a
+	// browser tab, media keys keep targeting Spotify even while the browser
+	// tab is the one actually making noise. Unless priorityPreferActive is on,
+	// in which case whichever ranked player is actually playing wins instead,
+	// and rank only breaks ties (or applies when nothing is playing).
+	function playerIdentifier(player) {
+		if (!player) return "";
+		return ((player.desktopEntry || player.identity) ?? "").toLowerCase();
+	}
+	function findPriorityPlayer() {
+		const order = Config.options.media.priorityOrder ?? [];
+		if (order.length === 0) return null;
+
+		const rank = (p) => order.indexOf(root.playerIdentifier(p));
+		let ranked = root.players.filter(p => rank(p) !== -1);
+		if (ranked.length === 0) return null;
+
+		if (Config.options.media.priorityPreferActive) {
+			const playing = ranked.filter(p => p.isPlaying);
+			if (playing.length > 0) ranked = playing;
+		}
+
+		ranked.sort((a, b) => rank(a) - rank(b));
+		return ranked[0];
+	}
+	readonly property MprisPlayer priorityPlayer: root.findPriorityPlayer();
+	property MprisPlayer activePlayer: priorityPlayer ?? trackedPlayer ?? Mpris.players.values[0] ?? null;
+	// For UIs that show more than one player at once (Super+M menu, sidebar) -
+	// same priority list, stable sort so unranked players keep their relative order.
+	function sortByPriority(playerList) {
+		const order = Config.options.media.priorityOrder ?? [];
+		const rank = (p) => {
+			const idx = order.indexOf(root.playerIdentifier(p));
+			return idx === -1 ? order.length : idx;
+		};
+		return playerList.slice().sort((a, b) => rank(a) - rank(b));
+	}
 	signal trackChanged(reverse: bool);
 
 	property bool __reverse: false;
@@ -76,11 +113,19 @@ Singleton {
 		}
 	}
 
+	// Fired only when the track changes on the same activePlayer instance -
+	// i.e. never just from activePlayer itself switching to a different
+	// player (that's onActivePlayerChanged, below), so this is a reliable
+	// "the song changed" signal regardless of what caused it (auto-advance,
+	// or a skip from within the app itself rather than our own keys/binds).
+	signal trackAutoChanged(MprisPlayer player);
+
 	Connections {
 		target: activePlayer
 
 		function onPostTrackChanged() {
 			root.updateTrack();
+			root.trackAutoChanged(root.activePlayer);
 		}
 
 		function onTrackArtUrlChanged() {
@@ -113,26 +158,43 @@ Singleton {
 		this.__reverse = false;
 	}
 
+	// Fired only for actions routed through here (media keys/binds via the
+	// mpris IPC target) - not for direct player.togglePlaying()/etc calls
+	// from the open Super+M menu's own buttons, which don't need a ticker
+	// popping up on top of the menu that's already visible.
+	// Carries the player the action was actually performed on: activePlayer
+	// can immediately re-resolve to someone else right after the call (e.g.
+	// with "prefer the playing player" on, pausing the one that made it
+	// active stops it being active), so listeners that want to show info
+	// about what was just acted on should use this, not activePlayer.
+	signal actionPerformed(string action, MprisPlayer player);
+
 	property bool isPlaying: this.activePlayer && this.activePlayer.isPlaying;
 	property bool canTogglePlaying: this.activePlayer?.canTogglePlaying ?? false;
 	function togglePlaying() {
-		if (this.canTogglePlaying) this.activePlayer.togglePlaying();
+		const target = this.activePlayer;
+		if (this.canTogglePlaying) target.togglePlaying();
+		if (target) root.actionPerformed("playPause", target);
 	}
 
 	property bool canGoPrevious: this.activePlayer?.canGoPrevious ?? false;
 	function previous() {
+		const target = this.activePlayer;
 		if (this.canGoPrevious) {
 			this.__reverse = true;
-			this.activePlayer.previous();
+			target.previous();
 		}
+		if (target) root.actionPerformed("previous", target);
 	}
 
 	property bool canGoNext: this.activePlayer?.canGoNext ?? false;
 	function next() {
+		const target = this.activePlayer;
 		if (this.canGoNext) {
 			this.__reverse = false;
-			this.activePlayer.next();
+			target.next();
 		}
+		if (target) root.actionPerformed("next", target);
 	}
 
 	property bool canChangeVolume: this.activePlayer && this.activePlayer.volumeSupported && this.activePlayer.canControl;

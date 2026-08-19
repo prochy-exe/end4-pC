@@ -74,7 +74,9 @@ RowLayout {
         implicitHeight: 40
         focus: GlobalStates.overviewOpen
         font.pixelSize: Appearance.font.pixelSize.small
-        placeholderText: Translation.tr("Search, calculate or run")
+        placeholderText: root.searchPrefixType === SearchBar.SearchPrefixType.Bitwarden
+            ? Translation.tr("Type to search Bitwarden vault")
+            : Translation.tr("Search, calculate or run")
         implicitWidth: root.searchingText == "" ? Appearance.sizes.searchWidthCollapsed : Appearance.sizes.searchWidth
 
         Behavior on implicitWidth {
@@ -108,6 +110,25 @@ RowLayout {
                 event.accepted = true;
             }
         }
+
+        // Entering Bitwarden mode sets the field's text to the prefix itself
+        // (e.g. "!"), so it's never actually empty and the native
+        // placeholderText above never gets a chance to show. This overlay hint
+        // fills that in once nothing's typed past the prefix.
+        TextMetrics {
+            id: bitwardenPrefixMetrics
+            font: searchInput.font
+            text: Config.options.search.prefix.bitwarden
+        }
+        StyledText {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            anchors.leftMargin: searchInput.leftPadding + bitwardenPrefixMetrics.width
+            visible: root.searchPrefixType === SearchBar.SearchPrefixType.Bitwarden
+                && searchInput.text === Config.options.search.prefix.bitwarden
+            text: Translation.tr("Type to search Bitwarden vault")
+            color: Appearance.colors.colSubtext
+        }
     }
 
     IconToolbarButton {
@@ -123,9 +144,30 @@ RowLayout {
         }
     }
 
+    MaterialLoadingIndicator {
+        id: bitwardenLoadingIndicator
+        Layout.alignment: Qt.AlignVCenter
+        implicitSize: 22
+        visible: root.searchPrefixType === SearchBar.SearchPrefixType.Bitwarden
+            && (Bitwarden.status === "checking" || (Bitwarden.status === "searching" && Bitwarden.items.length === 0))
+        loading: visible
+
+        property bool hovered: hoverHandler.hovered
+        HoverHandler {
+            id: hoverHandler
+        }
+
+        StyledToolTip {
+            text: Bitwarden.status === "checking"
+                ? Translation.tr("Checking Bitwarden auth...")
+                : Translation.tr("Loading Bitwarden vault...")
+        }
+    }
+
     IconToolbarButton {
         Layout.topMargin: 4
         Layout.bottomMargin: 4
+        visible: root.searchPrefixType !== SearchBar.SearchPrefixType.Bitwarden
         onClicked: {
             GlobalStates.overviewOpen = false;
             Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "search"]);
@@ -141,6 +183,7 @@ RowLayout {
         Layout.topMargin: 4
         Layout.bottomMargin: 4
         Layout.rightMargin: 4
+        visible: root.searchPrefixType !== SearchBar.SearchPrefixType.Bitwarden
         toggled: SongRec.running
         onClicked: SongRec.toggleRunning()
         text: "music_cast"

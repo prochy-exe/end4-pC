@@ -15,7 +15,14 @@ Item {
     implicitHeight: Appearance.sizes.barHeight
     width: parent.width
     readonly property real barPadding: 0
-    readonly property string monitorName: root.screen?.name ?? ""
+    // Settable from outside (Bar.qml passes barRoot.currentMonitorName, which is
+    // reliable since it comes from the PanelWindow's own `screen` property).
+    // root.screen?.name here is only a fallback for standalone/unset usage -
+    // root.QsWindow (which root.screen depends on) isn't reliably available yet
+    // for Loader-instantiated content, so relying on it alone left monitorName
+    // permanently stuck at "" for every bar widget, silently breaking every
+    // per-monitor bar setting.
+    property string monitorName: root.screen?.name ?? ""
     readonly property bool isMaterial: Config.getBarSetting(monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     readonly property real centerPillX: centerPill.x
     readonly property real centerPillWidth: centerPill.width
@@ -156,7 +163,9 @@ Item {
                             totalCount: root.effectiveLeftLayout.length
                             paintMaterialPill: root.shouldPaintMaterialPill(modelData)
                             bgColor: root.getMaterialPillColor(modelData)
+                            monitorName: root.monitorName
                             Loader {
+                                property string monitorName: root.monitorName
                                 Layout.fillHeight: true
                                 source: root.getWidgetUrl(modelData)
                                 onLoaded: {
@@ -187,7 +196,9 @@ Item {
                         Layout.fillHeight: true
                         currentIndex: index
                         totalCount: root.effectiveLeftLayout.length
+                        monitorName: root.monitorName
                         Loader {
+                            property string monitorName: root.monitorName
                             Layout.fillHeight: true
                             source: root.getWidgetUrl(modelData)
                             onLoaded: {
@@ -201,6 +212,7 @@ Item {
                 Component {
                     id: leftNoGroupDelegate
                     Loader {
+                        property string monitorName: root.monitorName
                         Layout.fillHeight: false
                         Layout.topMargin: root.currentBottom ? -5 : 3
                         Layout.alignment: Qt.AlignVCenter
@@ -249,7 +261,9 @@ Item {
                             totalCount: root.effectiveMiddleLayout.length
                             paintMaterialPill: root.shouldPaintMaterialPill(modelData)
                             bgColor: root.getMaterialPillColor(modelData)
+                            monitorName: root.monitorName
                             Loader {
+                                property string monitorName: root.monitorName
                                 Layout.fillHeight: true
                                 source: root.getWidgetUrl(modelData)
                                 onLoaded: {
@@ -280,7 +294,9 @@ Item {
                         Layout.fillHeight: true
                         currentIndex: index
                         totalCount: root.effectiveMiddleLayout.length
+                        monitorName: root.monitorName
                         Loader {
+                            property string monitorName: root.monitorName
                             Layout.fillHeight: true
                             source: root.getWidgetUrl(modelData)
                             onLoaded: {
@@ -294,6 +310,7 @@ Item {
                 Component {
                     id: middleNoGroupDelegate
                     Loader {
+                        property string monitorName: root.monitorName
                         Layout.fillHeight: false
                         Layout.topMargin: root.currentBottom ? -5 : 3
                         source: root.getWidgetUrl(modelData)
@@ -342,7 +359,9 @@ Item {
                             totalCount: root.effectiveRightLayout.length
                             paintMaterialPill: root.shouldPaintMaterialPill(modelData)
                             bgColor: root.getMaterialPillColor(modelData)
+                            monitorName: root.monitorName
                             Loader {
+                                property string monitorName: root.monitorName
                                 Layout.fillHeight: true
                                 source: root.getWidgetUrl(modelData)
                                 onLoaded: {
@@ -373,7 +392,9 @@ Item {
                         Layout.fillHeight: true
                         currentIndex: index
                         totalCount: root.effectiveRightLayout.length
+                        monitorName: root.monitorName
                         Loader {
+                            property string monitorName: root.monitorName
                             Layout.fillHeight: true
                             source: root.getWidgetUrl(modelData)
                             onLoaded: {
@@ -387,6 +408,7 @@ Item {
                 Component {
                     id: rightNoGroupDelegate
                     Loader {
+                        property string monitorName: root.monitorName
                         Layout.fillHeight: false
                         Layout.topMargin: root.currentBottom ? -5 : 3
                         source: root.getWidgetUrl(modelData)

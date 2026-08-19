@@ -19,7 +19,7 @@ StyledListView { // Scrollable window
         required property var modelData
         popup: root.popup
         width: ListView.view.width // https://doc.qt.io/qt-6/qml-qtquick-listview.html
-        notificationGroup: popup ? 
+        notificationGroup: popup ?
             Notifications.popupGroupsByAppName[modelData] :
             Notifications.groupsByAppName[modelData]
     }

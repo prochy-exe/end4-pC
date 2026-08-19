@@ -35,6 +35,10 @@ Rectangle {
             Layout.fillWidth: true
             sourceComponent: StyledTextArea { // Input area
                 id: inputTextArea
+                activeFocusOnPress: true
+                hoverEnabled: true
+                readOnly: false
+                enabled: true
                 placeholderText: root.placeholderText
                 wrapMode: TextEdit.Wrap
                 textFormat: TextEdit.PlainText
@@ -42,6 +46,12 @@ Rectangle {
                 color: Appearance.colors.colOnLayer1
                 padding: 15
                 background: null
+                onHoveredChanged: {
+                    // Hyprland can hand focus back to an underlying window on pointer motion;
+                    // keep the translator field focused while the pointer is over it.
+                    if (hovered && enabled && !readOnly)
+                        forceActiveFocus()
+                }
                 onTextChanged: root.inputTextChanged()
             }
         }

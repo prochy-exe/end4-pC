@@ -18,7 +18,7 @@ Item {
     property real iconSize:      23
     property real btnSize:       28
     property real btnSpacing:    2
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
     property bool vertical:    Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     property bool isMaterial:  Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     property var pinnedApps: Config.options?.dock.pinnedApps ?? []

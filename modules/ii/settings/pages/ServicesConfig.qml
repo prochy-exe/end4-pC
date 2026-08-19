@@ -76,6 +76,16 @@ ContentPage {
         }
 
         ContentSection {
+            icon: "music_note"
+            shape: MaterialShape.Shape.Sunny
+            title: Translation.tr("Media")
+
+            // "Super+M menu elements" moved to Interface (Settings > Interface
+            // > Super+M Menu) - it's UI-surface config, not a service.
+            MediaPriorityList {}
+        }
+
+        ContentSection {
             icon: "music_cast"
             shape: MaterialShape.Shape.Oval
             title: Translation.tr("Music Recognition")
@@ -101,6 +111,29 @@ ContentPage {
                     stepSize: 1
                     onValueChanged: {
                         Config.options.musicRecognition.interval = value;
+                    }
+                }
+            }
+        }
+
+        ContentSection {
+            icon: "screen_record"
+            shape: MaterialShape.Shape.Arch
+            title: Translation.tr("Screen Recording")
+
+            GroupedList {
+                ConfigSlider {
+                    Layout.fillWidth: true
+                    buttonIcon: "videocam"
+                    text: Translation.tr("Recording frame rate")
+                    usePercentTooltip: false
+                    value: Config.options.screenRecord.frameRate
+                    from: 10
+                    to: 144
+                    stepSize: 1
+                    stopIndicatorValues: [30, 60, 90, 120]
+                    onValueChanged: {
+                        Config.options.screenRecord.frameRate = value;
                     }
                 }
             }
@@ -183,6 +216,95 @@ ContentPage {
                             Config.options.search.clipboardVideoProcessing = checked;
                         }
                     }
+
+                    ConfigSwitch {
+                        buttonIcon: "auto_fix_high"
+                        text: Translation.tr("Enable Smart Paste transforms")
+                        checked: Config.options.search.clipboardSmartPaste.enable
+                        onCheckedChanged: {
+                            Config.options.search.clipboardSmartPaste.enable = checked;
+                        }
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "content_paste_go"
+                        text: Translation.tr("Auto rewrite clipboard when copying links")
+                        checked: Config.options.search.clipboardSmartPaste.autoRewriteClipboardOnCopy
+                        enabled: Config.options.search.clipboardSmartPaste.enable
+                        onCheckedChanged: {
+                            Config.options.search.clipboardSmartPaste.autoRewriteClipboardOnCopy = checked;
+                        }
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "link_off"
+                        text: Translation.tr("Strip tracking parameters from URLs")
+                        checked: Config.options.search.clipboardSmartPaste.stripTrackingParams
+                        enabled: Config.options.search.clipboardSmartPaste.enable
+                        onCheckedChanged: {
+                            Config.options.search.clipboardSmartPaste.stripTrackingParams = checked;
+                        }
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "dynamic_feed"
+                        text: Translation.tr("Rewrite social links for better embeds")
+                        checked: Config.options.search.clipboardSmartPaste.rewriteSocialEmbeds
+                        enabled: Config.options.search.clipboardSmartPaste.enable
+                        onCheckedChanged: {
+                            Config.options.search.clipboardSmartPaste.rewriteSocialEmbeds = checked;
+                        }
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "alternate_email"
+                        text: Translation.tr("Copy X/Twitter links to a custom domain")
+                        checked: Config.options.search.clipboardSmartPaste.rewriteXTwitter
+                        enabled: Config.options.search.clipboardSmartPaste.enable
+                            && Config.options.search.clipboardSmartPaste.rewriteSocialEmbeds
+                        onCheckedChanged: {
+                            Config.options.search.clipboardSmartPaste.rewriteXTwitter = checked;
+                        }
+                    }
+
+                    ConfigTextArea {
+                        Layout.fillWidth: true
+                        fieldWidth: 230
+                        buttonIcon: "link"
+                        text: Translation.tr("X/Twitter replacement domain")
+                        value: Config.options.search.clipboardSmartPaste.xTwitterReplacementDomain
+                        enabled: Config.options.search.clipboardSmartPaste.enable
+                            && Config.options.search.clipboardSmartPaste.rewriteSocialEmbeds
+                            && Config.options.search.clipboardSmartPaste.rewriteXTwitter
+                        onValueChanged: {
+                            Config.options.search.clipboardSmartPaste.xTwitterReplacementDomain = value;
+                        }
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "photo_camera"
+                        text: Translation.tr("Copy Instagram links to a custom domain")
+                        checked: Config.options.search.clipboardSmartPaste.rewriteInstagram
+                        enabled: Config.options.search.clipboardSmartPaste.enable
+                            && Config.options.search.clipboardSmartPaste.rewriteSocialEmbeds
+                        onCheckedChanged: {
+                            Config.options.search.clipboardSmartPaste.rewriteInstagram = checked;
+                        }
+                    }
+
+                    ConfigTextArea {
+                        Layout.fillWidth: true
+                        fieldWidth: 230
+                        buttonIcon: "link"
+                        text: Translation.tr("Instagram replacement domain")
+                        value: Config.options.search.clipboardSmartPaste.instagramReplacementDomain
+                        enabled: Config.options.search.clipboardSmartPaste.enable
+                            && Config.options.search.clipboardSmartPaste.rewriteSocialEmbeds
+                            && Config.options.search.clipboardSmartPaste.rewriteInstagram
+                        onValueChanged: {
+                            Config.options.search.clipboardSmartPaste.instagramReplacementDomain = value;
+                        }
+                    }
                 }
             }
 
@@ -196,6 +318,59 @@ ContentPage {
                         checked: Config.options.search.bitwardenDismissOnInteract
                         onCheckedChanged: {
                             Config.options.search.bitwardenDismissOnInteract = checked;
+                        }
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "timer"
+                        text: Translation.tr("Show TOTP seconds remaining in actions")
+                        checked: Config.options.search.bitwardenTotp.showCountdown
+                        onCheckedChanged: {
+                            Config.options.search.bitwardenTotp.showCountdown = checked;
+                        }
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "content_paste_off"
+                        text: Translation.tr("Auto-clear copied TOTP from clipboard")
+                        checked: Config.options.search.bitwardenTotp.autoClearClipboard
+                        onCheckedChanged: {
+                            Config.options.search.bitwardenTotp.autoClearClipboard = checked;
+                        }
+                    }
+
+                    ConfigSpinBox {
+                        icon: "timer_off"
+                        text: Translation.tr("Auto-clear delay (s)")
+                        enabled: Config.options.search.bitwardenTotp.autoClearClipboard
+                        value: Config.options.search.bitwardenTotp.autoClearSeconds
+                        from: 1
+                        to: 120
+                        stepSize: 1
+                        onValueChanged: {
+                            Config.options.search.bitwardenTotp.autoClearSeconds = value;
+                        }
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "shield_lock"
+                        text: Translation.tr("Do not overwrite clipboard if recently copied")
+                        checked: Config.options.search.bitwardenTotp.protectRecentClipboard
+                        onCheckedChanged: {
+                            Config.options.search.bitwardenTotp.protectRecentClipboard = checked;
+                        }
+                    }
+
+                    ConfigSpinBox {
+                        icon: "av_timer"
+                        text: Translation.tr("Recent-copy protection window (s)")
+                        enabled: Config.options.search.bitwardenTotp.protectRecentClipboard
+                        value: Config.options.search.bitwardenTotp.protectRecentClipboardSeconds
+                        from: 1
+                        to: 60
+                        stepSize: 1
+                        onValueChanged: {
+                            Config.options.search.bitwardenTotp.protectRecentClipboardSeconds = value;
                         }
                     }
                 }

@@ -6,7 +6,7 @@ import QtQuick.Layouts
 
 MouseArea {
     id: root
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
     property bool vertical: false
     property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
     property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3

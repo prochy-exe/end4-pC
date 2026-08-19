@@ -31,13 +31,29 @@ Scope {
     Process {
         id: unlockKeyringProc
         onExited: (exitCode, exitStatus) => {
+            console.warn(`[KeyringUnlock DEBUG] unlock.sh exited code=${exitCode} status=${exitStatus}`)
             KeyringStorage.fetchKeyringData();
+            keyringDebugCheckProc.running = true;
+        }
+    }
+    Process {
+        id: keyringDebugCheckProc
+        command: ["bash", "-c", Quickshell.shellPath("scripts/keyring/is_unlocked.sh")]
+        onExited: (exitCode, exitStatus) => {
+            console.warn(`[KeyringUnlock DEBUG] post-unlock is_unlocked.sh exitCode=${exitCode} (0=unlocked)`)
         }
     }
     function unlockKeyring() {
+        // Fingerprint unlock never sees a password (currentText is empty in that
+        // case) - fall back to the last one typed successfully this session.
+        const password = lockContext.currentText.length > 0
+            ? lockContext.currentText
+            : lockContext.lastKnownPassword
+        console.warn(`[KeyringUnlock DEBUG] unlockKeyring() called, password.length=${password.length}`)
+        if (password.length === 0) return
         unlockKeyringProc.exec({
             environment: ({
-                "UNLOCK_PASSWORD": lockContext.currentText
+                "UNLOCK_PASSWORD": password
             }),
             command: ["bash", "-c", Quickshell.shellPath("scripts/keyring/unlock.sh")]
         })
@@ -126,7 +142,44 @@ Scope {
             + "decides to keyboard-unfocus the lock screen"
 
         onPressed: {
+            console.warn(`[WakeRefocus DEBUG] lockFocus GlobalShortcut fired at ${new Date().toISOString()}, screenLocked=${GlobalStates.screenLocked}`)
             lockContext.shouldReFocus();
+            // hypridle's after_sleep_cmd can fire before Hyprland has fully
+            // re-initialized outputs that were powered off during sleep, so a
+            // single immediate refocus can silently miss those - their lock
+            // surface is left showing a stale buffer until something else (e.g.
+            // a mouse move) nudges the compositor into recompositing them.
+            // Retry once shortly after as a safety net.
+            wakeRefocusRetryTimer.restart();
+        }
+    }
+
+    Timer {
+        id: wakeRefocusRetryTimer
+        interval: 500
+        onTriggered: {
+            console.warn(`[WakeRefocus DEBUG] retry timer fired at ${new Date().toISOString()}`)
+            lockContext.shouldReFocus()
+        }
+    }
+
+    Process {
+        id: keyringLockedCheckProc
+        command: ["bash", "-c", Quickshell.shellPath("scripts/keyring/is_unlocked.sh")]
+        onExited: (exitCode, exitStatus) => {
+            // hyprlock has no wiring to KeyringStorage's unlock flow, so locking
+            // via it here wouldn't actually unlock the keyring - skip in that
+            // case rather than show a lock screen that doesn't help.
+            if (exitCode !== 0 && !Config.options.lock.useHyprlock) {
+                // Keyring is still locked and nothing else unlocked it (e.g. via
+                // screen unlock) since this Hyprland instance started - show the
+                // lock screen so entering the password also unlocks the keyring,
+                // instead of leaving it to whichever app first queries a secret
+                // (which would otherwise trigger gnome-keyring's own popup).
+                GlobalStates.screenLocked = true;
+            } else {
+                KeyringStorage.fetchKeyringData();
+            }
         }
     }
 
@@ -134,6 +187,8 @@ Scope {
         if (!Config.ready || !Persistent.ready) return;
         if (Config.options.lock.launchOnStartup && Persistent.isNewHyprlandInstance) {
             root.lock();
+        } else if (Config.options.lock.security.unlockKeyring && Persistent.isNewHyprlandInstance) {
+            keyringLockedCheckProc.running = true;
         } else {
             KeyringStorage.fetchKeyringData();
         }

@@ -18,9 +18,25 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.namespace: "quickshell:regionSelector"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: root.phase === RegionSelection.Phase.Select
+    // With multiple monitors, one RegionSelection window exists per screen.
+    // Once a selection is locked on one of them, only that window should
+    // hold exclusive keyboard focus - otherwise every window keeps
+    // requesting it simultaneously and the compositor may leave focus on a
+    // window whose own selectionLocked is false, silently swallowing
+    // Ctrl+C/Escape there instead of where the selection actually is.
+    property bool keyboardFocusAllowed: true
+    WlrLayershell.keyboardFocus: (root.phase === RegionSelection.Phase.Select && root.keyboardFocusAllowed)
         ? WlrKeyboardFocus.Exclusive
         : WlrKeyboardFocus.None
+    // Even with the focus coordination above, which window actually ends up
+    // with Wayland keyboard focus isn't fully in our control - so Ctrl+C
+    // doesn't act on its own local state. Whichever window catches the key
+    // just asks the shared parent (RegionSelector.qml) to relay it to
+    // whichever window actually holds the locked selection.
+    property bool isActiveMonitor: false
+    property bool anySelectionLocked: false
+    property int confirmSelectionSignal: 0
+    signal confirmRequested()
     exclusionMode: ExclusionMode.Ignore
     anchors {
         left: true
@@ -39,6 +55,13 @@ PanelWindow {
     property bool recordSystemAudio: Config.options.screenRecord.recordSystemAudio
     property bool recordMicAudio: Config.options.screenRecord.recordMicAudio
     property bool copyToClipboard: true
+    // Toggled via the toolbar, same as recordSystemAudio/recordMicAudio -
+    // clicking a monitor still commits/starts the capture, this just picks
+    // which capture that click performs.
+    property bool allMonitorsMode: false
+    // Re-encodes the recording for the smallest file size that still holds
+    // up visually, for sharing on socials/chat apps with upload limits.
+    property bool socialMode: false
     property bool showControls: true
     property real cursorGlobalX: -1
     property real cursorGlobalY: -1
@@ -51,6 +74,9 @@ PanelWindow {
     property real editStartRegionY: 0
     property real editStartRegionWidth: 0
     property real editStartRegionHeight: 0
+    property bool ocrInProgress: false
+    property bool ocrReady: false
+    property string ocrResultText: ""
     property var phase: RegionSelection.Phase.Select
     onVisibleChanged: {
         if (root.visible && root.phase === RegionSelection.Phase.Select) {
@@ -71,6 +97,7 @@ PanelWindow {
         } else if (root.lastSelectionMode === RegionSelection.SelectionMode.Monitor) {
             // Leaving monitor mode should clear monitor-wide highlight state.
             root.resetSelectionState();
+            root.allMonitorsMode = false;
         }
         root.lastSelectionMode = root.selectionMode;
     }
@@ -86,6 +113,7 @@ PanelWindow {
     }
     signal recordingStarted()
     signal dismiss()
+    signal ocrTranslateRequested(text: string)
     onRecordSystemAudioChanged: Config.options.screenRecord.recordSystemAudio = root.recordSystemAudio
     onRecordMicAudioChanged: Config.options.screenRecord.recordMicAudio = root.recordMicAudio
 
@@ -97,15 +125,15 @@ PanelWindow {
 
     Shortcut {
         sequence: "Ctrl+C"
-        enabled: root.visible
-            && root.phase === RegionSelection.Phase.Select
-            && root.selectionLocked
-            && root.regionWidth > 0
-            && root.regionHeight > 0
-        onActivated: {
-            root.selectionLocked = false
-            root.snip(true)
-        }
+        enabled: root.visible && root.phase === RegionSelection.Phase.Select && root.anySelectionLocked
+        onActivated: root.confirmRequested()
+    }
+
+    onConfirmSelectionSignalChanged: {
+        if (!root.isActiveMonitor) return
+        if (!root.selectionLocked || root.regionWidth <= 0 || root.regionHeight <= 0) return
+        root.selectionLocked = false
+        root.snip(true)
     }
 
     // Styles
@@ -193,6 +221,12 @@ PanelWindow {
 
     // Config
     property bool isCircleSelection: (root.selectionMode === RegionSelection.SelectionMode.Circle)
+    readonly property bool isOcrAction: root.action === RegionSelection.SnipAction.CharRecognition
+    readonly property bool isRectOrCircleSelection: root.selectionMode === RegionSelection.SelectionMode.RectCorners
+        || root.selectionMode === RegionSelection.SelectionMode.Circle
+    readonly property bool hideOcrGuides: root.isOcrAction
+        && root.isRectOrCircleSelection
+        && (root.ocrInProgress || root.ocrReady)
     property bool enableWindowRegions: Config.options.regionSelector.targetRegions.windows && root.selectionMode === RegionSelection.SelectionMode.RectCorners
     property bool enableLayerRegions: Config.options.regionSelector.targetRegions.layers && root.selectionMode === RegionSelection.SelectionMode.RectCorners
     property bool enableContentRegions: Config.options.regionSelector.targetRegions.content && root.selectionMode === RegionSelection.SelectionMode.RectCorners
@@ -206,8 +240,7 @@ PanelWindow {
         return (root.targetedRegionX >= 0 && root.targetedRegionY >= 0)
     }
     function setRegionToTargeted() {
-        const isRecordingAction = root.action === RegionSelection.SnipAction.Record || root.action === RegionSelection.SnipAction.RecordWithSound;
-        const padding = isRecordingAction ? 0 : Config.options.regionSelector.targetRegions.selectionPadding; // Make borders not cut off n stuff
+        const padding = 0;
         root.regionX = root.targetedRegionX - padding;
         root.regionY = root.targetedRegionY - padding;
         root.regionWidth = root.targetedRegionWidth + padding * 2;
@@ -260,6 +293,12 @@ PanelWindow {
     }
 
     function resetSelectionState() {
+        if (ocrProc.running)
+            ocrProc.running = false;
+        ocrTimeoutTimer.stop();
+        root.ocrInProgress = false;
+        root.ocrReady = false;
+        root.ocrResultText = "";
         root.selectionLocked = false;
         root.selectionFromTargetRegion = false;
         root.dragging = false;
@@ -455,22 +494,33 @@ PanelWindow {
         const commandCopyToClipboard = shouldForceClipboard ? true : root.copyToClipboard
         let commandX = root.regionX * root.monitorScale;
         let commandY = root.regionY * root.monitorScale;
+        let commandWidth = root.regionWidth * root.monitorScale;
+        let commandHeight = root.regionHeight * root.monitorScale;
         if (screenshotAction === ScreenshotAction.Action.Record || screenshotAction === ScreenshotAction.Action.RecordWithSound) {
-            // wf-recorder geometry is in global compositor coordinates.
-            commandX = (root.regionX + root.monitorOffsetX) * root.monitorScale;
-            commandY = (root.regionY + root.monitorOffsetY) * root.monitorScale;
+            // wf-recorder geometry is in global compositor (logical) coordinates.
+            // Do not multiply by monitor scale here.
+            commandX = root.regionX + root.monitorOffsetX;
+            commandY = root.regionY + root.monitorOffsetY;
+            commandWidth = root.regionWidth;
+            commandHeight = root.regionHeight;
         }
+        if (screenshotAction === ScreenshotAction.Action.CharRecognition) {
+            root.startOcrCapture(commandX, commandY, commandWidth, commandHeight)
+            return
+        }
+
         const command = ScreenshotAction.getCommand(
             commandX, //
             commandY, //
-            root.regionWidth * root.monitorScale,// 
-            root.regionHeight * root.monitorScale, //
+            commandWidth, //
+            commandHeight, //
             root.screenshotPath, //
             screenshotAction, //
             screenshotDir,
             root.recordSystemAudio,
             root.recordMicAudio,
-            commandCopyToClipboard
+            commandCopyToClipboard,
+            root.socialMode
         )
         Quickshell.execDetached(command);
         if (root.action == RegionSelection.SnipAction.Record || root.action == RegionSelection.SnipAction.RecordWithSound) {
@@ -480,6 +530,155 @@ PanelWindow {
         } else {
             root.dismiss();
         }
+    }
+
+    // No region/monitor to select here - captures every monitor at once,
+    // packed into one row left to right with no vertical offset (see
+    // record.sh's --all-monitors / screenshot_all_monitors.sh for why: a
+    // real-position capture leaves black bars wherever monitors don't
+    // share the same y-range).
+    function captureAllMonitors() {
+        if (root.action === RegionSelection.SnipAction.Record || root.action === RegionSelection.SnipAction.RecordWithSound) {
+            const command = [Directories.recordScriptPath, "--all-monitors"];
+            if (root.recordSystemAudio) command.push("--system-audio");
+            if (root.recordMicAudio) command.push("--mic");
+            if (root.copyToClipboard) command.push("--copy-after");
+            if (root.socialMode) command.push("--social");
+            Quickshell.execDetached(command);
+            root.recordingStarted();
+            root.phase = RegionSelection.Phase.Post;
+            return;
+        }
+
+        const saveDir = Config.options.screenSnip.savePath !== "" ? Config.options.screenSnip.savePath : "";
+        const command = [Directories.screenshotAllMonitorsScriptPath];
+        if (saveDir !== "") command.push(`--save-dir=${saveDir}`);
+        if (!root.copyToClipboard) command.push("--no-clipboard");
+        Quickshell.execDetached(command);
+        root.dismiss();
+    }
+
+    function startOcrCapture(x, y, width, height) {
+        const rx = Math.round(x)
+        const ry = Math.round(y)
+        const rw = Math.round(width)
+        const rh = Math.round(height)
+        const path = StringUtils.shellSingleQuoteEscape(`${root.screenshotPath ?? ""}`)
+
+        if (rw <= 0 || rh <= 0 || path.length === 0) {
+            Quickshell.execDetached(["notify-send", Translation.tr("OCR"), Translation.tr("Invalid OCR region"), "-a", "Shell"])
+            root.dismiss()
+            return
+        }
+
+        if (ocrProc.running)
+            ocrProc.running = false
+
+        root.ocrInProgress = true
+        root.ocrReady = false
+        root.ocrResultText = ""
+        ocrProc.buffer = ""
+        ocrProc.errBuffer = ""
+
+        const cmd = [
+            "set -e",
+            `trap \"rm -f '${path}'\" EXIT`,
+            `magick '${path}' -crop ${rw}x${rh}+${rx}+${ry} +repage '${path}'`,
+            `tesseract '${path}' stdout`
+        ].join(" && ")
+
+        ocrProc.command = ["bash", "-lc", cmd]
+        ocrTimeoutTimer.restart()
+        ocrProc.running = true
+    }
+
+    function finishOcrCapture(exitCode) {
+        ocrTimeoutTimer.stop()
+        root.ocrInProgress = false
+
+        if (exitCode !== 0) {
+            const err = `${ocrProc.errBuffer ?? ""}`.trim()
+            Quickshell.execDetached(["notify-send", Translation.tr("OCR"), err.length > 0 ? err : Translation.tr("OCR failed"), "-a", "Shell"])
+            root.dismiss()
+            return
+        }
+
+        const text = `${ocrProc.buffer ?? ""}`.trim()
+        if (text.length === 0) {
+            Quickshell.execDetached(["notify-send", Translation.tr("OCR"), Translation.tr("No text detected"), "-a", "Shell"])
+            root.dismiss()
+            return
+        }
+
+        root.ocrResultText = text
+        root.ocrReady = true
+        GlobalStates.lastOcrText = text
+        GlobalStates.lastOcrCapturedMs = Date.now()
+        Quickshell.clipboardText = text
+        Quickshell.execDetached(["notify-send", Translation.tr("OCR"), Translation.tr("Text copied to clipboard"), "-a", "Shell"])
+    }
+
+    function cancelStuckOcr() {
+        if (!ocrProc.running)
+            return
+        ocrProc.running = false
+        root.ocrInProgress = false
+        Quickshell.execDetached(["notify-send", Translation.tr("OCR"), Translation.tr("OCR timed out after 15s"), "-a", "Shell"])
+        root.dismiss()
+    }
+
+    function applyOcrCopy() {
+        Quickshell.clipboardText = root.ocrResultText
+        root.dismiss()
+    }
+
+    function applyOcrTranslate() {
+        if (!Config.options.sidebar.translator.enable) {
+            Quickshell.execDetached(["notify-send", Translation.tr("Translator"), Translation.tr("Translator sidebar is disabled in settings"), "-a", "Shell"])
+            return
+        }
+        root.ocrTranslateRequested(`${root.ocrResultText ?? ""}`)
+        root.dismiss()
+    }
+
+    function applyOcrReplace() {
+        Cliphist.pasteText(root.ocrResultText)
+        root.dismiss()
+    }
+
+    Process {
+        id: ocrProc
+        running: false
+        command: ["bash", "-lc", "true"]
+        property string buffer: ""
+        property string errBuffer: ""
+
+        stdout: SplitParser {
+            onRead: data => {
+                if (ocrProc.buffer.length > 0)
+                    ocrProc.buffer += "\n"
+                ocrProc.buffer += data
+            }
+        }
+
+        stderr: SplitParser {
+            onRead: data => {
+                if (ocrProc.errBuffer.length > 0)
+                    ocrProc.errBuffer += "\n"
+                ocrProc.errBuffer += data
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            root.finishOcrCapture(exitCode)
+        }
+    }
+
+    Timer {
+        id: ocrTimeoutTimer
+        interval: 15000
+        repeat: false
+        onTriggered: root.cancelStuckOcr()
     }
 
     // Only clickable in Selection phase
@@ -507,7 +706,7 @@ PanelWindow {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        enabled: root.phase === RegionSelection.Phase.Select
+        enabled: root.phase === RegionSelection.Phase.Select && !root.ocrInProgress && !root.ocrReady
         cursorShape: Qt.CrossCursor
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
@@ -581,6 +780,10 @@ PanelWindow {
                 }
                 if (root.mouseButton === Qt.RightButton) {
                     root.resetSelectionState();
+                    return;
+                }
+                if (root.allMonitorsMode) {
+                    root.captureAllMonitors();
                     return;
                 }
                 root.captureOrLockSelection();
@@ -701,6 +904,14 @@ PanelWindow {
             z: 2
             anchors.fill: parent
             active: root.selectionMode !== RegionSelection.SelectionMode.Circle
+            // Without this, the dim overlay + border stay composited on
+            // screen through Phase.Post (recording in progress) - the mask
+            // change to null (see `mask: Region` above) only makes it
+            // click-through, it doesn't stop it from being rendered, so
+            // wf-recorder's screencopy-based capture (which just grabs
+            // whatever's currently composited) was baking the dim/border
+            // into the actual recording for its entire duration.
+            visible: root.phase === RegionSelection.Phase.Select
             sourceComponent: RectCornersSelectionDetails {
                 regionX: root.regionX
                 regionY: root.regionY
@@ -708,10 +919,10 @@ PanelWindow {
                 regionHeight: root.regionHeight
                 mouseX: mouseArea.mouseX
                 mouseY: mouseArea.mouseY
-                showAimLines: root.cursorOnThisMonitor
+                showAimLines: root.cursorOnThisMonitor && !root.hideOcrGuides
                 color: root.selectionBorderColor
                 overlayColor: root.overlayColor
-                breathingBorderOnly: root.phase === RegionSelection.Phase.Post
+                breathingBorderOnly: root.ocrInProgress
             }
         }
 
@@ -719,6 +930,7 @@ PanelWindow {
             z: 2
             anchors.fill: parent
             active: root.selectionMode === RegionSelection.SelectionMode.Circle
+            visible: root.phase === RegionSelection.Phase.Select
             sourceComponent: CircleSelectionDetails {
                 color: root.selectionBorderColor
                 overlayColor: root.overlayColor
@@ -729,7 +941,11 @@ PanelWindow {
         // The thing to the bottom-right with an icon
         CursorGuide {
             z: 9999
-            visible: root.phase === RegionSelection.Phase.Select && root.cursorOnThisMonitor
+            visible: root.phase === RegionSelection.Phase.Select
+                && root.cursorOnThisMonitor
+                && !root.hideOcrGuides
+                && !root.ocrInProgress
+                && !root.ocrReady
             x: root.dragging ? root.regionX + root.regionWidth : mouseArea.mouseX
             y: root.dragging ? root.regionY + root.regionHeight : mouseArea.mouseY
             action: root.action
@@ -827,7 +1043,12 @@ PanelWindow {
         Row {
             id: regionSelectionControls
             z: 10
-            visible: root.showControls && root.phase === RegionSelection.Phase.Select
+            // Hidden while actively dragging out a rect/circle selection so
+            // it doesn't sit in the way of the area being selected -
+            // reappears as soon as the drag ends, whether that locks in a
+            // selection or gets cancelled. Monitor-mode clicks never set
+            // dragging (see mouseArea.onPressed), so this doesn't affect it.
+            visible: root.showControls && root.phase === RegionSelection.Phase.Select && !root.ocrInProgress && !root.ocrReady && !root.dragging
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 bottom: parent.bottom
@@ -866,6 +1087,12 @@ PanelWindow {
                 Synchronizer on copyToClipboard {
                     property alias source: root.copyToClipboard
                 }
+                Synchronizer on allMonitorsMode {
+                    property alias source: root.allMonitorsMode
+                }
+                Synchronizer on socialMode {
+                    property alias source: root.socialMode
+                }
                 onSelectMonitor: root.updateMonitorHighlight()
                 onDismiss: root.dismiss();
             }
@@ -885,12 +1112,25 @@ PanelWindow {
             visible: root.selectionLocked
                 && !root.selectionFromTargetRegion
                 && root.phase === RegionSelection.Phase.Select
+                && !root.ocrInProgress
+                && !root.ocrReady
                 && root.selectionMode === RegionSelection.SelectionMode.RectCorners
                 && root.regionWidth > 0
                 && root.regionHeight > 0
             spacing: 8
             x: Math.max(0, Math.min(parent.width - width, root.regionX + (root.regionWidth - width) / 2))
-            y: Math.min(parent.height - height, root.regionY + root.regionHeight + 8)
+            // Prefer just below the selection, but flip above it instead
+            // when that would overlap the main toolbar pinned to the
+            // screen bottom (which reappears at the same moment this does,
+            // once the selection locks) - avoids the two fighting for the
+            // same space when the selection reaches near the bottom edge.
+            y: {
+                const belowY = root.regionY + root.regionHeight + 8
+                const toolbarTop = parent.height - regionSelectionControls.height - 8
+                if (belowY + height + 8 > toolbarTop)
+                    return Math.max(0, root.regionY - height - 8)
+                return Math.min(parent.height - height, belowY)
+            }
 
             ToolbarPairedFab {
                 iconText: "check"
@@ -910,6 +1150,72 @@ PanelWindow {
                 }
                 StyledToolTip {
                     text: Translation.tr("Cancel selection")
+                }
+            }
+        }
+
+        Column {
+            id: ocrPostControls
+            z: 12
+            visible: root.ocrInProgress || root.ocrReady
+            spacing: 8
+            x: Math.max(0, Math.min(parent.width - width, root.regionX + (root.regionWidth - width) / 2))
+            y: Math.min(parent.height - height, root.regionY + root.regionHeight + 8)
+
+            Toolbar {
+                visible: root.ocrReady
+                enableShadow: true
+                padding: 6
+
+                ToolbarPairedFab {
+                    iconText: "content_copy"
+                    enableShadow: false
+                    onClicked: root.applyOcrCopy()
+                    StyledToolTip { text: Translation.tr("Copy") }
+                }
+
+                ToolbarPairedFab {
+                    iconText: "translate"
+                    enableShadow: false
+                    onClicked: root.applyOcrTranslate()
+                    StyledToolTip { text: Translation.tr("Translate") }
+                }
+
+                ToolbarPairedFab {
+                    iconText: "assignment_return"
+                    enableShadow: false
+                    onClicked: root.applyOcrReplace()
+                    StyledToolTip { text: Translation.tr("Replace") }
+                }
+
+                ToolbarPairedFab {
+                    iconText: "close"
+                    enableShadow: false
+                    onClicked: root.dismiss()
+                    StyledToolTip { text: Translation.tr("Dismiss") }
+                }
+            }
+
+            Toolbar {
+                visible: root.ocrInProgress
+                enableShadow: true
+                padding: 6
+
+                StyledText {
+                    text: Translation.tr("Recognizing text...")
+                    color: Appearance.colors.colOnLayer1
+                    font.pixelSize: Appearance.font.pixelSize.normal
+                }
+
+                ToolbarPairedFab {
+                    iconText: "close"
+                    enableShadow: false
+                    onClicked: {
+                        if (ocrProc.running)
+                            ocrProc.running = false
+                        root.dismiss()
+                    }
+                    StyledToolTip { text: Translation.tr("Cancel OCR") }
                 }
             }
         }

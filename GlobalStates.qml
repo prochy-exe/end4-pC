@@ -9,14 +9,19 @@ pragma ComponentBehavior: Bound
 
 Singleton {
     id: root
+    // Keep clipboard service alive so Smart Paste auto-rewrite runs globally.
+    readonly property var _cliphistBootstrap: Cliphist
     property bool barOpen: true
+    property bool cheatsheetOpen: false
     property bool crosshairOpen: false
     property bool sidebarLeftOpen: false
     property bool sidebarRightOpen: false
     property bool mediaControlsOpen: false
+    property bool mediaTickerOpen: false
     property bool osdBrightnessOpen: false
     property bool settingsOpen: false
     property bool osdVolumeOpen: false
+    property bool popupEditorOpen: false
     property bool oskOpen: false
     property bool overlayOpen: false
     property bool overviewOpen: false
@@ -33,9 +38,17 @@ Singleton {
     property bool workspaceShowNumbers: false
     property string settingsPage: ""
     property Item currentPageInstance: null
+    property string sidebarLeftRequestedTab: ""
+    property string sidebarLeftTranslatorPrefill: ""
+    property int sidebarLeftTranslatorPrefillNonce: 0
+    property bool sidebarLeftTranslatorPrefillArmed: false
+    property int sidebarLeftTranslatorResetNonce: 0
+    property bool ocrActionsPopupOpen: false
     property list<real> visualizerPoints: []
     property list<real> visualizerOutputPoints: []
     property list<real> visualizerInputPoints: []
+    property string lastOcrText: ""
+    property real lastOcrCapturedMs: 0
     property bool desktopWidgetKeyboardFocus: false
     property bool desktopMenuOpen: false
     property var desktopMenuScreen: null

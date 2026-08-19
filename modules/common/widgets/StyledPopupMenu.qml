@@ -7,7 +7,7 @@ import qs.modules.common.widgets // Para las sombras y estilos
 Item {
     id: root
     
-    // Propiedades que recibe desde BarConfig.qml
+    // Propiedades que recibe desde InterfaceConfig.qml (Bar settings)
     property alias model: repeater.model
     property var onItemSelected: (item) => {} 
     

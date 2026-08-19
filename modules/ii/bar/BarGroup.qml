@@ -4,7 +4,9 @@ import QtQuick.Layouts
 
 Item {
     id: root
-    readonly property string monitorName: root.QsWindow.window?.screen?.name ?? ""
+    // Settable from outside - see BarContent.qml's monitorName for why relying
+    // solely on QsWindow here left this permanently stuck at "".
+    property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
     property bool vertical: false
     property int currentIndex: 0
     property int totalCount: 0

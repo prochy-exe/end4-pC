@@ -37,10 +37,10 @@ StyledOverlayWidget {
 
                 BigRecorderButton {
                     materialSymbol: "photo_camera"
-                    name: "Screenshot"
+                    name: "Screenshot all monitors"
                     onClicked: {
                         GlobalStates.overlayOpen = false;
-                        Quickshell.execDetached(["bash", "-c", "grim - | wl-copy"]);
+                        Quickshell.execDetached([Directories.screenshotAllMonitorsScriptPath]);
                     }
                 }
 
@@ -52,13 +52,27 @@ StyledOverlayWidget {
                         Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "record"]);
                     }
                 }
-                
+
                 BigRecorderButton {
                     materialSymbol: "capture"
                     name: "Record screen"
                     onClicked: {
                         GlobalStates.overlayOpen = false;
-                        const command = [Directories.recordScriptPath, "--fullscreen"];
+                        const command = [Directories.recordScriptPath, "--fullscreen", "--copy-after"];
+                        if (Config.options.screenRecord.recordSystemAudio)
+                            command.push("--system-audio");
+                        if (Config.options.screenRecord.recordMicAudio)
+                            command.push("--mic");
+                        Quickshell.execDetached(command);
+                    }
+                }
+
+                BigRecorderButton {
+                    materialSymbol: "web_asset"
+                    name: "Record all monitors"
+                    onClicked: {
+                        GlobalStates.overlayOpen = false;
+                        const command = [Directories.recordScriptPath, "--all-monitors", "--copy-after"];
                         if (Config.options.screenRecord.recordSystemAudio)
                             command.push("--system-audio");
                         if (Config.options.screenRecord.recordMicAudio)

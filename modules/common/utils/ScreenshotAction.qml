@@ -25,7 +25,7 @@ Singleton {
     property string imageSearchEngineBaseUrl: Config.options.search.imageSearch.imageSearchEngineBaseUrl
     property string fileUploadApiEndpoint: "https://uguu.se/upload"
 
-    function getCommand(x, y, width, height, screenshotPath, action, saveDir = "", recordSystemAudio = false, recordMicAudio = false, copyToClipboard = true) {
+    function getCommand(x, y, width, height, screenshotPath, action, saveDir = "", recordSystemAudio = false, recordMicAudio = false, copyToClipboard = true, socialMode = false) {
         // Set command for action
         const rx = Math.round(x);
         const ry = Math.round(y);
@@ -75,7 +75,11 @@ Singleton {
                 return ["bash", "-c", `${cropInPlace} && xdg-open "${root.imageSearchEngineBaseUrl}$(${uploadAndGetUrl(screenshotPath)})" && ${cleanup}`]
                 break;
             case ScreenshotAction.Action.CharRecognition:
-                return ["bash", "-c", `${cropInPlace} && tesseract '${StringUtils.shellSingleQuoteEscape(screenshotPath)}' stdout -l $(tesseract --list-langs | awk 'NR>1{print $1}' | tr '\\n' '+' | sed 's/\\+$/\\n/') | wl-copy && ${cleanup}`]
+                return [
+                    "bash",
+                    "-c",
+                    `if timeout 15 sh -c \"${cropInPlace} && tesseract '${StringUtils.shellSingleQuoteEscape(screenshotPath)}' stdout | wl-copy\"; then notify-send 'OCR' 'Text copied to clipboard' -a 'Shell'; else notify-send 'OCR' 'OCR failed or timed out (15s)' -a 'Shell'; fi; ${cleanup}`
+                ]
                 break;
             case ScreenshotAction.Action.Record:
                 {
@@ -86,6 +90,8 @@ Singleton {
                         recordArgs.push("--mic");
                     if (copyToClipboard)
                         recordArgs.push("--copy-after");
+                    if (socialMode)
+                        recordArgs.push("--social");
                     return ["bash", "-c", `${Directories.recordScriptPath} ${recordArgs.join(" ")}`]
                 }
                 break;

@@ -49,6 +49,8 @@ Singleton {
     property string aiChats: FileUtils.trimFileProtocol(`${Directories.state}/user/ai/chats`)
     property string aiTranslationScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/ai/gemini-translate.sh`)
     property string recordScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/videos/record.sh`)
+    property string screenshotAllMonitorsScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/images/screenshot_all_monitors.sh`)
+    property string hypridleSetTimeoutsScriptPath: FileUtils.trimFileProtocol(`${Directories.scriptPath}/hypridle/set_timeouts.sh`)
     property string userAvatarPathAccountsService: FileUtils.trimFileProtocol(`/var/lib/AccountsService/icons/${SystemInfo.username}`)
     property string userAvatarPathRicersAndWeirdSystems: FileUtils.trimFileProtocol(`${Directories.home}.face`)
     property string userAvatarPathRicersAndWeirdSystems2: FileUtils.trimFileProtocol(`${Directories.home}.face.icon`)

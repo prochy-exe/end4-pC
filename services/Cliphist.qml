@@ -16,15 +16,203 @@ Singleton {
     property bool sloppySearch: Config.options?.search.sloppy ?? false
     property real scoreThreshold: 0.2
     property bool videoProcessingEnabled: Config.options?.search?.clipboardVideoProcessing ?? true
+    property list<string> rawEntries: []
     property list<string> entries: []
     property int pinRevision: 0
     property int videoMetadataRevision: 0
+    property bool suppressClipboardRewriteEvent: false
+    property real suppressAutoRewriteUntilMs: 0
+    property string lastObservedClipboardText: ""
     property var videoMetadataByEntryKey: ({})
     readonly property list<string> pinnedEntryKeys: Config.options?.search?.clipboardPinnedEntries ?? []
+    readonly property var smartPasteConfig: Config.options?.search?.clipboardSmartPaste ?? ({})
+    readonly property bool smartPasteEnabled: root.smartPasteConfig.enable ?? true
+    readonly property bool smartPasteStripTrackingParams: root.smartPasteConfig.stripTrackingParams ?? true
+    readonly property bool smartPasteRewriteSocialEmbeds: root.smartPasteConfig.rewriteSocialEmbeds ?? true
+    readonly property bool smartPasteAutoRewriteClipboardOnCopy: root.smartPasteConfig.autoRewriteClipboardOnCopy ?? true
+    readonly property bool smartPasteRewriteXTwitter: root.smartPasteConfig.rewriteXTwitter ?? true
+    readonly property bool smartPasteRewriteInstagram: root.smartPasteConfig.rewriteInstagram ?? true
+    readonly property string smartPasteXTwitterReplacementDomain: root.smartPasteConfig.xTwitterReplacementDomain ?? "fxtwitter.com"
+    readonly property string smartPasteInstagramReplacementDomain: root.smartPasteConfig.instagramReplacementDomain ?? "vxinstagram.com"
     readonly property var preparedEntries: entries.map(a => ({
         name: Fuzzy.prepare(`${a.replace(/^\s*\S+\s+/, "")}`),
         entry: a
     }))
+    readonly property list<string> knownTrackingParams: [
+        "fbclid", "gclid", "dclid", "igshid", "mc_cid", "mc_eid", "ref_src", "ref_url", "si"
+    ]
+
+    Component.onCompleted: {
+        root.lastObservedClipboardText = `${Quickshell.clipboardText ?? ""}`
+        root.maybeRewriteClipboardText()
+        if (root.autoRewriteEnabled() && !clipboardReadProc.running) {
+            clipboardReadProc.command = ["bash", "-c", "wl-paste -n --type text 2>/dev/null || true"]
+            clipboardReadProc.running = true
+        }
+    }
+
+    function shouldApplySmartPaste(entry) {
+        return root.smartPasteEnabled && !root.entryIsFileUri(entry) && !root.entryIsImage(entry)
+    }
+
+    function autoRewriteEnabled() {
+        return root.smartPasteEnabled && root.smartPasteAutoRewriteClipboardOnCopy
+    }
+
+    function suspendAutoRewrite(durationMs = 1200) {
+        root.suppressAutoRewriteUntilMs = Math.max(root.suppressAutoRewriteUntilMs, Date.now() + durationMs)
+    }
+
+    function stripTrailingPunctuation(urlToken) {
+        const match = urlToken.match(/([.,!?;:)\]]+)$/)
+        if (!match) {
+            return { core: urlToken, suffix: "" }
+        }
+        const suffix = match[1]
+        return {
+            core: urlToken.slice(0, urlToken.length - suffix.length),
+            suffix: suffix,
+        }
+    }
+
+    function removeTrackingParams(queryString) {
+        if (!root.smartPasteStripTrackingParams || queryString.length === 0) {
+            return queryString
+        }
+
+        const kept = queryString.split("&").filter(part => {
+            if (part.length === 0) return false
+            const eqIndex = part.indexOf("=")
+            const rawKey = eqIndex >= 0 ? part.slice(0, eqIndex) : part
+            const key = decodeURIComponent(rawKey).toLowerCase()
+            if (key.startsWith("utm_")) return false
+            if (root.knownTrackingParams.includes(key)) return false
+            return true
+        })
+        return kept.join("&")
+    }
+
+    function rewriteSocialHost(hostname) {
+        if (!root.smartPasteRewriteSocialEmbeds) {
+            return hostname
+        }
+
+        const sanitizeDomain = (value, fallbackValue) => {
+            const candidate = `${value ?? ""}`.trim().toLowerCase()
+            if (/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(candidate)) {
+                return candidate
+            }
+            return fallbackValue
+        }
+        const twitterTarget = sanitizeDomain(root.smartPasteXTwitterReplacementDomain, "fxtwitter.com")
+        const instagramTarget = sanitizeDomain(root.smartPasteInstagramReplacementDomain, "vxinstagram.com")
+
+        const host = hostname.toLowerCase()
+        if (root.smartPasteRewriteXTwitter && (
+            host === "twitter.com" || host === "www.twitter.com" || host === "mobile.twitter.com"
+            || host === "x.com" || host === "www.x.com" || host === "mobile.x.com"
+        )) {
+            return twitterTarget
+        }
+
+        if (root.smartPasteRewriteInstagram && (
+            host === "instagram.com" || host === "www.instagram.com" || host === "m.instagram.com"
+        )) {
+            return instagramTarget
+        }
+
+        return hostname
+    }
+
+    function rewriteUrlToken(urlToken) {
+        const parsed = root.stripTrailingPunctuation(urlToken)
+        const core = parsed.core
+        const suffix = parsed.suffix
+
+        const match = core.match(/^(https?):\/\/([^\/?#]+)([^?#]*)(\?[^#]*)?(#.*)?$/i)
+        if (!match) {
+            return urlToken
+        }
+
+        const scheme = match[1]
+        const host = match[2]
+        const path = match[3] ?? ""
+        const queryPart = match[4] ? match[4].slice(1) : ""
+        const fragment = match[5] ?? ""
+
+        const rewrittenHost = root.rewriteSocialHost(host)
+        const cleanedQuery = root.removeTrackingParams(queryPart)
+        const finalQuery = cleanedQuery.length > 0 ? `?${cleanedQuery}` : ""
+        return `${scheme}://${rewrittenHost}${path}${finalQuery}${fragment}${suffix}`
+    }
+
+    function rewriteBareSocialToken(urlToken) {
+        const parsed = root.stripTrailingPunctuation(urlToken)
+        const core = parsed.core
+        const suffix = parsed.suffix
+
+        const match = core.match(/^([^\/?#]+)([^?#]*)(\?[^#]*)?(#.*)?$/i)
+        if (!match) {
+            return urlToken
+        }
+
+        const host = match[1]
+        const path = match[2] ?? ""
+        const queryPart = match[3] ? match[3].slice(1) : ""
+        const fragment = match[4] ?? ""
+        const rewrittenHost = root.rewriteSocialHost(host)
+        const cleanedQuery = root.removeTrackingParams(queryPart)
+        const finalQuery = cleanedQuery.length > 0 ? `?${cleanedQuery}` : ""
+        return `${rewrittenHost}${path}${finalQuery}${fragment}${suffix}`
+    }
+
+    function applySmartPasteTransforms(text) {
+        if (!root.smartPasteEnabled || text === undefined || text === null) {
+            return text
+        }
+        let transformed = `${text}`.replace(/https?:\/\/[^\s<>"'\])}]+/g, matched => root.rewriteUrlToken(matched))
+        transformed = transformed.replace(/(^|[\s(])((?:www\.|mobile\.|m\.)?(?:x\.com|twitter\.com|instagram\.com)(?:\/[^\s<>"'\])}]*)?)/gi,
+            (matched, prefix, token) => `${prefix}${root.rewriteBareSocialToken(token)}`)
+        return transformed
+    }
+
+    function maybeRewriteClipboardText() {
+        if (!root.autoRewriteEnabled()) {
+            return
+        }
+
+        const current = `${Quickshell.clipboardText ?? ""}`
+        if (current.length === 0) {
+            return
+        }
+
+        root.maybeRewriteClipboardValue(current)
+    }
+
+    function maybeRewriteClipboardValue(current) {
+        if (!root.autoRewriteEnabled()) {
+            return
+        }
+
+        if (Date.now() < root.suppressAutoRewriteUntilMs) {
+            return
+        }
+
+        const currentText = `${current ?? ""}`
+        if (currentText.length === 0) {
+            return
+        }
+
+        const transformed = root.applySmartPasteTransforms(currentText)
+        if (transformed === currentText) {
+            return
+        }
+
+        root.suspendAutoRewrite(800)
+        root.suppressClipboardRewriteEvent = true
+        Quickshell.execDetached(["bash", "-c", `printf '%s' '${StringUtils.shellSingleQuoteEscape(transformed)}' | wl-copy`])
+        root.lastObservedClipboardText = transformed
+    }
 
     function toArray(value) {
         if (Array.isArray(value)) return value.slice();
@@ -35,6 +223,34 @@ Singleton {
             return out;
         }
         return [];
+    }
+
+    function historyIdentityKey(entry) {
+        const clean = StringUtils.cleanCliphistEntry(entry)
+        if (root.entryIsFileUri(entry)) {
+            return `file:${clean}`
+        }
+        if (root.entryIsImage(entry)) {
+            return `image:${clean}`
+        }
+        if (!root.autoRewriteEnabled()) {
+            return `text:${clean}`
+        }
+        return `text:${root.applySmartPasteTransforms(clean)}`
+    }
+
+    function dedupeHistoryEntries(entriesList) {
+        const seen = new Set()
+        const deduped = []
+        entriesList.forEach(entry => {
+            const key = root.historyIdentityKey(entry)
+            if (seen.has(key)) {
+                return
+            }
+            seen.add(key)
+            deduped.push(entry)
+        })
+        return deduped
     }
 
     function entryKey(entry) {
@@ -111,10 +327,14 @@ Singleton {
     }
 
     function rebuildPinsFromCurrentEntries() {
-        const availableKeys = new Set(root.entries.map(entry => root.entryKey(entry)));
-        const pins = root.normalizedPinnedEntryKeys().filter(key => availableKeys.has(key));
-        if (pins.length !== root.normalizedPinnedEntryKeys().length) {
-            root.setPinnedEntryKeys(pins);
+        // Keep persisted pins stable across boots/restarts even when cliphist
+        // temporarily reports an empty or partial list during startup.
+        const currentPins = root.toArray(root.pinnedEntryKeys)
+            .map(v => `${v}`.trim())
+            .filter(v => v.length > 0);
+        const normalized = root.normalizedPinnedEntryKeys();
+        if (normalized.length !== currentPins.length) {
+            root.setPinnedEntryKeys(normalized);
         }
     }
 
@@ -228,6 +448,7 @@ Singleton {
     }
 
     function copy(entry) {
+        root.suspendAutoRewrite()
         if (root.cliphistBinary.includes("cliphist")) { // Classic cliphist
             const copyType = root.entryIsFileUri(entry) ? "--type text/uri-list" : ""
             Quickshell.execDetached(["bash", "-c", `printf '${StringUtils.shellSingleQuoteEscape(entry)}' | ${root.cliphistBinary} decode | wl-copy ${copyType}`]);
@@ -238,11 +459,14 @@ Singleton {
         }
     }
 
-    function pasteText(text) {
-        Quickshell.execDetached(["bash", "-c", `printf '%s' '${StringUtils.shellSingleQuoteEscape(text)}' | wl-copy && sleep ${root.pasteDelay} && ${root.pressPasteCommand}`]);
+    function pasteText(text, applySmartTransform = false) {
+        root.suspendAutoRewrite()
+        const outputText = applySmartTransform ? root.applySmartPasteTransforms(text) : text
+        Quickshell.execDetached(["bash", "-c", `printf '%s' '${StringUtils.shellSingleQuoteEscape(outputText)}' | wl-copy && sleep ${root.pasteDelay} && ${root.pressPasteCommand}`]);
     }
 
-    function paste(entry) {
+    function pasteWithoutTransforms(entry) {
+        root.suspendAutoRewrite()
         if (root.cliphistBinary.includes("cliphist")) { // Classic cliphist
             const copyType = root.entryIsFileUri(entry) ? "--type text/uri-list" : ""
             Quickshell.execDetached(["bash", "-c", `printf '${StringUtils.shellSingleQuoteEscape(entry)}' | ${root.cliphistBinary} decode | wl-copy ${copyType} && sleep ${root.pasteDelay} && ${root.pressPasteCommand}`]);
@@ -253,7 +477,13 @@ Singleton {
         }
     }
 
+    function paste(entry) {
+        // Pasting from the clipboard menu should preserve selected item as-is.
+        root.pasteWithoutTransforms(entry)
+    }
+
     function superpaste(count, isImage = false) {
+        root.suspendAutoRewrite()
         // Find entries
         const targetEntries = entries.filter(entry => {
             if (!isImage) return true;
@@ -279,7 +509,27 @@ Singleton {
     }
 
     function deleteEntry(entry) {
-        deleteProc.deleteEntry(entry);
+        const targetIdentity = root.historyIdentityKey(entry)
+        const semanticTargets = root.rawEntries.filter(item => root.historyIdentityKey(item) === targetIdentity)
+
+        if (semanticTargets.length <= 1) {
+            deleteProc.deleteEntry(entry)
+            return
+        }
+
+        const deleteCommands = semanticTargets.map(item =>
+            `printf '%s\n' '${StringUtils.shellSingleQuoteEscape(item)}' | ${root.cliphistBinary} delete || true`
+        )
+        deleteSemanticProc.command = ["bash", "-c", deleteCommands.join(";")]
+        deleteSemanticProc.running = true
+    }
+
+    Process {
+        id: deleteSemanticProc
+        command: ["bash", "-c", "true"]
+        onExited: (exitCode, exitStatus) => {
+            root.refresh()
+        }
     }
 
     Process {
@@ -299,22 +549,79 @@ Singleton {
     }
 
     function wipe() {
-        const unpinned = root.entries.filter(entry => !root.isPinned(entry));
-        if (unpinned.length === 0) {
+        // Delete from raw history using semantic identities so rewritten/original
+        // variants are removed together.
+        const pinnedIdentityKeys = new Set(
+            root.entries
+                .filter(entry => root.isPinned(entry))
+                .map(entry => root.historyIdentityKey(entry))
+        )
+
+        const targets = root.rawEntries.filter(entry =>
+            !pinnedIdentityKeys.has(root.historyIdentityKey(entry))
+        )
+
+        if (targets.length === 0) {
             return;
         }
 
-        const deleteCommands = unpinned.map(entry =>
-            `printf '%s\n' '${StringUtils.shellSingleQuoteEscape(entry)}' | ${root.cliphistBinary} delete`
+        const deleteCommands = targets.map(entry =>
+            `printf '%s\n' '${StringUtils.shellSingleQuoteEscape(entry)}' | ${root.cliphistBinary} delete || true`
         );
 
-        wipeKeepPinnedProc.command = ["bash", "-c", deleteCommands.join(" && ")];
+        wipeKeepPinnedProc.command = ["bash", "-c", deleteCommands.join(";")];
         wipeKeepPinnedProc.running = true;
     }
 
     Connections {
         target: Quickshell
         function onClipboardTextChanged() {
+            const current = `${Quickshell.clipboardText ?? ""}`
+            if (root.suppressClipboardRewriteEvent) {
+                root.suppressClipboardRewriteEvent = false
+            } else {
+                root.maybeRewriteClipboardValue(current)
+            }
+            root.lastObservedClipboardText = `${Quickshell.clipboardText ?? ""}`
+            delayedUpdateTimer.restart()
+        }
+    }
+
+    Timer {
+        id: clipboardRewriteFallbackPoll
+        interval: 350
+        repeat: true
+        running: root.autoRewriteEnabled()
+        onTriggered: {
+            if (!root.autoRewriteEnabled() || clipboardReadProc.running) {
+                return
+            }
+            clipboardReadProc.command = ["bash", "-c", "wl-paste -n --type text 2>/dev/null || true"]
+            clipboardReadProc.running = true
+        }
+    }
+
+    Process {
+        id: clipboardReadProc
+        command: ["bash", "-c", "true"]
+        stdout: StdioCollector {
+            id: clipboardReadCollector
+        }
+        onExited: (exitCode, exitStatus) => {
+            if (!root.autoRewriteEnabled()) {
+                return
+            }
+
+            const current = `${clipboardReadCollector.text ?? ""}`
+            if (current === root.lastObservedClipboardText) {
+                return
+            }
+            root.lastObservedClipboardText = current
+
+            if (!root.suppressClipboardRewriteEvent && Date.now() >= root.suppressAutoRewriteUntilMs) {
+                root.maybeRewriteClipboardValue(current)
+            }
+
             delayedUpdateTimer.restart()
         }
     }
@@ -342,7 +649,8 @@ Singleton {
 
         onExited: (exitCode, exitStatus) => {
             if (exitCode === 0) {
-                root.entries = readProc.buffer
+                root.rawEntries = readProc.buffer
+                root.entries = root.dedupeHistoryEntries(root.rawEntries)
                 root.rebuildPinsFromCurrentEntries()
                 root.refreshVideoMetadataQueue()
             } else {
