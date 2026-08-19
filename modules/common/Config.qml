@@ -52,6 +52,29 @@ Singleton {
         return root.resolvePathValue(root.options?.bar ?? {}, keys, fallbackValue)
     }
 
+    function backgroundWidgetsShown(monitorName) {
+        const screens = root.options?.background?.screenList ?? []
+        return screens.length === 0 || screens.includes(monitorName)
+    }
+
+    function getBackgroundWidgetSetting(monitorName, widgetName, fallbackValue) {
+        const entry = (root.options?.background?.monitorWidgets ?? []).find(item => item.name === monitorName)
+        const value = entry?.widgets?.[widgetName]
+        return value === undefined ? fallbackValue : value
+    }
+
+    function setBackgroundWidgetSetting(monitorName, widgetName, value) {
+        const list = (root.options.background.monitorWidgets ?? []).slice()
+        const index = list.findIndex(item => item.name === monitorName)
+        const widgets = {}
+        const existingWidgets = index >= 0 ? (list[index].widgets ?? {}) : {}
+        for (const key in existingWidgets) widgets[key] = existingWidgets[key]
+        const entry = { name: monitorName, widgets: widgets }
+        entry.widgets[widgetName] = value
+        if (index >= 0) list[index] = entry; else list.push(entry)
+        root.options.background.monitorWidgets = list
+    }
+
     function setNestedValue(nestedKey, value) {
         let keys = nestedKey.split(".");
         let obj = root.options;
@@ -392,11 +415,14 @@ Singleton {
                     }
                 }
                 property list<string> screenList: [] 
+                property list<var> monitorWidgets: [] // [{ name, widgets: { clock: true, weather: false, ... } }]
                 property string wallpaperPath: ""
                 // "perMonitor" consults monitorWallpapers below; a monitor with
                 // no entry there falls back to wallpaperPath so it's never blank.
                 property string wallpaperMode: "shared" // "shared" | "perMonitor"
                 property list<var> monitorWallpapers: [] // [{ name, path }]
+                property string lockWallpaperMode: "shared" // "shared" | "perMonitor"
+                property list<var> lockMonitorWallpapers: [] // [{ name, path }]
                 property bool centeredWallpaper: false
                 property string centeredWallpaperShape: "Cookie7Sided"
                 property int centeredWallpaperSize: 400
