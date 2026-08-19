@@ -82,8 +82,19 @@ QtObject {
     // effect (it owns the wallpaper surface), so they degrade to a plain
     // block dissolve rather than silently doing nothing.
     readonly property bool datamoshSwitch: root.wallpaperAnimation === "datamosh"
+    // Synchronized mode with a computed direction overrides the transition's
+    // own axis/sign entirely - see Background.qml's transitionDirection. Empty
+    // string (not synchronized, or nothing to synchronize against) falls
+    // straight through to today's per-switch random roll below.
+    readonly property bool hasDirection: root.transitionDirection !== ""
     readonly property bool transitionEnabled: root.wallpaperAnimation !== ""
-    readonly property real transitionIntensity: root.datamoshSwitch ? 1.0 : 0
+    // Reuses the ambient effect's own musicReactive toggle - no separate
+    // switch for "should the transition react to music too". Base 0.85 rather
+    // than 0.0 so a transition during silence still plays at nearly full
+    // strength instead of visibly dimming.
+    readonly property real transitionIntensity: root.datamoshSwitch
+        ? (root.musicReactive ? 0.85 + 0.15 * root.beat : 1.0)
+        : 0
     // Shared with the classic wallpaper transitions in Background.qml - one
     // duration governs every wallpaper animation.
     readonly property int transitionDuration: Config.options?.background?.transitionDuration ?? 1200
@@ -111,6 +122,8 @@ QtObject {
     readonly property real trAberration: root.trValue("chromaticAberration", 41, 0.05, 0.60)
     readonly property real trNoise: root.trValue("noise", 47, 0.10, 0.60)
     readonly property real trAxisMode: {
+        if (root.hasDirection)
+            return (root.transitionDirection === "up" || root.transitionDirection === "down") ? 1.0 : 0.0;
         const d = root.trOpts?.glitchDirection ?? "random";
         if (d === "horizontal")
             return 0.0;
@@ -118,6 +131,12 @@ QtObject {
             return 1.0;
         return 2.0; // rolled per switch, in the shader, from the shared seed
     }
+    // +1 = right/down, -1 = left/up. Only meaningful to the shader when
+    // hasDirection is true; otherwise it forwards 1.0 and is ignored (the
+    // shader falls back to its own per-switch random sign in that case).
+    readonly property real trAxisSign: root.hasDirection
+        ? ((root.transitionDirection === "right" || root.transitionDirection === "down") ? 1.0 : -1.0)
+        : 1.0
 
     // 0 = showing sourceA untouched, 1 = showing sourceB untouched.
     // Starts settled so the very first wallpaper appears without a transition.
