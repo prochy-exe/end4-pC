@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
+import qs.services
 
 Item {
     id: root
@@ -13,8 +14,8 @@ Item {
     property real handLength: 95
     property real dotSize: 20
     property string style: "hide"
-    property color color: Appearance.colors.colSecondary
-    
+    property color color: MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
+
     rotation: (360 / 60 * clockSecond) + 90
 
     Behavior on rotation {

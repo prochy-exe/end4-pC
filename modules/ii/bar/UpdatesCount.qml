@@ -15,7 +15,7 @@ MouseArea {
     property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
 
-    implicitWidth: vertical ? Appearance.sizes.verticalBarWidth : (contentLoader.item?.implicitWidth ?? 0) 
+    implicitWidth: vertical ? Appearance.sizes.verticalBarWidth : (contentLoader.item?.implicitWidth ?? 0)
     implicitHeight: vertical ? (contentLoader.item?.implicitHeight ?? 0) : Appearance.sizes.barHeight
 
     cursorShape: Qt.PointingHandCursor
@@ -79,7 +79,7 @@ MouseArea {
             leftPadding: 5
             rightPadding: 3
             font.pixelSize: Appearance.font.pixelSize.small
-            color: root.isMaterial ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer1
+            color: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             text: Updates.count
         }
     }
@@ -91,7 +91,7 @@ MouseArea {
             rightPadding: 3
             text: "progress_activity"
             iconSize: Appearance.font.pixelSize.normal
-            color: root.isMaterial ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer1
+            color: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             RotationAnimation on rotation {
                 from: 0; to: 360
                 duration: 1000
@@ -118,9 +118,9 @@ MouseArea {
                 Layout.alignment: Qt.AlignVCenter
                 text: "deployed_code_update"
                 iconSize: Appearance.font.pixelSize.normal
-                color: Updates.updateStronglyAdvised ? Appearance.m3colors.m3error
-                    : Updates.updateAdvised ? Appearance.colors.colTertiary
-                    : Appearance.colors.colOnLayer1
+                color: Updates.updateStronglyAdvised ? MonitorThemes.m3ColorForItem(root, "m3error", Appearance.m3colors.m3error)
+                    : Updates.updateAdvised ? MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
+                    : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             }
 
             // Material
@@ -129,15 +129,15 @@ MouseArea {
                 width: 24
                 height: 24
                 radius: Appearance.rounding.full
-                color: Updates.updateStronglyAdvised ? Appearance.m3colors.m3error
-                    : Updates.updateAdvised ? Appearance.colors.colTertiary
-                    : Appearance.colors.colPrimary
+                color: Updates.updateStronglyAdvised ? MonitorThemes.m3ColorForItem(root, "m3error", Appearance.m3colors.m3error)
+                    : Updates.updateAdvised ? MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
+                    : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
                 MaterialSymbol {
                     anchors.centerIn: parent
                     text: "deployed_code_update"
                     iconSize: Appearance.font.pixelSize.normal
-                    color: Appearance.colors.colOnPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 }
             }
 
@@ -158,9 +158,9 @@ MouseArea {
                 Layout.alignment: Qt.AlignHCenter
                 text: "deployed_code_update"
                 iconSize: Appearance.font.pixelSize.normal
-                color: Updates.updateStronglyAdvised ? Appearance.m3colors.m3error
-                    : Updates.updateAdvised ? Appearance.colors.colTertiary
-                    : Appearance.colors.colOnLayer1
+                color: Updates.updateStronglyAdvised ? MonitorThemes.m3ColorForItem(root, "m3error", Appearance.m3colors.m3error)
+                    : Updates.updateAdvised ? MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
+                    : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             }
 
             Rectangle {
@@ -168,16 +168,16 @@ MouseArea {
                 width: 24
                 height: 24
                 radius: Appearance.rounding.full
-                color: Updates.updateStronglyAdvised ? Appearance.m3colors.m3error
-                    : Updates.updateAdvised ? Appearance.colors.colTertiary
-                    : Appearance.colors.colPrimary
+                color: Updates.updateStronglyAdvised ? MonitorThemes.m3ColorForItem(root, "m3error", Appearance.m3colors.m3error)
+                    : Updates.updateAdvised ? MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
+                    : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 Layout.alignment: Qt.AlignHCenter
 
                 MaterialSymbol {
                     anchors.centerIn: parent
                     text: "deployed_code_update"
                     iconSize: Appearance.font.pixelSize.normal
-                    color: Appearance.colors.colOnPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 }
             }
 

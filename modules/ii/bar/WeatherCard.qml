@@ -1,4 +1,5 @@
 import QtQuick
+import qs.services
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
@@ -6,8 +7,8 @@ import qs.modules.common.widgets
 Rectangle {
     id: root
     radius: Appearance.rounding.small
-    property color bgColor: Appearance.colors.colSurfaceContainerHigh
-    property color fgColor: Appearance.colors.colOnSurfaceVariant
+    property color bgColor: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHigh", Appearance.colors.colSurfaceContainerHigh)
+    property color fgColor: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
     color: root.bgColor
     implicitWidth: columnLayout.implicitWidth + 14 * 2
     implicitHeight: columnLayout.implicitHeight + 10 * 2

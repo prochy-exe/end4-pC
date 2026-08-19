@@ -11,8 +11,8 @@ Item {
     property real implicitSize: 135
     property real markLength: 12
     property real markWidth: 4
-    property color color: Appearance.colors.colOnSecondaryContainer
-    property color colOnBackground: Appearance.colors.colSecondaryContainer
+    property color color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
+    property color colOnBackground: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
     property real padding: 8
 
     Rectangle {
@@ -29,7 +29,7 @@ Item {
             Item {
                 required property int index
                 anchors.fill: parent
-                rotation: 360 / 12 * index 
+                rotation: 360 / 12 * index
 
                 Rectangle {
                     anchors {

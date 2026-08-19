@@ -80,7 +80,7 @@ AbstractBackgroundWidget {
         implicitWidth: root.widgetWidth
         implicitHeight: root.widgetHeight + (root.showLyrics ? 264 : 0)
         radius: Appearance.rounding?.verylarge ?? 30
-        color: Appearance.colors.colPrimaryContainer
+        color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
         clip: true
 
         Behavior on implicitHeight {
@@ -102,7 +102,7 @@ AbstractBackgroundWidget {
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     width: root.widgetHeight
-                    color: Appearance.colors.colSurfaceContainerLow
+                    color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                     topLeftRadius: card.radius
                     bottomLeftRadius: card.radius
                     topRightRadius: 0
@@ -136,7 +136,7 @@ AbstractBackgroundWidget {
                         fill: 1
                         text: "music_note"
                         iconSize: root.widgetHeight / 3
-                        color: Appearance.colors.colOnSecondaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                         visible: root.displayedArtFilePath === ""
                     }
                 }
@@ -163,7 +163,7 @@ AbstractBackgroundWidget {
                             text: root.currentPlayer?.trackArtist ?? "Play"
                             font.pixelSize: Appearance.font.pixelSize.normal
                             font.weight: Font.DemiBold
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             elide: Text.ElideRight
                         }
 
@@ -171,35 +171,35 @@ AbstractBackgroundWidget {
                             Layout.fillWidth: true
                             text: root.currentPlayer?.trackTitle ?? Translation.tr("Something")
                             font.pixelSize: Appearance.font.pixelSize.small
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.65
                             elide: Text.ElideRight
                         }
                     }
 
-                    // Controls 
+                    // Controls
                     Rectangle {
                         id: controlsPill
                         Layout.alignment: Qt.AlignRight
                         implicitWidth: controlsRow.implicitWidth + 10
                         implicitHeight: root.buttonSize + 8
                         radius: Appearance.rounding?.full ?? 999
-                        color: ColorUtils.transparentize(Appearance.colors.colOnPrimaryContainer, 0.9)
+                        color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer), 0.9)
 
                         RowLayout {
                             id: controlsRow
                             anchors.centerIn: parent
                             spacing: 2
-                    
+
                             RippleButton {
                                 implicitWidth: root.buttonSize
                                 implicitHeight: root.buttonSize
                                 buttonRadius: Appearance.rounding?.full ?? 999
                                 colBackground: root.showLyrics
-                                    ? Appearance.colors.colPrimary
+                                    ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                                     : "transparent"
-                                colBackgroundHover: Appearance.colors.colPrimaryContainerHover
-                                colRipple: Appearance.colors.colPrimaryContainerActive
+                                colBackgroundHover: MonitorThemes.shellColorForItem(root, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover)
+                                colRipple: MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
                                 downAction: () => { root.showLyrics = !root.showLyrics }
 
                                 MaterialSymbol {
@@ -208,15 +208,15 @@ AbstractBackgroundWidget {
                                     iconSize: root.buttonIconSize
                                     fill: root.showLyrics ? 1 : 0
                                     color: root.showLyrics
-                                        ? Appearance.colors.colOnPrimary
-                                        : Appearance.colors.colOnPrimaryContainer
+                                        ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                                        : MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                 }
                             }
 
                             MaterialShapeWrappedMaterialSymbol {
                                 shape: MaterialShape.Shape.Cookie12Sided
-                                color: Appearance.colors.colPrimary
-                                colSymbol: Appearance.colors.colOnPrimary
+                                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                                colSymbol: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                                 text: root.currentPlayer?.isPlaying ? "pause" : "play_arrow"
                                 iconSize: root.buttonIconSize + 12
                                 fill: 1
@@ -233,8 +233,8 @@ AbstractBackgroundWidget {
                                 implicitHeight: root.buttonSize
                                 buttonRadius: Appearance.rounding?.full ?? 999
                                 colBackground: "transparent"
-                                colBackgroundHover: Appearance.colors.colPrimaryContainerHover
-                                colRipple: Appearance.colors.colPrimaryContainerActive
+                                colBackgroundHover: MonitorThemes.shellColorForItem(root, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover)
+                                colRipple: MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
                                 downAction: () => root.currentPlayer?.next()
                                 altAction: () => root.currentPlayer?.previous()
 
@@ -243,7 +243,7 @@ AbstractBackgroundWidget {
                                     text: "skip_next"
                                     iconSize: root.buttonIconSize
                                     fill: 1
-                                    color: Appearance.colors.colOnPrimaryContainer
+                                    color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                 }
                             }
                         }
@@ -264,8 +264,8 @@ AbstractBackgroundWidget {
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
                         GradientStop { position: 0.0; color: "transparent" }
-                        GradientStop { position: 0.2; color: Appearance.colors.colOnPrimaryContainer }
-                        GradientStop { position: 0.8; color: Appearance.colors.colOnPrimaryContainer }
+                        GradientStop { position: 0.2; color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) }
+                        GradientStop { position: 0.8; color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) }
                         GradientStop { position: 1.0; color: "transparent" }
                     }
                     opacity: 0.15
@@ -282,11 +282,11 @@ AbstractBackgroundWidget {
                     anchors.leftMargin: 16
                     anchors.rightMargin: 16
                     textAlignment: Text.AlignHCenter
-                    textColor: Appearance.colors.colOnPrimaryContainer
-                    activeColor: Appearance.colors.colPrimary
-                    dimColor: Appearance.colors.colSubtext
-                    indicatorColor: Appearance.colors.colPrimary
-                    indicatorShapeColor: Appearance.colors.colOnPrimary
+                    textColor: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                    activeColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                    dimColor: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
+                    indicatorColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                    indicatorShapeColor: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 }
             }
         }

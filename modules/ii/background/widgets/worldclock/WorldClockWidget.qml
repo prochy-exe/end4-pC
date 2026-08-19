@@ -64,7 +64,7 @@ AbstractBackgroundWidget {
         Rectangle {
             id: contentRect
             anchors.fill: parent
-            color:  Appearance.colors.colPrimaryContainer
+            color:  MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
             radius: Appearance.rounding?.verylarge ?? 30
 
             // 2x2
@@ -81,7 +81,7 @@ AbstractBackgroundWidget {
                     MaterialSymbol {
                         iconSize: Appearance.font.pixelSize.hugeass
                         text: "location_on"
-                        color: Appearance.colors.colOnPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         opacity: 0.6
                     }
                     ColumnLayout {
@@ -90,20 +90,20 @@ AbstractBackgroundWidget {
                         StyledText {
                             font.pixelSize: Appearance.font.pixelSize.normal
                             font.weight: Font.Medium
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             text: root.localCityName
                         }
                     }
                     Item { Layout.fillWidth: true }
                     Rectangle {
                         radius: Appearance.rounding.full
-                        color: Appearance.colors.colSurfaceContainerLow
+                        color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                         implicitWidth: 28; implicitHeight: 28
                         MaterialSymbol {
                             anchors.centerIn: parent
                             iconSize: Appearance.font.pixelSize.normal
                             text: "settings"
-                            color: Appearance.colors.colOnSurfaceVariant
+                            color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -121,13 +121,13 @@ AbstractBackgroundWidget {
                         Layout.alignment: Qt.AlignRight
                         font.pixelSize: 42; font.weight: Font.Bold
                         font.features: { "tnum": 1 }
-                        color: Appearance.colors.colOnPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         text: root.localTime
                     }
                     StyledText {
                         Layout.alignment: Qt.AlignRight
                         font.pixelSize: Appearance.font.pixelSize.small
-                        color: Appearance.colors.colOnPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         opacity: 0.7
                         text: root.localDate
                     }
@@ -147,11 +147,11 @@ AbstractBackgroundWidget {
                             Layout.preferredWidth: 120; Layout.preferredHeight: 54
                             radius: Appearance.rounding.normal
                             color: modelData.isDay
-                                ? Appearance.colors.colPrimary
-                                : Appearance.colors.colSurfaceContainerLow
+                                ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                                : MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                             property color fg: modelData.isDay
-                                ? Appearance.colors.colOnPrimary
-                                : Appearance.colors.colOnLayer0
+                                ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                                : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                             Behavior on color { ColorAnimation { duration: 400 } }
 
                             ColumnLayout {
@@ -213,7 +213,7 @@ AbstractBackgroundWidget {
                                 anchors.centerIn: parent
                                 iconSize: Appearance.font.pixelSize.normal
                                 text: "arrow_back"
-                                color: Appearance.colors.colOnSurfaceVariant
+                                color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                             }
                             MouseArea {
                                 anchors.fill: parent
@@ -226,26 +226,26 @@ AbstractBackgroundWidget {
 
                     StyledComboBoxSearch {
                         model: WorldClock.comboModel
-                        colBackground: Appearance.colors.colSurfaceContainerLow
+                        colBackground: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                         textRole: "label"
                         currentIndex: WorldClock.comboModel.findIndex(m => m.tz === WorldClock.timezones[0])
                         onActivated: (idx) => WorldClock.setTimezone(0, WorldClock.comboModel[idx].tz)
                     }
                     StyledComboBoxSearch {
                         model: WorldClock.comboModel; textRole: "label"
-                        colBackground: Appearance.colors.colSurfaceContainerLow
+                        colBackground: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                         currentIndex: WorldClock.comboModel.findIndex(m => m.tz === WorldClock.timezones[1])
                         onActivated: (idx) => WorldClock.setTimezone(1, WorldClock.comboModel[idx].tz)
                     }
                     StyledComboBoxSearch {
                         model: WorldClock.comboModel; textRole: "label"
-                        colBackground: Appearance.colors.colSurfaceContainerLow
+                        colBackground: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                         currentIndex: WorldClock.comboModel.findIndex(m => m.tz === WorldClock.timezones[2])
                         onActivated: (idx) => WorldClock.setTimezone(2, WorldClock.comboModel[idx].tz)
                     }
                     StyledComboBoxSearch {
                         model: WorldClock.comboModel; textRole: "label"
-                        colBackground: Appearance.colors.colSurfaceContainerLow
+                        colBackground: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                         currentIndex: WorldClock.comboModel.findIndex(m => m.tz === WorldClock.timezones[3])
                         onActivated: (idx) => WorldClock.setTimezone(3, WorldClock.comboModel[idx].tz)
                     }
@@ -268,19 +268,19 @@ AbstractBackgroundWidget {
                         Layout.fillWidth:  true
 
                         backgroundColor: cityData?.isDay ?? true
-                            ? Appearance.colors.colPrimary
-                            : Appearance.colors.colSurfaceContainerLow
+                            ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                            : MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                         handColor: cityData?.isDay ?? true
-                            ? Appearance.colors.colOnPrimary
-                            : Appearance.colors.colOnLayer0
+                            ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                            : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                         centerDotColor: cityData?.isDay ?? true
-                            ? Appearance.colors.colOnPrimary
-                            : Appearance.colors.colOnLayer0
+                            ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                            : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                         label:       cityData?.name ?? ""
                         labelColor:  Qt.rgba(
-                            (cityData?.isDay ?? true ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer0).r,
-                            (cityData?.isDay ?? true ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer0).g,
-                            (cityData?.isDay ?? true ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer0).b,
+                            (cityData?.isDay ?? true ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)).r,
+                            (cityData?.isDay ?? true ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)).g,
+                            (cityData?.isDay ?? true ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)).b,
                             0.75)
                         labelSpacing: 6
                         autoTime:    false
@@ -301,7 +301,7 @@ AbstractBackgroundWidget {
             Rectangle {
                 id: toggleHandle
                 width: 16; height: 16; radius: 4
-                color: Appearance.colors.colOnPrimaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                 anchors { right: parent.right; bottom: parent.bottom; margins: 4 }
                 opacity: (root.containsMouse || toggleArea.containsMouse || toggleArea.pressed) ? 0.5 : 0
                 visible: opacity > 0 && !Config.options.background.widgetsLocked
@@ -312,7 +312,7 @@ AbstractBackgroundWidget {
                     anchors.centerIn: parent
                     text: root.sizeMode === "2x2" ? "calendar_view_month" : "calendar_view_week"
                     iconSize: 11
-                    color: Appearance.colors.colPrimaryContainer
+                    color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                 }
 
                 MouseArea {

@@ -23,6 +23,9 @@ Item {
     // permanently stuck at "" for every bar widget, silently breaking every
     // per-monitor bar setting.
     property string monitorName: root.screen?.name ?? ""
+    function themeColor(role, fallback) {
+        return MonitorThemes.color(root.monitorName, role, fallback)
+    }
     readonly property bool isMaterial: Config.getBarSetting(monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     readonly property real centerPillX: centerPill.x
     readonly property real centerPillWidth: centerPill.width
@@ -71,17 +74,17 @@ Item {
     }
 
     function getMaterialPillColor(name) {
-        if (root.isMaterial !== true) return Appearance.colors.colPrimaryContainer;
+        if (root.isMaterial !== true) return MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer);
         switch(name) {
             case "media":
             case "sysTray":
-                return Appearance.colors.colSecondaryContainer;
+                return MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer);
             case "resources":
-                return Appearance.colors.colTertiaryContainer;
+                return MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer);
             case "systemIcons":
-                return Appearance.colors.colPrimary; 
+                return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary);
             default:
-                return Appearance.colors.colPrimaryContainer;
+                return MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer);
         }
     }
     property real useShortenedForm: (Appearance.sizes.barHellaShortenScreenWidthThreshold >= screen?.width) ? 2 : (Appearance.sizes.barShortenScreenWidthThreshold >= screen?.width) ? 1 : 0
@@ -91,11 +94,11 @@ Item {
         id: barBackground
         anchors.fill: parent
         anchors.margins: root.currentCornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0
-        color: (!centerOnly && Config.getBarSetting(root.monitorName, ["showBackground"], Config.options.bar.showBackground) && root.currentCornerStyle !== 2 && !root.isMaterial) 
-            ? Appearance.colors.colLayer0 : "transparent"
+        color: (!centerOnly && Config.getBarSetting(root.monitorName, ["showBackground"], Config.options.bar.showBackground) && root.currentCornerStyle !== 2 && !root.isMaterial)
+            ? root.themeColor("surface_container_low", MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)) : "transparent"
         radius: root.currentCornerStyle === 1 ? Appearance.rounding.windowRounding : 0
         border.width: (!centerOnly && root.currentCornerStyle === 1) ? 1 : 0
-        border.color: Appearance.colors.colLayer0Border
+        border.color: root.themeColor("outline_variant", MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border))
     }
 
     // center-only
@@ -111,10 +114,10 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         width: middleRow.implicitWidth + 10
         height: parent.height - (root.currentCornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut * 2 : 0)
-        color: Appearance.colors.colLayer0
+        color: root.themeColor("surface_container_low", MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0))
         radius: root.currentCornerStyle === 1 ? Appearance.rounding.windowRounding : 0
         border.width: root.currentCornerStyle === 1 ? 1 : 0
-        border.color: Appearance.colors.colLayer0Border
+        border.color: root.themeColor("outline_variant", MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border))
 
         bottomLeftRadius:  root.currentCornerStyle === 0 && !Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom) ? Appearance.rounding.screenRounding : radius
         bottomRightRadius: root.currentCornerStyle === 0 && !Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom) ? Appearance.rounding.screenRounding : radius
@@ -143,7 +146,7 @@ Item {
                 implicitWidth: leftMaterialRow.implicitWidth + 10
                 implicitHeight: leftMaterialRow.implicitHeight
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colLayer0
+                color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
 
                 RowLayout {
                     id: leftMaterialRow
@@ -239,9 +242,9 @@ Item {
                 visible: root.isMaterial
                 anchors.centerIn: parent
                 implicitWidth: centerMaterialRow.implicitWidth + 10
-                implicitHeight: centerMaterialRow.implicitHeight 
+                implicitHeight: centerMaterialRow.implicitHeight
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colLayer0
+                color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
 
                 RowLayout {
                     id: centerMaterialRow
@@ -337,9 +340,9 @@ Item {
                 visible: root.isMaterial
                 anchors.centerIn: parent
                 implicitWidth: rightMaterialRow.implicitWidth + 10
-                implicitHeight: rightMaterialRow.implicitHeight 
+                implicitHeight: rightMaterialRow.implicitHeight
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colLayer0
+                color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
 
                 RowLayout {
                     id: rightMaterialRow

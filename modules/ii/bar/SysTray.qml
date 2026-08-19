@@ -93,16 +93,16 @@ Item {
             background.implicitWidth: 24
             background.implicitHeight: 24
             background.anchors.centerIn: this
-            colBackgroundToggled: Appearance.colors.colSecondaryContainer
-            colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
-            colRippleToggled: Appearance.colors.colSecondaryContainerActive
+            colBackgroundToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+            colBackgroundToggledHover: MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+            colRippleToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
 
             contentItem: MaterialSymbol {
                 anchors.centerIn: parent
                 iconSize: Appearance.font.pixelSize.larger
                 text: root.currentBottom ? "keyboard_control_key" : "expand_more"
                 horizontalAlignment: Text.AlignHCenter
-                color: root.trayOverflowOpen ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer2
+                color: root.trayOverflowOpen ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 rotation: (root.trayOverflowOpen ? 180 : 0) - (90 * root.currentVertical) + (180 * root.invertSide)
                 Behavior on rotation {
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)

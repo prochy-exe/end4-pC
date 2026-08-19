@@ -37,7 +37,7 @@ Item {
             MaterialSymbol {
                 text: Audio.sink?.audio?.muted ? "volume_off" : "volume_up"
                 iconSize: Appearance.font.pixelSize.larger
-                color: root.isMaterial ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer1
+                color: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             }
         }
         Revealer {
@@ -45,23 +45,23 @@ Item {
             MaterialSymbol {
                 text: "mic_off"
                 iconSize: Appearance.font.pixelSize.larger
-                color: root.isMaterial ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer1
+                color: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             }
         }
         Loader {
             source: "HyprlandXkbIndicator.qml"
-            onLoaded: item.color = root.isMaterial ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer1
+            onLoaded: item.color = root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
         }
         MaterialSymbol {
             text: Network.materialSymbol
             iconSize: Appearance.font.pixelSize.larger
-            color: root.isMaterial ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer1
+            color: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
         }
         MaterialSymbol {
             visible: BluetoothStatus.available
             text: BluetoothStatus.connected ? "bluetooth_connected" : BluetoothStatus.enabled ? "bluetooth" : "bluetooth_disabled"
             iconSize: Appearance.font.pixelSize.larger
-            color: root.isMaterial ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer1
+            color: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
         }
         Loader {
             id: notifLoader

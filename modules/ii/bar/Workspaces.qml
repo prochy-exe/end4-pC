@@ -94,7 +94,7 @@ ButtonMouseArea {
             id: occupiedIndicatorsBg
             anchors.fill: parent
             contentLayer: StyledRectangle.ContentLayer.Group
-            color: ColorUtils.transparentize(Appearance.m3colors.m3secondaryContainer, 0.4)
+            color: ColorUtils.transparentize(MonitorThemes.m3ColorForItem(root, "m3secondaryContainer", Appearance.m3colors.m3secondaryContainer), 0.4)
             visible: false
         }
 
@@ -176,7 +176,7 @@ ButtonMouseArea {
                 hover: root.containsMouse
                 press: root.containsPress
                 drag: true // There are too many layers so we need to force this to be a lil more opaque
-                contentColor: Appearance.colors.colPrimary
+                contentColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             }
         }
 
@@ -194,8 +194,8 @@ ButtonMouseArea {
         Colorizer {
             z: 5
             anchors.fill: numbersGrid
-            colorizationColor: Appearance.colors.colOnPrimary
-            sourceColor: Appearance.colors.colOnSecondaryContainer
+            colorizationColor: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+            sourceColor: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
 
             source: activeIndicator
             maskEnabled: true
@@ -254,7 +254,7 @@ ButtonMouseArea {
                         sourceComponent: Colorizer {
                             implicitWidth: appIcon.implicitWidth
                             implicitHeight: appIcon.implicitHeight
-                            colorizationColor: Appearance.m3colors.darkmode ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnPrimary
+                            colorizationColor: Appearance.m3colors.darkmode ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                             colorization: root.wsSetting(["monochromeIcons"], Config.options.bar.workspaces.monochromeIcons) ? 0.8 : 0.5
                             brightness: 0
                             source: appIcon
@@ -298,7 +298,7 @@ ButtonMouseArea {
                     return base;
                 return specialWsText.implicitWidth + undirectionalWidth;
             }
-            color: Appearance.colors.colPrimary
+            color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
             implicitWidth: root.vertical ? undirectionalWidth : undirectionalLength
             implicitHeight: root.vertical ? undirectionalLength : undirectionalWidth
@@ -307,7 +307,7 @@ ButtonMouseArea {
                 id: specialWsText
                 anchors.centerIn: parent
                 text: (!root.vertical ? wsModel.specialWorkspaceName : "S")
-                color: Appearance.colors.colOnPrimary
+                color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 font.pixelSize: root.specialTextSize
             }
 
@@ -367,7 +367,7 @@ ButtonMouseArea {
         id: wsNum
         property bool hasBiggestWindow: !!wsModel.biggestWindow[index]
         property int wsId: wsModel.getWorkspaceIdAt(index)
-        property color contentColor: (wsModel.occupied[wsNum.index] && wsId !== wsModel.fakeWorkspace) ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer1Inactive
+        property color contentColor: (wsModel.occupied[wsNum.index] && wsId !== wsModel.fakeWorkspace) ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colOnLayer1Inactive", Appearance.colors.colOnLayer1Inactive)
         property bool showingNumbers: {
             if (root.superPressAndHeld)
                 return true;
@@ -461,7 +461,7 @@ ButtonMouseArea {
 
             contentLayer: StyledRectangle.ContentLayer.Group
             radius: indicatorThickness / 2
-            color: Appearance.colors.colPrimary
+            color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
             x: root.vertical ? null : indicatorPosition
             y: root.vertical ? indicatorPosition : null

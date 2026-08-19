@@ -22,12 +22,12 @@ RippleButton {
     implicitHeight: 32
 
     buttonRadius: Appearance.rounding.full
-    colBackground: isMaterial ? Appearance.colors.colPrimaryContainer : "transparent"
-    colBackgroundHover: isMaterial ? Appearance.colors.colPrimaryContainerHover : Appearance.colors.colLayer1Hover
-    colRipple: isMaterial ? Appearance.colors.colLayer1Active : Appearance.colors.colLayer1Active
-    colBackgroundToggled: Appearance.colors.colSecondaryContainer
-    colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
-    colRippleToggled: Appearance.colors.colSecondaryContainerActive
+    colBackground: isMaterial ? MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : "transparent"
+    colBackgroundHover: isMaterial ? MonitorThemes.shellColorForItem(root, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover) : MonitorThemes.shellColorForItem(root, "colLayer1Hover", Appearance.colors.colLayer1Hover)
+    colRipple: isMaterial ? MonitorThemes.shellColorForItem(root, "colLayer1Active", Appearance.colors.colLayer1Active) : MonitorThemes.shellColorForItem(root, "colLayer1Active", Appearance.colors.colLayer1Active)
+    colBackgroundToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+    colBackgroundToggledHover: MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+    colRippleToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
     toggled: GlobalStates.sidebarLeftOpen
 
     onPressed: {
@@ -62,7 +62,7 @@ RippleButton {
         height: root.isMaterial ? (root.vertical ? 24 : 22) : 19.5
         source: Config.options.custom.distroIcon
         colorize: Config.options.custom.colorizeIcon
-        color: Appearance.colors.colPrimary
+        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
         Rectangle {
             opacity: root.showPing ? 1 : 0
@@ -76,7 +76,7 @@ RippleButton {
             implicitWidth: 8
             implicitHeight: 8
             radius: Appearance.rounding.full
-            color: Appearance.colors.colTertiary
+            color: MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
             Behavior on opacity {
                 animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
             }

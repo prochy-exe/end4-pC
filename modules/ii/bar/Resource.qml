@@ -2,6 +2,7 @@ import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.widgets
 import QtQuick
+import qs.services
 import QtQuick.Layouts
 
 Item {
@@ -24,7 +25,7 @@ Item {
             lineWidth: Appearance.rounding.unsharpen
             value: root.percentage
             implicitSize: vertical ? 20 : 20
-            colPrimary: root.warning ? Appearance.colors.colError : Appearance.colors.colOnSecondaryContainer
+            colPrimary: root.warning ? MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError) : MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
             enableAnimation: false
             Item {
                 anchors.centerIn: parent
@@ -36,7 +37,7 @@ Item {
                     fill: 1
                     text: root.iconName
                     iconSize: Appearance.font.pixelSize.normal
-                    color: Appearance.colors.colOnSecondaryContainer
+                    color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                 }
             }
         }
@@ -48,7 +49,7 @@ Item {
             lineWidth: Appearance.rounding.unsharpen
             value: root.percentage
             implicitSize: 20
-            colPrimary: root.warning ? Appearance.colors.colError : Appearance.colors.colOnSecondaryContainer
+            colPrimary: root.warning ? MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError) : MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
             accountForLightBleeding: !root.warning
             enableAnimation: false
             Item {
@@ -61,7 +62,7 @@ Item {
                     fill: 1
                     text: root.iconName
                     iconSize: Appearance.font.pixelSize.normal
-                    color: Appearance.m3colors.m3onSecondaryContainer
+                    color: MonitorThemes.m3ColorForItem(root, "m3onSecondaryContainer", Appearance.m3colors.m3onSecondaryContainer)
                 }
             }
         }
@@ -104,7 +105,7 @@ Item {
             StyledText {
                 id: percentageText
                 anchors.centerIn: parent
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 font.pixelSize: Appearance.font.pixelSize.small
                 text: `${Math.round(root.percentage * 100).toString()}`
             }

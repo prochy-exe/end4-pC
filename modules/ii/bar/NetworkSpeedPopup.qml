@@ -72,7 +72,7 @@ StyledPopup {
         implicitWidth: 145
         implicitHeight: cardContent.implicitHeight + 20
         radius: Appearance.rounding.small
-        color: Appearance.colors.colSurfaceContainerLow
+        color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
 
         ColumnLayout {
             id: cardContent
@@ -94,7 +94,7 @@ StyledPopup {
 
                 StyledText {
                     text: card.label
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                     font.pixelSize: Appearance.font.pixelSize.smaller
                     font.weight: Font.Medium
                 }
@@ -104,7 +104,7 @@ StyledPopup {
 
             StyledText {
                 text: root.formatRate(card.speed)
-                color: Appearance.colors.colOnSurfaceVariant
+                color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                 font.pixelSize: Appearance.font.pixelSize.large
                 font.weight: Font.DemiBold
                 font.features: { "tnum": 1 }
@@ -112,7 +112,7 @@ StyledPopup {
 
             StyledText {
                 text: `${root.formatTotal(card.total)} ${Translation.tr("this session")}`
-                color: Appearance.colors.colOnSurfaceVariant
+                color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                 opacity: 0.6
                 font.pixelSize: Appearance.font.pixelSize.smallest
             }
@@ -134,8 +134,8 @@ StyledPopup {
                 text: Network.materialSymbol
                 iconSize: Appearance.font.pixelSize.large
                 implicitSize: 36
-                color: Appearance.colors.colPrimaryContainer
-                colSymbol: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+                colSymbol: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             }
 
             ColumnLayout {
@@ -146,7 +146,7 @@ StyledPopup {
                     text: root.connectionName
                     font.pixelSize: Appearance.font.pixelSize.normal
                     font.weight: Font.Medium
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                 }
@@ -154,7 +154,7 @@ StyledPopup {
                 StyledText {
                     text: root.connectionDetails
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                     opacity: 0.6
                 }
             }
@@ -169,7 +169,7 @@ StyledPopup {
                 iconName: "arrow_upward"
                 speed: root.uploadSpeed
                 total: root.uploadedBytes
-                accentColor: Appearance.colors.colTertiary
+                accentColor: MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
             }
 
             SpeedCard {
@@ -177,7 +177,7 @@ StyledPopup {
                 iconName: "arrow_downward"
                 speed: root.downloadSpeed
                 total: root.downloadedBytes
-                accentColor: Appearance.colors.colPrimary
+                accentColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             }
         }
 
@@ -189,7 +189,7 @@ StyledPopup {
                 || Network.macAddress !== ""
 
             Layout.fillWidth: true
-            bgcolor: Appearance.colors.colSurfaceContainerLow
+            bgcolor: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
 
             StyledPopupValueRow {
                 Layout.fillWidth: true

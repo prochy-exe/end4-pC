@@ -3,12 +3,13 @@ pragma ComponentBehavior: Bound
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
+import qs.services
 
 Item {
     id: root
     property real numberSize: 80
     property real margins: 10
-    property color color: Appearance.colors.colOnSecondaryContainer
+    property color color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
 
     property int hours: 12
     property int numbers: 4
@@ -22,7 +23,7 @@ Item {
             required property int index
             rotation: 360 / root.numbers * (index + 1)
             anchors.fill: parent
-            
+
             Item {
                 implicitWidth: root.numberSize
                 implicitHeight: implicitWidth

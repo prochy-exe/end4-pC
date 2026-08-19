@@ -143,7 +143,7 @@ AbstractBackgroundWidget {
 
     Rectangle {
         id: contentItem
-        color: Appearance.colors.colPrimaryContainer
+        color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
         radius: Appearance.rounding?.verylarge ?? 30
         implicitWidth: 276
         implicitHeight: 252
@@ -162,7 +162,7 @@ AbstractBackgroundWidget {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 font.pixelSize: Appearance.font.pixelSize.smaller
-                color: Appearance.colors.colOnPrimaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                 opacity: 0.4
                 text: "PNG · JPG · WEBP · AVIF · BMP · PDF · TIFF"
             }
@@ -174,23 +174,23 @@ AbstractBackgroundWidget {
                 radius: Appearance.rounding.large
                 color: {
                     switch (root.dropStatus) {
-                        case "hover":      return Appearance.colors.colPrimaryContainer
-                        case "converting": return Appearance.colors.colSecondaryContainer
-                        case "done":       return Appearance.colors.colTertiaryContainer
+                        case "hover":      return MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+                        case "converting": return MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+                        case "done":       return MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer)
                         case "error":      return Qt.rgba(
-                                                Appearance.colors.colError.r,
-                                                Appearance.colors.colError.g,
-                                                Appearance.colors.colError.b, 0.15)
-                        default:           return Appearance.colors.colSurfaceContainerLow 
+                                                MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError).r,
+                                                MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError).g,
+                                                MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError).b, 0.15)
+                        default:           return MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                     }
                 }
                 border.color: {
                     switch (root.dropStatus) {
-                        case "hover":      return Appearance.colors.colPrimary
-                        case "converting": return Appearance.colors.colSecondary
-                        case "done":       return Appearance.colors.colTertiary
-                        case "error":      return Appearance.colors.colError
-                        default:           return Appearance.colors.colOnPrimaryContainer
+                        case "hover":      return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                        case "converting": return MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
+                        case "done":       return MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
+                        case "error":      return MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
+                        default:           return MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                     }
                 }
                 border.width: root.dropStatus === "hover" ? 2 : 1
@@ -203,8 +203,8 @@ AbstractBackgroundWidget {
                     anchors.verticalCenterOffset: -14
                     visible: root.dropStatus === "converting"
                     loading: root.dropStatus === "converting"
-                    colBg: Appearance.colors.colPrimary
-                    colShape: Appearance.colors.colOnPrimary
+                    colBg: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                    colShape: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                     implicitSize: 48
                 }
 
@@ -216,10 +216,10 @@ AbstractBackgroundWidget {
                     fill: root.dropStatus === "done" ? 1 : 0
                     color: {
                         switch (root.dropStatus) {
-                            case "hover": return Appearance.colors.colPrimary
-                            case "done":  return Appearance.colors.colTertiary
-                            case "error": return Appearance.colors.colError
-                            default:      return Appearance.colors.colOnLayer1
+                            case "hover": return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                            case "done":  return MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
+                            case "error": return MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
+                            default:      return MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                         }
                     }
                     text: {
@@ -241,10 +241,10 @@ AbstractBackgroundWidget {
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     color: {
                         switch (root.dropStatus) {
-                            case "hover":  return Appearance.colors.colPrimary
-                            case "done":   return Appearance.colors.colTertiary
-                            case "error":  return Appearance.colors.colError
-                            default:       return Appearance.colors.colOnLayer1
+                            case "hover":  return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                            case "done":   return MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
+                            case "error":  return MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
+                            default:       return MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                         }
                     }
                     opacity: root.dropStatus === "idle" ? 0.6 : 1.0
@@ -292,7 +292,7 @@ AbstractBackgroundWidget {
                     Layout.leftMargin: 3
                     text: "Convert to:"
                     font.pixelSize: Appearance.font.pixelSize.small
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                     opacity: 0.7
                     Layout.alignment: Qt.AlignVCenter
                 }
@@ -300,9 +300,9 @@ AbstractBackgroundWidget {
                 StyledComboBox {
                     Layout.fillWidth: true
                     model: root.formatOptions
-                    colBackground: Appearance.colors.colSurfaceContainerLow
-                    colBackgroundHover: Appearance.colors.colSurfaceContainerLow
-                    colBackgroundActive: Appearance.colors.colSurfaceContainerLow // same color I didn't like the hover 
+                    colBackground: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
+                    colBackgroundHover: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
+                    colBackgroundActive: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow) // same color I didn't like the hover
                     textRole: "displayName"
                     valueRole: "value"
                     currentIndex: {

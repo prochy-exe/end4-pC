@@ -101,9 +101,9 @@ AbstractBackgroundWidget {
 
                 property real intensity: pointValue / root.maxBarHeight
                 color: Qt.rgba(
-                    Appearance.colors.colPrimary.r * intensity + Appearance.colors.colPrimaryContainer.r * (1 - intensity),
-                    Appearance.colors.colPrimary.g * intensity + Appearance.colors.colPrimaryContainer.g * (1 - intensity),
-                    Appearance.colors.colPrimary.b * intensity + Appearance.colors.colPrimaryContainer.b * (1 - intensity),
+                    MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary).r * intensity + MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer).r * (1 - intensity),
+                    MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary).g * intensity + MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer).g * (1 - intensity),
+                    MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary).b * intensity + MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer).b * (1 - intensity),
                     1
                 )
 

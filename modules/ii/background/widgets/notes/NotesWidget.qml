@@ -78,7 +78,7 @@ AbstractBackgroundWidget {
         Rectangle {
             id: contentRect
             anchors.fill: parent
-            color: Appearance.colors.colPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
             radius: Appearance.rounding?.verylarge ?? 30
 
             // List
@@ -97,7 +97,7 @@ AbstractBackgroundWidget {
                         Layout.leftMargin: 8
                         font.pixelSize: Appearance.font.pixelSize.huge
                         font.weight: Font.Medium
-                        color: Appearance.colors.colOnPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         text: "Notes"
                     }
                     Item { Layout.fillWidth: true }
@@ -132,15 +132,15 @@ AbstractBackgroundWidget {
 
                         property color bg: {
                             const cyclePos = index % 3
-                            if (cyclePos === 0) return Appearance.colors.colPrimary
-                            if (cyclePos === 1) return Appearance.colors.colSecondary
-                            return Appearance.colors.colTertiary
+                            if (cyclePos === 0) return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                            if (cyclePos === 1) return MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
+                            return MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
                         }
                         property color fg: {
                             const cyclePos = index % 3
-                            if (cyclePos === 0) return Appearance.colors.colOnPrimary
-                            if (cyclePos === 1) return Appearance.colors.colOnSecondary
-                            return Appearance.colors.colOnTertiary
+                            if (cyclePos === 0) return MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                            if (cyclePos === 1) return MonitorThemes.shellColorForItem(root, "colOnSecondary", Appearance.colors.colOnSecondary)
+                            return MonitorThemes.shellColorForItem(root, "colOnTertiary", Appearance.colors.colOnTertiary)
                         }
 
                         onClicked: root.openNote(noteCard.modelData)
@@ -168,13 +168,13 @@ AbstractBackgroundWidget {
                             anchors.right: parent.right
                             height: parent.height
                             radius: Appearance.rounding.normal
-                            color: Appearance.colors.colError
+                            color: MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
 
                             MaterialSymbol {
                                 anchors.centerIn: parent
                                 text: "delete"
                                 iconSize: Appearance.font.pixelSize.larger
-                                color: Appearance.colors.colOnError
+                                color: MonitorThemes.shellColorForItem(root, "colOnError", Appearance.colors.colOnError)
                             }
 
                             SwipeDelegate.onClicked: Notes.deleteNote(noteCard.modelData.id)
@@ -202,7 +202,7 @@ AbstractBackgroundWidget {
                             anchors.centerIn: parent
                             iconSize: Appearance.font.pixelSize.normal
                             text: "arrow_back"
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -225,7 +225,7 @@ AbstractBackgroundWidget {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     radius: Appearance.rounding.normal
-                    color: Appearance.colors.colSurfaceContainerLow
+                    color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
 
                     TextArea {
                         id: editTextArea
@@ -234,7 +234,7 @@ AbstractBackgroundWidget {
                         text: root.editingText
                         wrapMode: TextArea.Wrap
                         placeholderText: "Type your note..."
-                        color: Appearance.colors.colOnLayer0
+                        color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                         background: null
                         onTextChanged: root.editingText = text
                     }

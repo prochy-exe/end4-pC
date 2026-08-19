@@ -27,7 +27,7 @@ MouseArea {
         anchors.centerIn: parent
         value: percentage
         rotation: root.vertical ? -90 : 0
-        highlightColor: (isLow && !isCharging) ? Appearance.m3colors.m3error : Appearance.colors.colOnSecondaryContainer
+        highlightColor: (isLow && !isCharging) ? MonitorThemes.m3ColorForItem(root, "m3error", Appearance.m3colors.m3error) : MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
         Item {
             anchors.centerIn: parent
             width: batteryProgress.valueBarWidth
@@ -79,7 +79,7 @@ MouseArea {
                         Layout.alignment: Qt.AlignHCenter
                         Layout.topMargin: root.isCharging ? 2 : 4
                         font: batteryProgress.font
-                        text: root.percentage * 100 
+                        text: root.percentage * 100
                         visible: root.percentage < 1
                     }
                 }

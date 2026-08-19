@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import qs.modules.common
 import QtQuick
+import qs.services
 
 Item {
     id: root
@@ -11,7 +12,7 @@ Item {
     property real handLength: 72
     property real handWidth: 20
     property string style: "fill"
-    property color color: Appearance.colors.colPrimary
+    property color color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
     property real fillColorAlpha: root.style === "hollow" ? 0 : 1
     Behavior on fillColorAlpha {

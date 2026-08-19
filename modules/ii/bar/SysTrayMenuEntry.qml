@@ -4,6 +4,7 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
 import QtQuick
+import qs.services
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
@@ -20,7 +21,7 @@ RippleButton {
     signal dismiss()
     signal openSubmenu(handle: QsMenuHandle)
 
-    colBackground: menuEntry.isSeparator ? Appearance.m3colors.m3outlineVariant : ColorUtils.transparentize(Appearance.colors.colLayer0)
+    colBackground: menuEntry.isSeparator ? MonitorThemes.m3ColorForItem(root, "m3outlineVariant", Appearance.m3colors.m3outlineVariant) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0))
     enabled: !menuEntry.isSeparator
     opacity: 1
 
@@ -37,13 +38,13 @@ RippleButton {
         }
     }
 
-    releaseAction: () => { 
+    releaseAction: () => {
         if (menuEntry.hasChildren) {
             root.openSubmenu(root.menuEntry);
             return;
         }
         menuEntry.triggered();
-        root.dismiss(); 
+        root.dismiss();
     }
     altAction: (event) => { // Not hog right-click
         event.accepted = false;

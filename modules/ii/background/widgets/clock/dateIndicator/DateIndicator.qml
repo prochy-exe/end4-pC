@@ -4,11 +4,12 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
 import QtQuick
+import qs.services
 
 Item {
     id: root
     property string style: "bubble"
-    property color color: Appearance.colors.colOnSecondaryContainer
+    property color color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
     property real dateSquareSize: 64
 
     // Rotating date
@@ -31,7 +32,7 @@ Item {
         }
 
         sourceComponent: RectangleDate {
-            color: ColorUtils.mix(root.color, Appearance.colors.colSecondaryContainerHover, 0.5)
+            color: ColorUtils.mix(root.color, MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover), 0.5)
             radius: Appearance.rounding.small
             implicitWidth: 45 * rectLoader.opacity
             implicitHeight: 30 * rectLoader.opacity

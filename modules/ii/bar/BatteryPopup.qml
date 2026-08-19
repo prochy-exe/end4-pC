@@ -31,8 +31,8 @@ StyledPopup {
                 text: "battery_android_full"
                 iconSize: Appearance.font.pixelSize.large
                 implicitSize: 36
-                color: Appearance.colors.colPrimaryContainer
-                colSymbol: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+                colSymbol: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             }
 
             ColumnLayout {
@@ -45,12 +45,12 @@ StyledPopup {
                         weight: Font.Medium
                         pixelSize: Appearance.font.pixelSize.normal
                     }
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                 }
 
                 StyledText {
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                     opacity: 0.6
                     text: {
                         if (Battery.chargeState == 4)
@@ -68,7 +68,7 @@ StyledPopup {
                 Layout.rightMargin: 8
                 font.pixelSize: Appearance.font.pixelSize.huge
                 font.weight: Font.Bold
-                color: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 text: `${Math.round(Battery.percentage * 100)}`
             }
         }
@@ -85,7 +85,7 @@ StyledPopup {
                 sublabel: Battery.chargeCycles > 0
                     ? `${Battery.chargeCycles} ${Translation.tr("cycles")}`
                     : Translation.tr("N/A")
-                sublabelColor: Appearance.colors.colOnSurfaceVariant
+                sublabelColor: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                 cardWidth: 160
             }
 
@@ -99,7 +99,7 @@ StyledPopup {
                 sublabel: Battery.chargeState == 4
                     ? Translation.tr("Full")
                     : `${Battery.energyRate.toFixed(2)}W`
-                sublabelColor: Appearance.colors.colOnSurfaceVariant
+                sublabelColor: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                 cardWidth: 160
             }
         }

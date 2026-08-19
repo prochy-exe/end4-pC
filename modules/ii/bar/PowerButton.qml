@@ -15,9 +15,9 @@ RippleButton {
     implicitHeight: implicitWidth
 
     buttonRadius: Appearance.rounding.full
-    colBackground: isMaterial ? Appearance.colors.colPrimary : "transparent"
-    colBackgroundHover: isMaterial ? Appearance.colors.colPrimaryHover : Appearance.colors.colLayer1Hover
-    colRipple: isMaterial ? Appearance.colors.colPrimaryActive : Appearance.colors.colLayer1Active
+    colBackground: isMaterial ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : "transparent"
+    colBackgroundHover: isMaterial ? MonitorThemes.shellColorForItem(root, "colPrimaryHover", Appearance.colors.colPrimaryHover) : MonitorThemes.shellColorForItem(root, "colLayer1Hover", Appearance.colors.colLayer1Hover)
+    colRipple: isMaterial ? MonitorThemes.shellColorForItem(root, "colPrimaryActive", Appearance.colors.colPrimaryActive) : MonitorThemes.shellColorForItem(root, "colLayer1Active", Appearance.colors.colLayer1Active)
 
     onPressed: {
         GlobalStates.sessionOpen = !GlobalStates.sessionOpen
@@ -28,7 +28,7 @@ RippleButton {
         visible: !root.isMaterial
         text: "power_settings_new"
         iconSize: Appearance.font.pixelSize.larger
-        color: Appearance.colors.colOnLayer0
+        color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
     }
 
     MaterialShapeWrappedMaterialSymbol {
@@ -36,8 +36,8 @@ RippleButton {
         visible: root.isMaterial
         text: "power_settings_new"
         iconSize: Appearance.font.pixelSize.normal
-        color: Appearance.colors.colOnPrimary
-        colSymbol: Appearance.colors.colPrimary
+        color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+        colSymbol: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
         wrappedShape: MaterialShape.Shape.Cookie12Sided
         padding: 2
     }

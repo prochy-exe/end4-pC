@@ -12,7 +12,7 @@ import Quickshell.Hyprland
 Loader {
     id: root
     property bool vertical: false
-    property color color: Appearance.colors.colOnSurfaceVariante
+    property color color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariante", Appearance.colors.colOnSurfaceVariante)
 
     sourceComponent: Item {
         implicitWidth: root.vertical ? null : rowLayout.implicitWidth + 8
@@ -28,7 +28,7 @@ Loader {
                 horizontalAlignment: Text.AlignHCenter
                 text: HyprlandXkb.displayedLayoutCode
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.colors.colOnLayer0
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                 animateChange: true
             }
         }

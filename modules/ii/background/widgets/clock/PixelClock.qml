@@ -21,8 +21,8 @@ Item {
     readonly property string glyphTopRight: DateTime.digitH1
     readonly property string glyphBottomLeft: DateTime.digitM0
     readonly property string glyphBottomRight: DateTime.digitM1
-    readonly property color tintSoft: Appearance.colors.colPrimaryContainer
-    readonly property color tintBold: Appearance.colors.colPrimary
+    readonly property color tintSoft: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+    readonly property color tintBold: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
     readonly property real fringeSize: isVertical ? root.width * 0.026 : root.height * 0.03
     readonly property real tileW: isVertical ? root.width * 0.66 : root.width * 0.30

@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import qs.services
 import QtQuick.Layouts
 import QtQuick.Effects
 import Qt5Compat.GraphicalEffects
@@ -78,7 +79,7 @@ AbstractBackgroundWidget {
         MaterialShape {
             id: shadowShape
             anchors.fill: parent
-            color: Appearance.colors.colPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
             shape: getShape(Config.options.background.widgets.customImage.shape ?? "Cookie4Sided")
             visible: false
         }
@@ -92,7 +93,7 @@ AbstractBackgroundWidget {
             id: imageShape
             anchors.fill: parent
             z: 0
-            color: Appearance.colors.colPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
             shape: getShape(Config.options.background.widgets.customImage.shape ?? "Cookie4Sided")
 
             layer.enabled: true
@@ -122,8 +123,8 @@ AbstractBackgroundWidget {
                 text: root.dropHover ? "download" : "image"
                 fill: root.dropHover ? 1 : 0
                 color: root.dropHover
-                    ? Appearance.colors.colPrimary
-                    : Appearance.colors.colOnPrimaryContainer
+                    ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                    : MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                 visible: root.imagePath === ""
                 Behavior on color { animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this) }
             }
@@ -157,7 +158,7 @@ AbstractBackgroundWidget {
             width: 16
             height: 16
             radius: 4
-            color: Appearance.colors.colOnPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
             anchors {
                 right: imageShape.right
                 bottom: imageShape.bottom

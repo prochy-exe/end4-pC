@@ -142,7 +142,7 @@ Item {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 1; text: "screenshot_region"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 }
             }
         }
@@ -162,7 +162,7 @@ Item {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 1; text: "colorize"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 }
             }
         }
@@ -196,7 +196,7 @@ Item {
                     id: btn
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    colBackground: recordingItem.isRecording ? Appearance.colors.colPrimaryContainer : "transparent"
+                    colBackground: recordingItem.isRecording ? MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : "transparent"
                     buttonRadius: recordingItem.isRecording ? Appearance.rounding.normal : implicitHeight / 2
                     onClicked: Quickshell.execDetached([Directories.recordScriptPath])
 
@@ -208,7 +208,7 @@ Item {
                         fill: 1
                         text: recordingItem.isRecording ? "stop_circle" : "screen_record"
                         iconSize: Appearance.font.pixelSize.large
-                        color: recordingItem.isRecording ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer2
+                        color: recordingItem.isRecording ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                         Behavior on color { ColorAnimation { duration: 200 } }
                     }
                 }
@@ -226,7 +226,7 @@ Item {
                         font.pixelSize: Appearance.font.pixelSize.small
                         font.features: { "tnum": 1 }
                         font.letterSpacing: -0.3
-                        color: Appearance.colors.colOnLayer2
+                        color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                         rightPadding: 8
                         Component.onCompleted: width = implicitWidth
                     }
@@ -255,7 +255,7 @@ Item {
         Component {
             id: recordingIndicatorLegacy
             CircleUtilButton {
-                colBackground: Appearance.colors.colPrimaryContainer
+                colBackground: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                 onClicked: Quickshell.execDetached([Directories.recordScriptPath])
 
                 MaterialSymbol {
@@ -263,7 +263,7 @@ Item {
                     fill: 1
                     text: "radio_button_checked"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
             }
         }
@@ -282,7 +282,7 @@ Item {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 0; text: "keyboard"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 }
             }
         }
@@ -301,7 +301,7 @@ Item {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 0; text: "imagesmode"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 }
             }
         }
@@ -321,7 +321,7 @@ Item {
                     fill: 0
                     text: Pipewire.defaultAudioSource?.audio?.muted ? "mic_off" : "mic"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 }
             }
         }
@@ -351,7 +351,7 @@ Item {
                     fill: 0
                     text: Appearance.m3colors.darkmode ? "light_mode" : "dark_mode"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 }
             }
         }
@@ -399,7 +399,7 @@ Item {
                         case PowerProfile.Performance: return "local_fire_department"
                     }
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 }
             }
         }

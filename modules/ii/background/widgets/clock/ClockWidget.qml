@@ -37,7 +37,7 @@ AbstractBackgroundWidget {
     }
 
     property var textHorizontalAlignment: {
-        if (!Config.options.background.widgets.clock.digital.adaptiveAlignment || root.forceCenter || Config.options.background.widgets.clock.digital.vertical) 
+        if (!Config.options.background.widgets.clock.digital.adaptiveAlignment || root.forceCenter || Config.options.background.widgets.clock.digital.vertical)
             return Text.AlignHCenter;
         if (root.x < root.scaledScreenWidth / 3)
             return Text.AlignLeft;
@@ -110,7 +110,7 @@ AbstractBackgroundWidget {
             implicitHeight: statusTextRow.implicitHeight + 5 * 2
             implicitWidth: statusTextRow.implicitWidth + 5 * 2
             radius: Appearance.rounding.small
-            color: ColorUtils.transparentize(Appearance.colors.colSecondaryContainer, root.clockStyle === "cookie" ? 0 : 1)
+            color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer), root.clockStyle === "cookie" ? 0 : 1)
 
             Behavior on implicitWidth {
                 animation: Appearance.animation.elementResize.numberAnimation.createObject(this)
@@ -155,7 +155,7 @@ AbstractBackgroundWidget {
         property alias statusIcon: statusIconWidget.text
         property alias statusText: statusTextWidget.text
         property bool shown: true
-        property color textColor: root.clockStyle === "cookie" ? Appearance.colors.colOnSecondaryContainer : root.colText
+        property color textColor: root.clockStyle === "cookie" ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : root.colText
         opacity: shown ? 1 : 0
         visible: opacity > 0
         Behavior on opacity {
@@ -168,7 +168,7 @@ AbstractBackgroundWidget {
             iconSize: Appearance.font.pixelSize.huge
             color: statusTextRow.textColor
             style: Text.Raised
-            styleColor: Appearance.colors.colShadow
+            styleColor: MonitorThemes.shellColorForItem(root, "colShadow", Appearance.colors.colShadow)
         }
         ClockText {
             id: statusTextWidget
@@ -180,7 +180,7 @@ AbstractBackgroundWidget {
                 weight: Font.Normal
             }
             style: Text.Raised
-            styleColor: Appearance.colors.colShadow
+            styleColor: MonitorThemes.shellColorForItem(root, "colShadow", Appearance.colors.colShadow)
         }
     }
 }

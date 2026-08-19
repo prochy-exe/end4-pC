@@ -33,7 +33,7 @@ MouseArea {
             if (item.hasMenu)
                 if (menu.active && menu.item && typeof menu.item.close === "function")
                     menu.item.close();
-                else 
+                else
                     menu.open();
             break;
         }
@@ -94,7 +94,7 @@ MouseArea {
             ColorOverlay {
                 anchors.fill: desaturatedIcon
                 source: desaturatedIcon
-                color: ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.9)
+                color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0), 0.9)
             }
         }
     }

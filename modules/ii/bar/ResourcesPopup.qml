@@ -31,9 +31,9 @@ StyledPopup {
                 iconShape: MaterialShape.Shape.Gem
                 value: ResourceUsage.cpuUsage
                 sublabel: `${Math.round(ResourceUsage.cpuTemp)}°C`
-                sublabelColor: ResourceUsage.cpuTemp > 80 ? Appearance.colors.colError
-                    : ResourceUsage.cpuTemp > 60 ? Appearance.m3colors.m3tertiary
-                    : Appearance.colors.colOnLayer1
+                sublabelColor: ResourceUsage.cpuTemp > 80 ? MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
+                    : ResourceUsage.cpuTemp > 60 ? MonitorThemes.m3ColorForItem(root, "m3tertiary", Appearance.m3colors.m3tertiary)
+                    : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             }
         }
 

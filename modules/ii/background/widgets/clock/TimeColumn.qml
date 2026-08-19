@@ -9,7 +9,7 @@ Column {
     id: root
     property list<string> clockNumbers: DateTime.time.split(/[: ]/)
     property bool isEnabled: Config.options.background.widgets.clock.cookie.timeIndicators
-    property color color: Appearance.colors.colOnSecondaryContainer
+    property color color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
 
     property bool hourMarksEnabled: Config.options.background.widgets.clock.cookie.hourMarks
     spacing: -16

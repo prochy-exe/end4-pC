@@ -16,9 +16,9 @@ AbstractBackgroundWidget {
     readonly property real singleWidth: 132
     readonly property real cardHeight: 120
 
-    readonly property real snapWidth1: singleWidth            
-    readonly property real snapWidth2: singleWidth * 2 + cardSpacing  
-    readonly property real snapWidth3: singleWidth * 2 + cardSpacing  
+    readonly property real snapWidth1: singleWidth
+    readonly property real snapWidth2: singleWidth * 2 + cardSpacing
+    readonly property real snapWidth3: singleWidth * 2 + cardSpacing
 
     property string sizeMode: root.configEntry.sizeMode ?? "2x2"
 
@@ -103,7 +103,7 @@ AbstractBackgroundWidget {
         implicitWidth: 28
         implicitHeight: 28
         radius: 14
-        color: isToday ? Appearance.colors.colPrimary : "transparent"
+        color: isToday ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : "transparent"
 
         StyledText {
             anchors.centerIn: parent
@@ -111,8 +111,8 @@ AbstractBackgroundWidget {
             font.pixelSize: Appearance.font.pixelSize.smaller
             font.weight: parent.bold || parent.isToday ? Font.Bold : Font.Normal
             color: parent.isToday
-                ? Appearance.colors.colOnPrimary
-                : Appearance.colors.colOnLayer0
+                ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
             opacity: parent.currentMonth ? 1.0 : 0.3
         }
     }
@@ -124,7 +124,7 @@ AbstractBackgroundWidget {
                       : root.sizeMode === "1x2" ? root.cardHeight
                       : root.cardHeight * 2 + root.cardSpacing
         radius: Appearance.rounding?.verylarge ?? 30
-        color: Appearance.colors.colPrimaryContainer
+        color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
         StyledRectangularShadow {
             target: card
@@ -155,7 +155,7 @@ AbstractBackgroundWidget {
                     Rectangle {
                         Layout.fillWidth: true
                         implicitHeight: parent.height * 0.35
-                        color: Appearance.colors.colPrimary
+                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                         topLeftRadius: card.radius
                         topRightRadius: card.radius
 
@@ -166,13 +166,13 @@ AbstractBackgroundWidget {
                                 text: root.today.toLocaleDateString(Qt.locale(), "MMM").toUpperCase()
                                 font.pixelSize: Appearance.font.pixelSize.normal
                                 font.weight: Font.Bold
-                                color: Appearance.colors.colOnPrimary
+                                color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                             }
                             StyledText {
                                 text: root.today.toLocaleDateString(Qt.locale(), "ddd").toUpperCase()
                                 font.pixelSize: Appearance.font.pixelSize.normal
                                 font.weight: Font.Bold
-                                color: Appearance.colors.colOnPrimary
+                                color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                                 opacity: 0.7
                             }
                         }
@@ -187,7 +187,7 @@ AbstractBackgroundWidget {
                             text: root.today.getDate()
                             font.pixelSize: 60
                             font.weight: Font.Bold
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         }
                     }
                 }
@@ -206,7 +206,7 @@ AbstractBackgroundWidget {
                     implicitHeight: 28
                     implicitWidth: monthText.implicitWidth + 20
                     radius: Appearance.rounding.full
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
                     StyledText {
                         id: monthText
@@ -214,7 +214,7 @@ AbstractBackgroundWidget {
                         text: root.today.toLocaleDateString(Qt.locale(), "MMMM yyyy")
                         font.pixelSize: Appearance.font.pixelSize.small
                         font.weight: Font.Bold
-                        color: Appearance.colors.colOnPrimary
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                     }
                 }
 
@@ -235,7 +235,7 @@ AbstractBackgroundWidget {
                                 text: modelData
                                 font.pixelSize: Appearance.font.pixelSize.smaller
                                 font.weight: Font.Bold
-                                color: Appearance.colors.colOnPrimaryContainer
+                                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                 opacity: 0.5
                             }
                         }
@@ -252,7 +252,7 @@ AbstractBackgroundWidget {
                                 anchors.centerIn: parent
                                 width: 28; height: 28
                                 radius: 14
-                                color: modelData.isToday ? Appearance.colors.colPrimary : "transparent"
+                                color: modelData.isToday ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : "transparent"
 
                                 StyledText {
                                     anchors.centerIn: parent
@@ -260,8 +260,8 @@ AbstractBackgroundWidget {
                                     font.pixelSize: Appearance.font.pixelSize.smaller
                                     font.weight: modelData.isToday ? Font.Bold : Font.Normal
                                     color: modelData.isToday
-                                        ? Appearance.colors.colOnPrimary
-                                        : Appearance.colors.colOnPrimaryContainer
+                                        ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                                        : MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                     opacity: modelData.currentMonth ? 1.0 : 0.3
                                 }
                             }
@@ -288,7 +288,7 @@ AbstractBackgroundWidget {
                         Layout.fillWidth: true
                         font.pixelSize: Appearance.font.pixelSize.normal
                         font.weight: Font.Medium
-                        color: Appearance.colors.colOnPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         text: root.viewingDate.toLocaleDateString(Qt.locale(), "MMMM yyyy")
                     }
 
@@ -296,12 +296,12 @@ AbstractBackgroundWidget {
                         implicitWidth: 26; implicitHeight: 26; radius: 13
                         color: "transparent"
                         border.width: 1
-                        border.color: Appearance.colors.colPrimary
+                        border.color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                         MaterialSymbol {
                             anchors.centerIn: parent
                             text: "chevron_left"
                             iconSize: Appearance.font.pixelSize.normal
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -314,12 +314,12 @@ AbstractBackgroundWidget {
                         implicitWidth: 26; implicitHeight: 26; radius: 13
                         color: "transparent"
                         border.width: 1
-                        border.color: Appearance.colors.colPrimary
+                        border.color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                         MaterialSymbol {
                             anchors.centerIn: parent
                             text: "chevron_right"
                             iconSize: Appearance.font.pixelSize.normal
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -339,7 +339,7 @@ AbstractBackgroundWidget {
                             horizontalAlignment: Text.AlignHCenter
                             font.pixelSize: Appearance.font.pixelSize.smaller
                             font.weight: Font.Bold
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                             text: modelData
                         }
@@ -349,7 +349,7 @@ AbstractBackgroundWidget {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    color: Appearance.colors.colLayer1
+                    color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
                     radius: (Appearance.rounding?.verylarge ?? 30) - 8
 
                     ColumnLayout {
@@ -380,7 +380,7 @@ AbstractBackgroundWidget {
         Rectangle {
             id: resizeHandle
             width: 16; height: 16; radius: 4
-            color: Appearance.colors.colOnPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
             anchors { right: card.right; bottom: card.bottom; margins: 4 }
             opacity: (root.containsMouse || resizeArea.containsMouse || resizeArea.pressed) ? 0.5 : 0
             visible: opacity > 0 && !Config.options.background.widgetsLocked
@@ -416,7 +416,7 @@ AbstractBackgroundWidget {
         Rectangle {
             id: toggleHandle
             width: 16; height: 16; radius: 4
-            color: Appearance.colors.colOnPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
             anchors { left: card.left; bottom: card.bottom; margins: 4 }
             opacity: (root.containsMouse || toggleArea.containsMouse) && root.sizeMode !== "1x1" ? 0.5 : 0
             visible: opacity > 0 && !Config.options.background.widgetsLocked
@@ -426,7 +426,7 @@ AbstractBackgroundWidget {
                 anchors.centerIn: parent
                 text: root.sizeMode === "1x2" ? "calendar_view_month" : "calendar_view_week"
                 iconSize: 11
-                color: Appearance.colors.colPrimaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
             }
 
             MouseArea {

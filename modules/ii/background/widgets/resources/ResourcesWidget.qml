@@ -29,8 +29,8 @@ AbstractBackgroundWidget {
         property string value: ""
         property string label: ""
         property int shape: MaterialShape.Shape.Cookie12Sided
-        property color bgColor: Appearance.colors.colPrimaryContainer
-        property color shapeColor: Appearance.colors.colPrimary
+        property color bgColor: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+        property color shapeColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
         implicitWidth: root.cardWidth
         implicitHeight: root.cardHeight
@@ -53,7 +53,7 @@ AbstractBackgroundWidget {
                 Layout.alignment: Qt.AlignRight
                 shape: statCard.shape
                 color: statCard.shapeColor
-                colSymbol: Appearance.colors.colOnPrimary
+                colSymbol: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 text: statCard.icon
                 iconSize: 18
                 fill: 1
@@ -68,13 +68,13 @@ AbstractBackgroundWidget {
                 text: statCard.value
                 font.pixelSize: Appearance.font.pixelSize.hugeass
                 font.weight: Font.Bold
-                color: Appearance.colors.colOnPrimaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
             }
 
             StyledText {
                 text: statCard.label
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.colors.colOnPrimaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                 opacity: 0.6
             }
         }
@@ -101,8 +101,8 @@ AbstractBackgroundWidget {
             value: Math.round(ResourceUsage.memoryUsedPercentage * 100) + "%"
             label: "RAM"
             shape: MaterialShape.Shape.Cookie4Sided
-            bgColor: Appearance.colors.colSecondaryContainer
-            shapeColor: Appearance.colors.colSecondary
+            bgColor: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+            shapeColor: MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
         }
         StatCard {
             icon: root.hasBattery ? "battery_full" : "storage"
@@ -111,8 +111,8 @@ AbstractBackgroundWidget {
                 : Math.round(ResourceUsage.diskUsedPercentage * 100) + "%"
             label: root.hasBattery ? "Battery" : "Disk"
             shape: MaterialShape.Shape.Cookie12Sided
-            bgColor: Appearance.colors.colTertiaryContainer
-            shapeColor: Appearance.colors.colTertiary
+            bgColor: MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer)
+            shapeColor: MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
         }
     }
     Rectangle {
@@ -120,7 +120,7 @@ AbstractBackgroundWidget {
         width: 16
         height: 16
         radius: 6
-        color: Appearance.colors.colOnPrimaryContainer
+        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
         anchors {
             left: parent.right
             bottom: parent.bottom
@@ -137,7 +137,7 @@ AbstractBackgroundWidget {
             anchors.centerIn: parent
             text: "rotate_right"
             iconSize: 11
-            color: Appearance.colors.colPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
             RotationAnimation on rotation {
                 running: toggleArea.containsMouse

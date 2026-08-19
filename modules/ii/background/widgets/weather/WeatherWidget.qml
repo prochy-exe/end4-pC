@@ -52,7 +52,7 @@ AbstractBackgroundWidget {
         implicitWidth: root.widgetWidth
         implicitHeight: root.cardHeight
         radius: Appearance.rounding?.verylarge ?? 30
-        color: Appearance.colors.colPrimaryContainer
+        color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
         StyledRectangularShadow {
             target: card
@@ -68,7 +68,7 @@ AbstractBackgroundWidget {
             }
         }
 
-        // 1x1 
+        // 1x1
         Component {
             id: oneByOneContent
             ColumnLayout {
@@ -81,8 +81,8 @@ AbstractBackgroundWidget {
                 MaterialShapeWrappedMaterialSymbol {
                     Layout.alignment: Qt.AlignRight
                     shape: MaterialShape.Shape.Cookie12Sided
-                    color: Appearance.colors.colPrimary
-                    colSymbol: Appearance.colors.colOnPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                    colSymbol: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                     text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
                     iconSize: 18
                     fill: 1
@@ -97,13 +97,13 @@ AbstractBackgroundWidget {
                     text: Weather.data?.temp ?? "--°"
                     font.pixelSize: Appearance.font.pixelSize.hugeass
                     font.weight: Font.Bold
-                    color: Appearance.colors.colOnPrimaryContainer
+                    color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                 }
                 StyledText {
                     Layout.fillWidth: true
                     text: Weather.data?.city ?? "--"
                     font.pixelSize: Appearance.font.pixelSize.small
-                    color: Appearance.colors.colOnPrimaryContainer
+                    color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                     opacity: 0.6
                     elide: Text.ElideRight
                 }
@@ -130,19 +130,19 @@ AbstractBackgroundWidget {
                             text: Weather.data?.temp ?? "--°"
                             font.pixelSize: Appearance.font.pixelSize.hugeass
                             font.weight: Font.Bold
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         }
                         StyledText {
                             text: Weather.data?.city ?? "--"
                             font.pixelSize: Appearance.font.pixelSize.small
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                             elide: Text.ElideRight
                         }
                         StyledText {
                             text: Weather.data?.description ?? "--"
                             font.pixelSize: Appearance.font.pixelSize.small
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                             elide: Text.ElideRight
                         }
@@ -153,8 +153,8 @@ AbstractBackgroundWidget {
                     MaterialShapeWrappedMaterialSymbol {
                         Layout.topMargin: -19
                         shape: MaterialShape.Shape.Cookie12Sided
-                        color: Appearance.colors.colPrimary
-                        colSymbol: Appearance.colors.colOnPrimary
+                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                        colSymbol: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                         text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
                         iconSize: 18
                         fill: 1
@@ -176,13 +176,13 @@ AbstractBackgroundWidget {
                         MaterialSymbol {
                             iconSize: Appearance.font.pixelSize.smaller
                             text: "humidity_mid"
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                         StyledText {
                             text: Weather.data?.humidity ?? "--"
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                     }
@@ -192,13 +192,13 @@ AbstractBackgroundWidget {
                         MaterialSymbol {
                             iconSize: Appearance.font.pixelSize.smaller
                             text: "rainy"
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                         StyledText {
                             text: Weather.data?.cr ?? "--"
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                     }
@@ -208,13 +208,13 @@ AbstractBackgroundWidget {
                         MaterialSymbol {
                             iconSize: Appearance.font.pixelSize.smaller
                             text: "air"
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                         StyledText {
                             text: Weather.data?.wind ?? "--"
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                     }
@@ -243,7 +243,7 @@ AbstractBackgroundWidget {
                             pixelSize: 40
                             weight: Font.Bold
                         }
-                        color: Appearance.colors.colPrimary
+                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                     }
 
                     ColumnLayout {
@@ -254,13 +254,13 @@ AbstractBackgroundWidget {
                             text: Weather.data?.description ?? ""
                             font.pixelSize: Appearance.font.pixelSize.normal
                             font.weight: Font.DemiBold
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             elide: Text.ElideRight
                         }
                         StyledText {
                             text: Weather.data?.city ?? "--"
                             font.pixelSize: Appearance.font.pixelSize.small
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                             elide: Text.ElideRight
                         }
@@ -272,8 +272,8 @@ AbstractBackgroundWidget {
                         Layout.topMargin: -5
                         Layout.alignment: Qt.AlignVCenter
                         shape: MaterialShape.Shape.Cookie12Sided
-                        color: Appearance.colors.colPrimary
-                        colSymbol: Appearance.colors.colOnPrimary
+                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                        colSymbol: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                         text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
                         iconSize: 24
                         fill: 1
@@ -295,13 +295,13 @@ AbstractBackgroundWidget {
                         MaterialSymbol {
                             iconSize: Appearance.font.pixelSize.smaller
                             text: "humidity_mid"
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                         StyledText {
                             text: Weather.data?.humidity ?? "--"
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                     }
@@ -311,13 +311,13 @@ AbstractBackgroundWidget {
                         MaterialSymbol {
                             iconSize: Appearance.font.pixelSize.smaller
                             text: "rainy"
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                         StyledText {
                             text: Weather.data?.cr ?? "--"
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                     }
@@ -327,13 +327,13 @@ AbstractBackgroundWidget {
                         MaterialSymbol {
                             iconSize: Appearance.font.pixelSize.smaller
                             text: "air"
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                         StyledText {
                             text: Weather.data?.wind ?? "--"
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                     }
@@ -343,13 +343,13 @@ AbstractBackgroundWidget {
                         MaterialSymbol {
                             iconSize: Appearance.font.pixelSize.smaller
                             text: "visibility"
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                         StyledText {
                             text: Weather.data?.visib ?? "--"
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             opacity: 0.6
                         }
                     }
@@ -365,13 +365,13 @@ AbstractBackgroundWidget {
                             MaterialSymbol {
                                 iconSize: Appearance.font.pixelSize.smaller
                                 text: "wb_twilight"
-                                color: Appearance.colors.colOnPrimaryContainer
+                                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                 opacity: 0.6
                             }
                             StyledText {
                                 text: Weather.data?.sunrise ?? "--"
                                 font.pixelSize: Appearance.font.pixelSize.smaller
-                                color: Appearance.colors.colOnPrimaryContainer
+                                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                 opacity: 0.6
                             }
                         }
@@ -381,13 +381,13 @@ AbstractBackgroundWidget {
                             MaterialSymbol {
                                 iconSize: Appearance.font.pixelSize.smaller
                                 text: "nights_stay"
-                                color: Appearance.colors.colOnPrimaryContainer
+                                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                 opacity: 0.6
                             }
                             StyledText {
                                 text: Weather.data?.sunset ?? "--"
                                 font.pixelSize: Appearance.font.pixelSize.smaller
-                                color: Appearance.colors.colOnPrimaryContainer
+                                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                 opacity: 0.6
                             }
                         }
@@ -401,7 +401,7 @@ AbstractBackgroundWidget {
             width: 16
             height: 16
             radius: 4
-            color: Appearance.colors.colOnPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
             anchors {
                 right: card.right
                 bottom: card.bottom

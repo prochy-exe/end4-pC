@@ -1,5 +1,6 @@
 import qs.modules.common
 import QtQuick
+import qs.services
 import QtQuick.Layouts
 
 Item {
@@ -15,7 +16,7 @@ Item {
     readonly property int currentCornerStyle: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle)
     property bool paintMaterialPill: false
     property real padding: (root.isMaterial && !root.paintMaterialPill) ? 0 : 5
-    property color bgColor: Appearance.colors.colPrimaryContainer
+    property color bgColor: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
     readonly property real fullRadius: height / 2
     readonly property real midRadius: root.currentCornerStyle === 2 ? Appearance.rounding.unsharpenmore + 2 : Appearance.rounding.unsharpenmore
@@ -51,8 +52,8 @@ Item {
                 : (root.currentBorderless === "transparent"
                     ? "transparent"
                     : root.currentCornerStyle === 2
-                        ? Appearance.colors.colLayer0
-                        : Appearance.colors.colLayer1)
+                        ? MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
+                        : MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1))
 
         topLeftRadius: (root.isMaterial && root.paintMaterialPill) ? root.fullRadius : (root.currentBorderless === "separated" ? root.fullRadius : root.startRadius)
         bottomLeftRadius: (root.isMaterial && root.paintMaterialPill) ? root.fullRadius : (root.currentBorderless === "separated" ? root.fullRadius : root.vertical ? root.endRadius : root.startRadius)

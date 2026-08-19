@@ -1,4 +1,5 @@
 import QtQuick
+import qs.services
 import Quickshell
 import Quickshell.Io
 import qs
@@ -47,17 +48,17 @@ AbstractWidget {
     }
 
     property bool needsColText: false
-    property color dominantColor: Appearance.colors.colPrimary
+    property color dominantColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
     property bool dominantColorIsDark: dominantColor.hslLightness < 0.5
     property color colText: {
         const onNormalBackground = (GlobalStates.screenLocked && Config.options.lock.blur.enable)
-        const adaptiveColor = ColorUtils.colorWithLightness(Appearance.colors.colPrimary, (dominantColorIsDark ? 0.8 : 0.12))
-        return onNormalBackground ? Appearance.colors.colOnLayer0 : adaptiveColor;
+        const adaptiveColor = ColorUtils.colorWithLightness(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), (dominantColorIsDark ? 0.8 : 0.12))
+        return onNormalBackground ? MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0) : adaptiveColor;
     }
 
     property bool wallpaperIsVideo: Config.options.background.wallpaperPath.endsWith(".mp4") || Config.options.background.wallpaperPath.endsWith(".webm") || Config.options.background.wallpaperPath.endsWith(".mkv") || Config.options.background.wallpaperPath.endsWith(".avi") || Config.options.background.wallpaperPath.endsWith(".mov")
     property string wallpaperPath: wallpaperIsVideo ? Config.options.background.thumbnailPath : Config.options.background.wallpaperPath
-    
+
     onWallpaperPathChanged: refreshPlacementIfNeeded()
     onPlacementStrategyChanged: refreshPlacementIfNeeded()
     Connections {
@@ -97,7 +98,7 @@ AbstractWidget {
                 // console.log("[Background] Least busy region output:", output)
                 if (output.length === 0) return;
                 const parsedContent = JSON.parse(output);
-                root.dominantColor = parsedContent.dominant_color || Appearance.colors.colPrimary;
+                root.dominantColor = parsedContent.dominant_color || MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary);
                 if (root.placementStrategy === "free") return;
                 root.targetX = parsedContent.center_x * root.wallpaperScale - root.width / 2;
                 root.targetY  = parsedContent.center_y * root.wallpaperScale - root.height / 2;

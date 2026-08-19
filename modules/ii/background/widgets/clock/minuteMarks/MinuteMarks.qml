@@ -3,11 +3,12 @@ pragma ComponentBehavior: Bound
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
+import qs.services
 
 Item {
     id: root
 
-    property color color: Appearance.colors.colOnSecondaryContainer
+    property color color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
     property string style: Config.options.background.widgets.clock.cookie.dialNumberStyle // "dots", "numbers", "full", "hide"
     property string dateStyle : Config.options.background.widgets.clock.cookie.dateStyle
 
@@ -50,5 +51,5 @@ Item {
             margins: 46 - linesLoader.opacity * 34
         }
     }
-    
+
 }

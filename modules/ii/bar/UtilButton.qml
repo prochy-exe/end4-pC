@@ -1,4 +1,5 @@
 import QtQuick
+import qs.services
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
@@ -34,7 +35,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Appearance.rounding.full
-        color: root.hovered ? Appearance.colors.colPrimary : ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+        color: root.hovered ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0), 0.8)
 
         Behavior on color {
             ColorAnimation { duration: Appearance.animation.elementMoveFast.duration }
@@ -47,7 +48,7 @@ Item {
             id: symbol
             anchors.centerIn: parent
             iconSize: Appearance.font.pixelSize.large
-            color: root.hovered ? Appearance.colors.colOnPrimary : Appearance.colors.colPrimary
+            color: root.hovered ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
             Behavior on color {
                 ColorAnimation { duration: Appearance.animation.elementMoveFast.duration }

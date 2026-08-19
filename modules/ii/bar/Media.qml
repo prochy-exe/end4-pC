@@ -16,7 +16,7 @@ import Quickshell.Services.Mpris
 Item {
     id: root
     readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
-    
+
     property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
     property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
@@ -109,7 +109,7 @@ Item {
             implicitSize: 20
             lineWidth: Appearance.rounding.unsharpen
             value: root.activePlayer?.position / root.activePlayer?.length
-            colPrimary: Appearance.colors.colOnSecondaryContainer
+            colPrimary: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
             enableAnimation: false
             Item {
                 anchors.centerIn: parent
@@ -120,7 +120,7 @@ Item {
                     fill: 1
                     text: root.activePlayer?.isPlaying ? "pause" : "music_note"
                     iconSize: Appearance.font.pixelSize.normal
-                    color: Appearance.m3colors.m3onSecondaryContainer
+                    color: MonitorThemes.m3ColorForItem(root, "m3onSecondaryContainer", Appearance.m3colors.m3onSecondaryContainer)
                 }
             }
         }
@@ -130,17 +130,17 @@ Item {
     Rectangle {
         visible: root.vertical && root.isMaterial
         anchors.centerIn: parent
-        color: Appearance.colors.colSecondaryContainer
+        color: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
         radius: Appearance.rounding.full
         implicitWidth: 32
         implicitHeight: 32
-        
+
         MaterialSymbol {
             anchors.centerIn: parent
             fill: 1
             text: root.activePlayer?.isPlaying ? "pause" : "music_note"
             iconSize: Appearance.font.pixelSize.normal
-            color: Appearance.colors.colOnSecondaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
         }
     }
 
@@ -158,7 +158,7 @@ Item {
                 implicitSize: 20
                 lineWidth: Appearance.rounding.unsharpen
                 value: root.activePlayer?.position / root.activePlayer?.length
-                colPrimary: Appearance.colors.colOnSecondaryContainer
+                colPrimary: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                 enableAnimation: false
                 Item {
                     anchors.centerIn: parent
@@ -169,7 +169,7 @@ Item {
                         fill: 1
                         text: root.activePlayer?.isPlaying ? "pause" : "music_note"
                         iconSize: Appearance.font.pixelSize.normal
-                        color: Appearance.m3colors.m3onSecondaryContainer
+                        color: MonitorThemes.m3ColorForItem(root, "m3onSecondaryContainer", Appearance.m3colors.m3onSecondaryContainer)
                     }
                 }
             }
@@ -180,7 +180,7 @@ Item {
                 Layout.rightMargin: 0
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 text: Config.getBarSetting(root.monitorName, ["media", "onlyTitle"], Config.options.bar.media.onlyTitle) ? root.cleanedTitle : `${root.cleanedTitle}${root.activePlayer?.trackArtist ? ' • ' + root.activePlayer.trackArtist : ''}`
             }
         }
@@ -197,7 +197,7 @@ Item {
             anchors.centerIn: parent
             spacing: 6
 
-            // No platyer 
+            // No platyer
             Loader {
                 active: !root.hasTrack
                 visible: active
@@ -211,7 +211,7 @@ Item {
                         implicitWidth: 26
                         implicitHeight: 26
                         radius: Appearance.rounding.full
-                        color: Appearance.colors.colPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                         Layout.alignment: Qt.AlignVCenter
 
                         layer.enabled: true
@@ -226,8 +226,8 @@ Item {
                         Image {
                             id: avatarImage
                             anchors.fill: parent
-                            source: Config.options.profile.avatarPath !== "" 
-                                ? "file://" + Config.options.profile.avatarPicture 
+                            source: Config.options.profile.avatarPath !== ""
+                                ? "file://" + Config.options.profile.avatarPicture
                                 : "file:///home/" + (Quickshell.env("USER") ?? "user") + "/.face"
                             sourceSize.width: avatarRect.width * 2
                             sourceSize.height: avatarRect.height * 2
@@ -242,7 +242,7 @@ Item {
                             anchors.centerIn: parent
                             text: "account_circle"
                             iconSize: Appearance.font.pixelSize.normal
-                            color: Appearance.colors.colOnPrimaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             visible: avatarImage.status === Image.Error || avatarImage.status === Image.Null
                         }
                     }
@@ -255,7 +255,7 @@ Item {
                         StyledText {
                             text: Config.options.profile.displayName === "" ? SystemInfo.username : Config.options.profile.displayName
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnSecondaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                             elide: Text.ElideRight
                             Layout.maximumWidth: 120
                         }
@@ -263,7 +263,7 @@ Item {
                         StyledText {
                             id: distroLabel
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnSecondaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                             opacity: 0.7
                             elide: Text.ElideRight
                             Layout.rightMargin: 8
@@ -288,7 +288,7 @@ Item {
                         implicitWidth: 26
                         implicitHeight: 26
                         radius: Appearance.rounding.full
-                        color: Appearance.colors.colSecondaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
                         Layout.alignment: Qt.AlignVCenter
 
                         layer.enabled: true
@@ -316,7 +316,7 @@ Item {
                             fill: 1
                             text: "music_note"
                             iconSize: Appearance.font.pixelSize.normal
-                            color: Appearance.colors.colOnSecondaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                             visible: root.displayedArtFilePath === ""
                         }
                     }
@@ -331,7 +331,7 @@ Item {
                             id: artistText
                             text: root.trackArtist
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnSecondaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                             elide: Text.ElideRight
                             Layout.maximumWidth: 120
                             Behavior on text {
@@ -347,7 +347,7 @@ Item {
                             Layout.topMargin: (!root.activePlayer || root.trackArtist.length === 0) ? -13 : 0
                             text: StringUtils.cleanMusicTitle(root.trackTitle) || Translation.tr("No media")
                             font.pixelSize: Appearance.font.pixelSize.smallie
-                            color: Appearance.colors.colOnSecondaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                             elide: Text.ElideRight
                             opacity: 0.7
                             Layout.maximumWidth: 120
@@ -366,9 +366,9 @@ Item {
                         implicitWidth: 40
                         implicitHeight: 23
                         buttonRadius: root.isPlaying ? Appearance.rounding.normal : 13
-                        colBackground: root.isPlaying ? Appearance.colors.colPrimary : Appearance.colors.colSurfaceContainerLow
-                        colBackgroundHover: root.isPlaying ? Appearance.colors.colPrimaryHover : Appearance.colors.colPrimaryContainerHover
-                        colRipple: root.isPlaying ? Appearance.colors.colPrimaryActive : Appearance.colors.colPrimaryContainerActive
+                        colBackground: root.isPlaying ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
+                        colBackgroundHover: root.isPlaying ? MonitorThemes.shellColorForItem(root, "colPrimaryHover", Appearance.colors.colPrimaryHover) : MonitorThemes.shellColorForItem(root, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover)
+                        colRipple: root.isPlaying ? MonitorThemes.shellColorForItem(root, "colPrimaryActive", Appearance.colors.colPrimaryActive) : MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
                         downAction: () => root.activePlayer?.togglePlaying()
                         contentItem: MaterialSymbol {
                             anchors.centerIn: parent
@@ -376,7 +376,7 @@ Item {
                             text: root.isPlaying ? "pause" : "play_arrow"
                             iconSize: Appearance.font.pixelSize.large
                             fill: 1
-                            color: root.isPlaying ? Appearance.colors.colOnPrimary : Appearance.colors.colOnPrimaryContainer
+                            color: root.isPlaying ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         }
                     }
 
@@ -387,8 +387,8 @@ Item {
                         Layout.leftMargin: -4
                         buttonRadius: 13
                         colBackground: "transparent"
-                        colBackgroundHover: Appearance.colors.colPrimaryContainerHover
-                        colRipple: Appearance.colors.colPrimaryContainerActive
+                        colBackgroundHover: MonitorThemes.shellColorForItem(root, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover)
+                        colRipple: MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
                         downAction: () => root.activePlayer?.next()
                         altAction: () => root.activePlayer?.previous()
                         contentItem: MaterialSymbol {
@@ -397,7 +397,7 @@ Item {
                             text: "skip_next"
                             iconSize: Appearance.font.pixelSize.large
                             fill: 1
-                            color: Appearance.colors.colOnSecondaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                         }
                     }
                 }

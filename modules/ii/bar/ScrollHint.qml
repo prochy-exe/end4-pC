@@ -1,13 +1,14 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
+import qs.services
 
 Revealer { // Scroll hint
     id: root
     property string icon
     property string side: "left"
     property string tooltipText: ""
-    
+
     MouseArea {
         id: mouseArea
         anchors.right: root.side === "left" ? parent.right : undefined
@@ -43,17 +44,17 @@ Revealer { // Scroll hint
             MaterialSymbol {
                 text: "keyboard_arrow_up"
                 iconSize: 14
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             }
             MaterialSymbol {
                 text: root.icon
                 iconSize: 14
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             }
             MaterialSymbol {
                 text: "keyboard_arrow_down"
                 iconSize: 14
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             }
         }
     }

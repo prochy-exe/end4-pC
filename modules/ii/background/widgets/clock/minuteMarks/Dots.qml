@@ -3,12 +3,13 @@ pragma ComponentBehavior: Bound
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
+import qs.services
 
 Item {
     id: root
     property real implicitSize: 12
     property real margins: 10
-    property color color: Appearance.colors.colOnSecondaryContainer
+    property color color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
 
     Repeater {
         model: 12

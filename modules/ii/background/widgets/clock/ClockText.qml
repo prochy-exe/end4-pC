@@ -1,9 +1,11 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
+import qs.services
 import QtQuick.Layouts
 
 StyledText {
+    id: clockText
     Layout.fillWidth: true
     font {
         family: Config.options.background.widgets.clock.quote.followClock ? Config.options.background.widgets.clock.digital.font.family : Appearance.font.family.expressive
@@ -14,6 +16,6 @@ StyledText {
         variableAxes: ({})
     }
     style: Text.Raised
-    styleColor: Appearance.colors.colShadow
+    styleColor: MonitorThemes.shellColorForItem(clockText, "colShadow", Appearance.colors.colShadow)
     animateChange: Config.options.background.widgets.clock.digital.animateChange
 }

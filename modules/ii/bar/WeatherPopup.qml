@@ -10,7 +10,7 @@ StyledPopup {
 
     ColumnLayout {
         id: mainLayout
-        implicitWidth: 340 
+        implicitWidth: 340
         spacing: 8
 
         Layout.topMargin: -8
@@ -27,13 +27,13 @@ StyledPopup {
             bottomRightRadius: Appearance.rounding.normal
 
             gradient: Gradient {
-                GradientStop { position: 0.0; color: Appearance.colors.colPrimaryContainer }
-                GradientStop { position: 1.0; color: Appearance.colors.colSurfaceContainerLow }
+                GradientStop { position: 0.0; color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) }
+                GradientStop { position: 1.0; color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow) }
             }
 
             Item {
                 anchors.fill: parent
-                anchors.margins: 16 
+                anchors.margins: 16
 
                 ColumnLayout {
                     anchors.left: parent.left
@@ -45,13 +45,13 @@ StyledPopup {
                         text: Weather.data?.city ?? "Paris, France"
                         font.pixelSize: Appearance.font.pixelSize.normal
                         font.weight: Font.DemiBold
-                        color: Appearance.colors.colOnLayer0
+                        color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                     }
 
                     StyledText {
                         text: Weather.data?.description ?? "Cloudy"
                         font.pixelSize: Appearance.font.pixelSize.smaller
-                        color: Appearance.colors.colOnLayer0
+                        color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                         opacity: 0.6
                     }
                 }
@@ -66,7 +66,7 @@ StyledPopup {
                         text: Weather.data?.temp ?? "3"
                         font.pixelSize: 48
                         font.weight: Font.Light
-                        color: Appearance.colors.colOnLayer0
+                        color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                     }
                 }
 
@@ -78,8 +78,8 @@ StyledPopup {
                     text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
                     iconSize: 40
                     implicitSize: 64
-                    color: Qt.alpha(Appearance.colors.colOnLayer0, 0.15)
-                    colSymbol: Appearance.colors.colPrimary
+                    color: Qt.alpha(MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0), 0.15)
+                    colSymbol: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
 
                 ColumnLayout {
@@ -95,12 +95,12 @@ StyledPopup {
                         MaterialSymbol {
                             text: "wb_twilight"
                             iconSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colPrimary
+                            color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                         }
                         StyledText {
                             text: Weather.data?.sunrise ?? "07:34 AM"
                             font.pixelSize: Appearance.font.pixelSize.smallest
-                            color: Appearance.colors.colOnLayer0
+                            color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                             opacity: 0.8
                         }
                     }
@@ -111,12 +111,12 @@ StyledPopup {
                         MaterialSymbol {
                             text: "bedtime"
                             iconSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colPrimary
+                            color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                         }
                         StyledText {
                             text: Weather.data?.sunset ?? "05:21 PM"
                             font.pixelSize: Appearance.font.pixelSize.smallest
-                            color: Appearance.colors.colOnLayer0
+                            color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                             opacity: 0.8
                         }
                     }
@@ -130,7 +130,7 @@ StyledPopup {
             rowSpacing: 4
             columnSpacing: 4
             uniformCellWidths: true
-            
+
             Layout.leftMargin: 2
             Layout.rightMargin: 2
             Layout.bottomMargin: 2

@@ -12,7 +12,7 @@ ColumnLayout {
     property bool isVertical: Config.options.background.widgets.clock.digital.vertical
     property color colText: Config.options.background.widgets.clock.color !== ""
         ? Config.options.background.widgets.clock.color
-        : Appearance.colors.colOnSecondaryContainer
+        : MonitorThemes.shellColorForItem(clockColumn, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
     property var textHorizontalAlignment: Text.AlignHCenter
 
     // Time

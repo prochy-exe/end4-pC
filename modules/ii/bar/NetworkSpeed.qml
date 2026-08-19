@@ -1,4 +1,5 @@
 import QtQuick
+import qs.services
 import QtQuick.Layouts
 import Quickshell.Io
 import qs.modules.common
@@ -131,7 +132,7 @@ MouseArea {
             Layout.preferredWidth: root.vertical ? -1 : regularRateMetrics.width
             horizontalAlignment: Text.AlignRight
             text: speedLine.rateText
-            color: Appearance.colors.colOnLayer1
+            color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             font.pixelSize: Appearance.font.pixelSize.smallest
             font.weight: Font.Medium
             font.features: { "tnum": 1 }
@@ -146,13 +147,13 @@ MouseArea {
         SpeedLine {
             iconName: "arrow_upward"
             rate: root.uploadBytesPerSecond
-            accentColor: Appearance.colors.colTertiary
+            accentColor: MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
         }
 
         SpeedLine {
             iconName: "arrow_downward"
             rate: root.downloadBytesPerSecond
-            accentColor: Appearance.colors.colPrimary
+            accentColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
         }
     }
 

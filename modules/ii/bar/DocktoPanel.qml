@@ -350,7 +350,7 @@ Item {
                                     }
                                     ColorOverlay {
                                         anchors.fill: desat; source: desat
-                                        color: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.8)
+                                        color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.8)
                                     }
                                 }
                             }
@@ -378,8 +378,8 @@ Item {
                                             ? ((slotItem.appEntry?.toplevels?.length ?? 0) <= 3 ? 4 : 2)
                                             : 2
                                         color: slotItem.appActive
-                                            ? Appearance.colors.colPrimary
-                                            : ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.4)
+                                            ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                                            : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0), 0.4)
                                     }
                                 }
                             }
@@ -397,7 +397,7 @@ Item {
                     anchors.centerIn: parent
                     width:  root.vertical ? Math.round(root.btnSize * 0.6) : 1
                     height: root.vertical ? 1 : Math.round(root.btnSize * 0.6)
-                    color:  root.isMaterial ? Appearance.colors.colPrimary : Appearance.colors.colOutlineVariant
+                    color:  root.isMaterial ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant)
                 }
             }
 
@@ -455,7 +455,7 @@ Item {
                                     }
                                     ColorOverlay {
                                         anchors.fill: desat2; source: desat2
-                                        color: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.8)
+                                        color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.8)
                                     }
                                 }
                             }
@@ -483,8 +483,8 @@ Item {
                                             ? (activeSlot.modelData.toplevels.length <= 3 ? 4 : 2)
                                             : 2
                                         color: activeSlot.appIsActive
-                                            ? Appearance.colors.colPrimary
-                                            : ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.4)
+                                            ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                                            : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0), 0.4)
                                     }
                                 }
                             }

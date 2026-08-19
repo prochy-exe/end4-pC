@@ -31,7 +31,7 @@ Item {
     property var mainAppIconSource: {
         if (!root.activeAppClass || root.activeAppClass === "")
             return Quickshell.iconPath("user-desktop", "image-missing")
-        return Quickshell.iconPath(AppSearch.guessIcon(root.activeAppClass), 
+        return Quickshell.iconPath(AppSearch.guessIcon(root.activeAppClass),
             Quickshell.iconPath("user-desktop", "image-missing"))     // ← fallback Desktop
     }
 
@@ -74,7 +74,7 @@ Item {
         StyledText {
             Layout.fillWidth: true
             font.pixelSize: Appearance.font.pixelSize.smaller
-            color: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             elide: Text.ElideRight
             text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ?
                 root.activeWindow?.appId :
@@ -83,7 +83,7 @@ Item {
         StyledText {
             Layout.fillWidth: true
             font.pixelSize: Appearance.font.pixelSize.small
-            color: Appearance.colors.colOnLayer0
+            color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
             elide: Text.ElideRight
             text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ?
                 root.activeWindow?.title :

@@ -1,4 +1,5 @@
 import QtQuick
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 
@@ -20,14 +21,14 @@ Item {
         anchors.centerIn: parent
         width:  vertical ? Math.round(btnSize * 0.6) : 1
         height: vertical ? 1 : Math.round(btnSize * 0.6)
-        color:  isMaterial ? Appearance.colors.colPrimary : Appearance.colors.colOutlineVariant
+        color:  isMaterial ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant)
     }
 
     StyledText {
         visible: root.style === "dot"
         anchors.centerIn: parent
         text: "•"
-        color: isMaterial ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer0
+        color: isMaterial ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
         font.pixelSize: Appearance.font.pixelSize.normal
     }
 }

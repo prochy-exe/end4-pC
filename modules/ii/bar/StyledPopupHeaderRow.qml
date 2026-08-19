@@ -1,4 +1,5 @@
 import QtQuick
+import qs.services
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
@@ -15,7 +16,7 @@ Row {
         font.weight: Font.DemiBold
         text: root.icon
         iconSize: Appearance.font.pixelSize.large
-        color: Appearance.colors.colOnSurfaceVariant
+        color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
     }
 
     StyledText {
@@ -25,6 +26,6 @@ Row {
             weight: Font.DemiBold
             pixelSize: Appearance.font.pixelSize.normal
         }
-        color: Appearance.colors.colOnSurfaceVariant
+        color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
     }
 }

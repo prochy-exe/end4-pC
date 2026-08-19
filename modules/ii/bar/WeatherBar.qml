@@ -13,7 +13,7 @@ MouseArea {
     property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
 
-    implicitWidth: vertical ? 32 : (contentLoader.item?.implicitWidth ?? 0) 
+    implicitWidth: vertical ? 32 : (contentLoader.item?.implicitWidth ?? 0)
     implicitHeight: vertical ? (contentLoader.item?.implicitHeight ?? 0) : Appearance.sizes.barHeight
 
     acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -47,14 +47,14 @@ MouseArea {
                 fill: 0
                 text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
                 iconSize: Appearance.font.pixelSize.large
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 Layout.alignment: Qt.AlignVCenter
             }
 
             StyledText {
                 visible: !root.isMaterial
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 text: Weather.data?.temp ?? "--°"
                 Layout.alignment: Qt.AlignVCenter
             }
@@ -62,7 +62,7 @@ MouseArea {
             StyledText {
                 visible: root.isMaterial
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 text: Weather.data?.temp ?? "--°"
                 Layout.alignment: Qt.AlignVCenter
                 leftPadding: 5
@@ -73,14 +73,14 @@ MouseArea {
                 width: 25
                 height: 25
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
                 MaterialSymbol {
                     anchors.centerIn: parent
                     fill: 0
                     text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
                     iconSize: Appearance.font.pixelSize.normal
-                    color: Appearance.colors.colOnPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 }
             }
         }
@@ -96,14 +96,14 @@ MouseArea {
                 fill: 0
                 text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
                 iconSize: Appearance.font.pixelSize.large
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 Layout.alignment: Qt.AlignHCenter
             }
 
             StyledText {
                 visible: !root.isMaterial
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 text: (Weather.data?.temp ?? "--°").replace(/[CF]$/, "")
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -111,7 +111,7 @@ MouseArea {
             StyledText {
                 visible: root.isMaterial
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 text: (Weather.data?.temp ?? "--°").replace(/[CF]$/, "")
                 Layout.alignment: Qt.AlignHCenter
                 Layout.topMargin: 3
@@ -122,7 +122,7 @@ MouseArea {
                 width: 25
                 height: 25
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 Layout.alignment: Qt.AlignHCenter
 
                 MaterialSymbol {
@@ -130,7 +130,7 @@ MouseArea {
                     fill: 0
                     text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
                     iconSize: Appearance.font.pixelSize.normal
-                    color: Appearance.colors.colOnPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 }
             }
         }

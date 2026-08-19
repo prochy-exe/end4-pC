@@ -75,10 +75,10 @@ PopupWindow {
                 margins: root.padding
             }
 
-            color: Appearance.colors.colLayer0
+            color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
             radius: Appearance.rounding.windowRounding
             border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            border.color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
             clip: true
 
             opacity: 0
@@ -217,7 +217,7 @@ PopupWindow {
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: 1
-            color: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             Layout.topMargin: 4
             Layout.bottomMargin: 4
         }

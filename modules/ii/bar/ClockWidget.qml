@@ -44,7 +44,7 @@ BarWidgetSwitcher {
                             else
                                 return Appearance.font.pixelSize.large;
                         }
-                        color: Appearance.colors.colOnLayer1
+                        color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                         text: modelData.padStart(2, "0")
                     }
                 }
@@ -54,7 +54,7 @@ BarWidgetSwitcher {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.bottomMargin: 5
                 font.pixelSize: Appearance.font.pixelSize.smallest
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 text: DateTime.shortDate
             }
         }
@@ -82,7 +82,7 @@ BarWidgetSwitcher {
                         font.pixelSize: modelData.match(/am|pm/i)
                             ? Appearance.font.pixelSize.smallest - 2
                             : Appearance.font.pixelSize.small
-                        color: Appearance.colors.colPrimary
+                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                         text: modelData.padStart(2, "0")
                     }
                 }
@@ -92,7 +92,7 @@ BarWidgetSwitcher {
                 width: 25
                 height: 25
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 Layout.alignment: Qt.AlignHCenter
 
                 MaterialSymbol {
@@ -100,7 +100,7 @@ BarWidgetSwitcher {
                     fill: 0
                     text: "calendar_clock"
                     iconSize: Appearance.font.pixelSize.normal
-                    color: Appearance.colors.colOnPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 }
             }
         }
@@ -112,18 +112,18 @@ BarWidgetSwitcher {
             StyledText {
                 visible: root.showDate
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 text: DateTime.longDate
             }
             StyledText {
                 visible: root.showDate
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 text: "•"
             }
             StyledText {
                 font.pixelSize: Appearance.font.pixelSize.large
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 text: DateTime.time
                 font.letterSpacing: -0.4
                 font.features: { "tnum": 1 }
@@ -144,7 +144,7 @@ BarWidgetSwitcher {
             StyledText {
                 visible: root.showDate
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.colors.colOnPrimaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                 text: DateTime.longDate
                 Layout.alignment: Qt.AlignVCenter
                 leftPadding: 5
@@ -154,13 +154,13 @@ BarWidgetSwitcher {
                 implicitWidth: timeText.implicitWidth + 16
                 implicitHeight: 24
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
                 StyledText {
                     id: timeText
                     anchors.centerIn: parent
                     font.pixelSize: Appearance.font.pixelSize.smallie
-                    color: Appearance.colors.colOnPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                     font.weight: Font.Bold
                     text: pill.ampm !== "" ? pill.hours.padStart(2, "0") + ":" + pill.minutes.padStart(2, "0") : DateTime.time
                     font.features: { "tnum": 1 }
@@ -174,14 +174,14 @@ BarWidgetSwitcher {
                 implicitWidth: ampmText.implicitWidth + 8
                 implicitHeight: 24
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colTertiaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer)
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: -10
                 StyledText {
                     id: ampmText
                     anchors.centerIn: parent
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                     text: pill.ampm
                 }
             }

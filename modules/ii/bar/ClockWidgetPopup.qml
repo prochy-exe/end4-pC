@@ -9,9 +9,9 @@ StyledPopup {
     property var today: new Date()
 
     function usageColor(value) {
-        if (value > 0.9) return Appearance.colors.colError
-        if (value > 0.6) return Appearance.m3colors.m3tertiary
-        return Appearance.colors.colPrimary
+        if (value > 0.9) return MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
+        if (value > 0.6) return MonitorThemes.m3ColorForItem(root, "m3tertiary", Appearance.m3colors.m3tertiary)
+        return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
     }
 
     ColumnLayout {
@@ -25,13 +25,13 @@ StyledPopup {
                 text: Qt.locale().toString(root.today, " MMMM")
                 font.pixelSize: Appearance.font.pixelSize.huge
                 font.weight: Font.Bold
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             }
 
             StyledText {
                 text: " " + Qt.locale().toString(root.today, "yyyy")
                 font.pixelSize: Appearance.font.pixelSize.huge
-                color: Appearance.colors.colOnSurfaceVariant
+                color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
             }
         }
 
@@ -62,8 +62,8 @@ StyledPopup {
                     height: 56
                     radius: Appearance.rounding.normal
                     color: isToday
-                        ? Appearance.colors.colPrimaryContainer
-                        : Appearance.colors.colSurfaceContainerHigh
+                        ? MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+                        : MonitorThemes.shellColorForItem(root, "colSurfaceContainerHigh", Appearance.colors.colSurfaceContainerHigh)
 
                     ColumnLayout {
                         anchors.centerIn: parent
@@ -74,8 +74,8 @@ StyledPopup {
                             text: Qt.locale().toString(date, "ddd").slice(0, 2)
                             font.pixelSize: Appearance.font.pixelSize.smaller
                             color: isToday
-                                ? Appearance.colors.colPrimary
-                                : Appearance.colors.colOnSurfaceVariant
+                                ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                                : MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                             font.weight: isToday ? Font.Bold : Font.Normal
                         }
 
@@ -87,8 +87,8 @@ StyledPopup {
                                 : Appearance.font.pixelSize.small
                             font.weight: isToday ? Font.Bold : Font.Normal
                             color: isToday
-                                ? Appearance.colors.colPrimary
-                                : Appearance.colors.colOnLayer1
+                                ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                                : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                         }
                     }
                 }
@@ -108,8 +108,8 @@ StyledPopup {
                     text: "checklist"
                     iconSize: Appearance.font.pixelSize.large
                     implicitSize: 36
-                    color: Appearance.colors.colPrimaryContainer
-                    colSymbol: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+                    colSymbol: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
 
                 StyledText {
@@ -117,7 +117,7 @@ StyledPopup {
                     text: `${Todo.list.filter(t => !t.done).length}`
                     font.pixelSize: Appearance.font.pixelSize.huge
                     font.weight: Font.Bold
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
             }
 
@@ -145,7 +145,7 @@ StyledPopup {
                         topRightRadius:    isFirst ? bigRadius : smallRadius
                         bottomLeftRadius:  isLast  ? bigRadius : smallRadius
                         bottomRightRadius: isLast  ? bigRadius : smallRadius
-                        color: Appearance.colors.colSurfaceContainerHigh
+                        color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHigh", Appearance.colors.colSurfaceContainerHigh)
 
                         StyledText {
                             anchors {
@@ -157,7 +157,7 @@ StyledPopup {
                             }
                             text: `    ${todo.content} `
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnLayer1
+                            color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                             elide: Text.ElideRight
                         }
                     }
@@ -168,13 +168,13 @@ StyledPopup {
                     height: 64
                     visible: Todo.list.filter(t => !t.done).length === 0
                     radius: Appearance.rounding.normal
-                    color: Appearance.colors.colSurfaceContainerHigh
+                    color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHigh", Appearance.colors.colSurfaceContainerHigh)
 
                     StyledText {
                         anchors.centerIn: parent
                         text: Translation.tr("No pending tasks")
                         font.pixelSize: Appearance.font.pixelSize.smaller
-                        color: Appearance.colors.colOnLayer1
+                        color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                     }
                 }
             }
@@ -192,25 +192,25 @@ StyledPopup {
                 MaterialSymbol {
                     text: "timelapse"
                     iconSize: Appearance.font.pixelSize.small
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                 }
 
                 StyledText {
                     text: Translation.tr("System Uptime")
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                 }
 
                 StyledText {
                     text: "•"
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                 }
 
                 StyledText {
                     text: DateTime.uptime
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                 }
             }
         }

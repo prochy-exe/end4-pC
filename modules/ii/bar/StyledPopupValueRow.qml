@@ -1,4 +1,5 @@
 import QtQuick
+import qs.services
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
@@ -12,18 +13,18 @@ RowLayout {
 
     MaterialSymbol {
         text: root.icon
-        color: Appearance.colors.colOnSurfaceVariant
+        color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
         iconSize: Appearance.font.pixelSize.large
     }
     StyledText {
         text: root.label
-        color: Appearance.colors.colOnSurfaceVariant
+        color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
     }
     StyledText {
         Layout.fillWidth: true
         horizontalAlignment: Text.AlignRight
         visible: root.value !== ""
-        color: Appearance.colors.colOnSurfaceVariant
+        color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
         text: root.value
     }
 }
