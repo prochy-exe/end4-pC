@@ -14,6 +14,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
 
+import qs.modules.ii.background.wallpaperEffects
 import qs.modules.ii.background.widgets
 import qs.modules.ii.background.widgets.clock
 import qs.modules.ii.background.widgets.weather
@@ -99,7 +100,18 @@ Variants {
         property int centeredWallpaperSize: Config.options.background.centeredWallpaperSize
         property color centeredWallpaperColor: root.getColorFromName(Config.options.background.centeredWallpaperColor)
 
-        property var shaderList: ["circlePit", "circleSelect", "magic", "Doom", "Peel", "transition", "pixelate", "stripes"]
+        // "Doom" deliberately excluded: its shader has a `const int[256]`
+        // array that this driver's GLSL compiler rejects ("OpenGL does not
+        // allow constant arrays"), so the transition effect silently renders
+        // nothing - since the plain wallpaper image is also hidden whenever
+        // a shader transition is active, that leaves the monitor black
+        // until the next successful wallpaper change. Each monitor rolls
+        // its own random pick independently, which is why this only hit
+        // one monitor at a time and only intermittently.
+        // "datamosh" is deliberately not in this pool: it is rendered by the
+        // wallpaperEffects shader rather than by transitionEffect below, and
+        // which renderer draws the wallpaper cannot be decided per-switch.
+        property var shaderList: ["circlePit", "circleSelect", "magic", "Peel", "transition", "pixelate", "stripes"]
         property string currentShader: "pixelate"
         property string wallpaperAnimation: Config.options.background.wallpaperAnimation ?? "random"
 
@@ -112,6 +124,12 @@ Variants {
         property string effectiveWallpaperPath: {
             if (GlobalStates.screenLocked && Config.options.background.lockWall !== "")
                 return Config.options.background.lockWall;
+            if (Config.options.background.wallpaperMode === "perMonitor") {
+                const override = (Config.options.background.monitorWallpapers ?? [])
+                    .find(m => m.name === bgRoot.screen.name);
+                if (override?.path)
+                    return override.path;
+            }
             return Wallpapers.previewPath || Wallpapers.confirmedPath || Config.options.background.wallpaperPath;
         }
 
@@ -123,6 +141,44 @@ Variants {
             const sensitiveNetwork = (CF.StringUtils.stringListContainsSubstring(Network.networkName.toLowerCase(), Config.options.workSafety.triggerCondition.networkNameKeywords));
             return enabled && sensitiveWallpaper && sensitiveNetwork;
         }
+
+        // The shader wallpaper takes over both the still image and the
+        // wallpaperAnimation transitions. It is needed either for the ambient
+        // effect or because "datamosh" is the selected switch animation - the
+        // datamosh transition is a wallpaperAnimation choice, not its own toggle.
+        property bool datamoshTransition: bgRoot.wallpaperAnimation === "datamosh"
+
+        // Which monitors the shader wallpaper is allowed on. "all",
+        // "allButPrimary", or an explicit monitor name.
+        //
+        // Primary comes from Config.options.hyprland.primaryMonitor, the value
+        // Settings -> Hyprland actually sets. Hyprland's own monitor id 0 is
+        // just whichever output came up first and does not track that choice.
+        property bool effectAllowedHere: {
+            const mode = Config.options.background.effects.screenMode ?? "all";
+            if (mode === "all")
+                return true;
+            if (mode === "allButPrimary") {
+                const primary = (Config.options.hyprland?.primaryMonitor ?? "").trim();
+                if (primary.length > 0)
+                    return bgRoot.screen.name !== primary;
+                // No primary chosen: fall back to Hyprland's first output.
+                return (bgRoot.monitor?.id ?? 0) !== 0;
+            }
+            return bgRoot.screen.name === mode;
+        }
+
+        // The monitor picker scopes the *ambient* effect only. A wallpaper switch
+        // happens on every screen - with the same seed, so it looks identical -
+        // so the datamosh transition ignores it.
+        property bool effectsEnabled: ((Config.options.background.effects.enable && bgRoot.effectAllowedHere)
+            || bgRoot.datamoshTransition) && !bgRoot.wallpaperSafetyTriggered
+
+        // On a monitor the effect is excluded from, "datamosh" has no classic
+        // shader to fall back to (there is no shaders/datamosh.frag.qsb), so
+        // that monitor shows the plain image and swaps instantly.
+        property bool usesClassicTransition: !bgRoot.effectsEnabled
+            && bgRoot.wallpaperAnimation !== "" && !bgRoot.datamoshTransition
 
         property bool shouldBlur: (GlobalStates.screenLocked && Config.options.lock.blur.enable)
         property color dominantColor: Appearance.colors.colPrimary
@@ -158,6 +214,20 @@ Variants {
         }
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
+        }
+
+        // Kicks off the reveal animation once the new wallpaper image is actually
+        // ready. Called both from onWallpaperPathChanged (in case the image is
+        // already cached and loads synchronously, in which case wallpaper.status
+        // may never emit a Loading->Ready transition for onStatusChanged to catch)
+        // and from wallpaper.onStatusChanged (for the normal async-load case).
+        // Without this, a cache-hit could leave transitionProgress stuck at 0 -
+        // the shader then renders its "not yet revealed" state indefinitely,
+        // which is the gray/blank screen some wallpaper changes could produce.
+        function startTransition() {
+            if (bgRoot.transitionProgress !== 0.0) return
+            if (wallpaper.status !== Image.Ready) return
+            transitionAnim.restart()
         }
 
         Component.onCompleted: {
@@ -199,6 +269,7 @@ Variants {
                 bgRoot.currentShader = bgRoot.wallpaperAnimation
             }
             bgRoot.transitionProgress = 0.0
+            bgRoot.startTransition()
         }
 
         NumberAnimation {
@@ -207,7 +278,7 @@ Variants {
             property: "transitionProgress"
             from: 0.0
             to: 1.0
-            duration: 1200
+            duration: Config.options.background.transitionDuration
             easing.type: Easing.InOutCubic
             onFinished: {
                 previousWallpaper.source = ""
@@ -260,28 +331,60 @@ Variants {
                 smooth: true
                 asynchronous: true
                 layer.enabled: true
-                visible: bgRoot.wallpaperAnimation === "" && !blurLoader.active && !bgRoot.centeredWallpaperEnabled && !bgRoot.videoRevealed
+                visible: !bgRoot.effectsEnabled && !bgRoot.usesClassicTransition && !blurLoader.active && !bgRoot.centeredWallpaperEnabled && !bgRoot.videoRevealed
                 onStatusChanged: {
-                    if (status === Image.Ready && bgRoot.transitionProgress === 0.0) {
-                        transitionAnim.restart()
-                    }
+                    if (status === Image.Ready) bgRoot.startTransition()
                 }
             }
 
             ShaderEffect {
                 id: transitionEffect
                 anchors.fill: parent
-                visible: !blurLoader.active && bgRoot.wallpaperAnimation !== "" && !bgRoot.centeredWallpaperEnabled && !bgRoot.videoRevealed
+                visible: bgRoot.usesClassicTransition && !blurLoader.active && !bgRoot.centeredWallpaperEnabled && !bgRoot.videoRevealed
                 property var fromImage: previousWallpaper
                 property var toImage: wallpaper
+                // Whenever fragmentShader is "" (no transition selected, or the
+                // shader wallpaper is in charge) Qt falls back to its built-in
+                // shader, which samples `source`. Without this it warns every
+                // time and the fallback would draw nothing.
+                property var source: wallpaper
                 property real progress: bgRoot.transitionProgress
                 property real aspectX: width / height
                 property real aspectY: 1.0
                 property vector2d aspectRatio: Qt.vector2d(aspectX, aspectY)
                 property vector2d origin: Qt.vector2d(0.5, 0.5)
-                fragmentShader: bgRoot.wallpaperAnimation !== ""
+                // Skipped whenever the shader wallpaper is in charge, and also
+                // for "datamosh" - that has no classic .frag.qsb to look up.
+                fragmentShader: bgRoot.usesClassicTransition
                     ? Qt.resolvedUrl(`shaders/${bgRoot.currentShader}.frag.qsb`)
                     : ""
+            }
+
+            Loader {
+                id: effectLoader
+                anchors.fill: parent
+                // Torn down with the window rather than outliving it. Quickshell
+                // destroys and re-creates this window when the wallpaper hides
+                // for a fullscreen video; a subtree that survives that gets
+                // re-sized from stale state during completeWindow() and
+                // segfaults in addToDirtyList(). Rebuilding is cheap - the
+                // images are still in Qt's pixmap cache.
+                active: bgRoot.effectsEnabled && bgRoot.visible
+                visible: active && !bgRoot.centeredWallpaperEnabled && !bgRoot.videoRevealed && !blurLoader.active
+                sourceComponent: WallpaperEffect {
+                    source: bgRoot.wallpaperPath
+                    // Quickshell destroys this window when the wallpaper is
+                    // hidden (fullscreen video, lock/wake). Anything still
+                    // marking scene-graph items dirty after that crashes, so
+                    // the effect stops dead while the window is off screen.
+                    active: bgRoot.visible
+                    // The loader itself is active on every monitor once
+                    // datamoshTransition is true (the switch has to run
+                    // everywhere) - this is what keeps the *ambient* half
+                    // out of a monitor the "Show on" picker excluded.
+                    ambientAllowedHere: bgRoot.effectAllowedHere
+                    monitorName: bgRoot.screen.name
+                }
             }
 
             Loader {
@@ -298,7 +401,9 @@ Variants {
                     }
                 }
                 sourceComponent: GaussianBlur {
-                    source: bgRoot.wallpaperAnimation === "" ? wallpaper : transitionEffect
+                    source: bgRoot.effectsEnabled
+                        ? effectLoader.item
+                        : (bgRoot.wallpaperAnimation === "" ? wallpaper : transitionEffect)
                     radius: GlobalStates.screenLocked ? Config.options.lock.blur.radius : 0
                     samples: Config.options.lock.blur.size 
                     Rectangle {
