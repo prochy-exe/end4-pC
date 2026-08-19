@@ -309,6 +309,19 @@ ContentPage {
                         Config.options.background.transitionDuration = value;
                     }
                 }
+                ConfigSwitch {
+                    Layout.fillWidth: true
+                    buttonIcon: "sync_alt"
+                    text: Translation.tr("Synchronize direction across monitors")
+                    // Only meaningful for the datamosh switch transition - the
+                    // classic shuffle transitions have no per-monitor character.
+                    enabled: Config.options.background.wallpaperAnimation === "datamosh"
+                    checked: Config.options.background.effects.transitionMode === "synchronized"
+                    onClicked: {
+                        Config.options.background.effects.transitionMode =
+                            Config.options.background.effects.transitionMode === "synchronized" ? "independent" : "synchronized";
+                    }
+                }
             }
 
             Connections {
