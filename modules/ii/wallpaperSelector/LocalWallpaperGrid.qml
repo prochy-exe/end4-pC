@@ -135,7 +135,13 @@ Item {
             positionViewAtIndex(currentIndex, GridView.Contain);
             const filePath = grid.model.get(currentIndex, "filePath");
             const isDir = grid.model.get(currentIndex, "fileIsDir");
-            if (!isDir && filePath && Config.options.background.enableWallpaperPreview) Wallpapers.startPreview(filePath);
+            // Keyboard nav needs the same lockWall/monitor-target exclusion
+            // as WallpaperDirectoryItem's click handler - see the comment
+            // there for why per-monitor targets can't preview correctly yet.
+            const canPreview = Config.options.background.enableWallpaperPreview
+                && GlobalStates.wallpaperSelectorTarget !== "lockWall"
+                && !GlobalStates.wallpaperSelectorTarget.startsWith("monitor:");
+            if (!isDir && filePath && canPreview) Wallpapers.startPreview(filePath);
         }
 
         function activateCurrent() {

@@ -27,7 +27,17 @@ MouseArea {
     padding: Appearance.sizes.wallpaperSelectorItemPadding
     hoverEnabled: true
     onClicked: {
-        if (GlobalStates.wallpaperSelectorTarget === "lockWall" || !Config.options.background.enableWallpaperPreview)
+        // Live preview shows on Wallpapers.previewPath globally, with no
+        // notion of "which monitor this preview is for" - fine for lockWall
+        // (no live preview surface anyway) and for the shared wallpaper (all
+        // monitors should show it). A per-monitor target has no such surface
+        // either: the monitor being edited already has its own override, so
+        // Background.qml's effectiveWallpaperPath resolves that override
+        // first and never reaches the preview at all, while every *other*
+        // monitor (no override) falls through to the global preview path and
+        // incorrectly shows it. Same treatment as lockWall until previewing
+        // is made monitor-aware: skip straight to select.
+        if (GlobalStates.wallpaperSelectorTarget === "lockWall" || GlobalStates.wallpaperSelectorTarget.startsWith("monitor:") || !Config.options.background.enableWallpaperPreview)
             root.activated()
         else
             root.previewRequested()

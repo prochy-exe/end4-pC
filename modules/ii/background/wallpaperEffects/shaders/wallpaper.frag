@@ -241,7 +241,15 @@ void main() {
             // starts from, so "up" and "left" runs the drip the other way.
             // trAxisSign is used unnegated here, unlike rSign above - see the
             // comment there for why the two sites disagree on sign.
-            float head = (trAxisMode > 1.5 || trAxisSign > 0.0)
+            //
+            // !inTransition is checked first so the sign only ever applies to
+            // the switch transition itself. trAxisSign stays pinned to a
+            // synchronized monitor's direction for as long as that monitor
+            // exists, including while idle - without this guard the ambient
+            // melt (meltAmt above also has an idle/music term, not just tr)
+            // would run permanently backwards on any monitor whose computed
+            // direction is "up"/"left", not just during a switch.
+            float head = (!inTransition || trAxisMode > 1.5 || trAxisSign > 0.0)
                 ? 1.0 - level * clamp(meltReach, 0.0, 1.0)
                 : level * clamp(meltReach, 0.0, 1.0);
             vec2 headUV = uv + sortDir * (head - along);
@@ -251,7 +259,7 @@ void main() {
             float heavy = 1.0 - luma(headCol);
             float len = drive * (0.10 + hash11(ci * 3.9 + sd + 5.0) * 0.90) * (0.55 + heavy * 0.9);
 
-            float t = (trAxisMode > 1.5 || trAxisSign > 0.0)
+            float t = (!inTransition || trAxisMode > 1.5 || trAxisSign > 0.0)
                 ? (along - head) / max(len, 1e-4)
                 : (head - along) / max(len, 1e-4);
             if (t >= 0.0 && t <= 1.0) {

@@ -88,12 +88,21 @@ QtObject {
     // straight through to today's per-switch random roll below.
     readonly property bool hasDirection: root.transitionDirection !== ""
     readonly property bool transitionEnabled: root.wallpaperAnimation !== ""
-    // Reuses the ambient effect's own musicReactive toggle - no separate
-    // switch for "should the transition react to music too". Base 0.85 rather
-    // than 0.0 so a transition during silence still plays at nearly full
-    // strength instead of visibly dimming.
+    // Reuses the ambient effect's own musicReactive *toggle* - no separate
+    // switch for "should the transition react to music too" - but reads it
+    // directly (root.opts, not root.musicReactive/root.beat), since those are
+    // additionally gated on ambientEnabled (effects.enable + this monitor's
+    // ambientAllowedHere). Gating the switch transition through them would
+    // make a wallpaper switch pulse differently per monitor depending on the
+    // ambient "Show on" picker, and not react at all for anyone with the
+    // ambient effect off entirely - both wrong, since every monitor is meant
+    // to see the identical switch regardless of ambient settings (same seed,
+    // see startTransition above). Base 0.85 rather than 0.0 so a transition
+    // during silence still plays at nearly full strength instead of visibly
+    // dimming.
+    readonly property bool transitionMusicReactive: root.opts?.musicReactive ?? true
     readonly property real transitionIntensity: root.datamoshSwitch
-        ? (root.musicReactive ? 0.85 + 0.15 * root.beat : 1.0)
+        ? (root.transitionMusicReactive ? 0.85 + 0.15 * AudioLevels.beat : 1.0)
         : 0
     // Shared with the classic wallpaper transitions in Background.qml - one
     // duration governs every wallpaper animation.

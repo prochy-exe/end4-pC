@@ -555,6 +555,14 @@ MouseArea {
                     root.forceActiveFocus()
             } else if (!GlobalStates.wallpaperSelectorOpen) {
                 Wallpapers.stopPreview();
+                // Every path that sets a real target ("lockWall"/"monitor:X")
+                // clears it back to "wallpaper" itself on success - but
+                // Escape, the close FAB, and an external close (e.g. the IPC
+                // toggle) all skip that and just flip wallpaperSelectorOpen,
+                // which would otherwise leave a stale target for the next
+                // open to silently write into. This is the one place every
+                // close path passes through, so it's the right spot to reset it.
+                GlobalStates.wallpaperSelectorTarget = "wallpaper";
             }
         }
     }
