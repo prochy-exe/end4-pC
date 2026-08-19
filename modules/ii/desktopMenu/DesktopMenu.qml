@@ -156,7 +156,27 @@ Scope {
                             anchors.margins: 10
                             model: root.carouselModel
                             onWallpaperSelected: (path) => {
-                                Wallpapers.select(path, Appearance.m3colors.darkmode)
+                                // The menu already opens on/for the monitor that
+                                // was right-clicked (see desktopMenuScreen, set
+                                // from Background.qml's per-screen click area) -
+                                // in perMonitor mode a pick needs to go to that
+                                // monitor's own override, same as the full
+                                // wallpaper selector's "monitor:" target, or it
+                                // silently lands on the shared path instead,
+                                // which only shows on monitors with no override
+                                // of their own (not necessarily the one clicked).
+                                if (Config.options.background.wallpaperMode === "perMonitor") {
+                                    const monitorName = GlobalStates.desktopMenuScreen?.name ?? ""
+                                    Wallpapers.select(path, Appearance.m3colors.darkmode, finalPath => {
+                                        const list = (Config.options.background.monitorWallpapers ?? []).slice()
+                                        const index = list.findIndex(m => m.name === monitorName)
+                                        const entry = { name: monitorName, path: finalPath }
+                                        if (index >= 0) list[index] = entry; else list.push(entry)
+                                        Config.options.background.monitorWallpapers = list
+                                    })
+                                } else {
+                                    Wallpapers.select(path, Appearance.m3colors.darkmode)
+                                }
                                 GlobalStates.desktopMenuOpen = false
                             }
                         }
