@@ -70,6 +70,10 @@ ContentPage {
         required property var entry
         spacing: 6
 
+        function commitPatch(patch) {
+            page.updateCustomResource(row.entry.id, patch)
+        }
+
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
@@ -105,7 +109,7 @@ ContentPage {
             text: Translation.tr("Name")
             fieldWidth: 220
             Component.onCompleted: value = row.entry.name ?? ""
-            onValueChanged: page.updateCustomResource(row.entry.id, { name: value })
+            onFocusLost: row.commitPatch({ name: value })
         }
 
         ConfigSelectionArray {
@@ -127,7 +131,7 @@ ContentPage {
             placeholderText: Translation.tr("Shell command to keep running while on")
             fieldWidth: 220
             Component.onCompleted: value = row.entry.command ?? ""
-            onValueChanged: page.updateCustomResource(row.entry.id, { command: value })
+            onFocusLost: row.commitPatch({ command: value })
         }
 
         ConfigTextArea {
@@ -137,8 +141,11 @@ ContentPage {
             text: Translation.tr("Service name")
             placeholderText: Translation.tr("e.g. syncthing (systemctl --user)")
             fieldWidth: 220
+            confirmButtonVisible: true
+            confirmButtonIcon: "search"
             Component.onCompleted: value = row.entry.serviceName ?? ""
-            onValueChanged: page.updateCustomResource(row.entry.id, { serviceName: value })
+            onFocusLost: row.commitPatch({ serviceName: value })
+            onConfirmClicked: page.openServicePicker(row.entry.id)
         }
 
         ConfigTextArea {
@@ -150,7 +157,7 @@ ContentPage {
             confirmButtonVisible: true
             confirmButtonIcon: "search"
             Component.onCompleted: value = row.entry.iconOn ?? ""
-            onValueChanged: page.updateCustomResource(row.entry.id, { iconOn: value })
+            onFocusLost: row.commitPatch({ iconOn: value })
             onConfirmClicked: page.openIconPicker(row.entry.id, "iconOn")
         }
 
@@ -163,7 +170,7 @@ ContentPage {
             confirmButtonVisible: true
             confirmButtonIcon: "search"
             Component.onCompleted: value = row.entry.iconOff ?? ""
-            onValueChanged: page.updateCustomResource(row.entry.id, { iconOff: value })
+            onFocusLost: row.commitPatch({ iconOff: value })
             onConfirmClicked: page.openIconPicker(row.entry.id, "iconOff")
         }
     }
@@ -461,6 +468,7 @@ ContentPage {
             mode: "command",
             command: "",
             serviceName: "",
+            serviceScope: "user",
             iconOn: "check_circle",
             iconOff: "circle"
         })
@@ -484,6 +492,13 @@ ContentPage {
     function openIconPicker(entryId, field) {
         page.iconPickerTarget = { entryId, field }
         page.iconPickerOpen = true
+    }
+
+    property bool servicePickerOpen: false
+    property string servicePickerTarget: ""
+    function openServicePicker(entryId) {
+        page.servicePickerTarget = entryId
+        page.servicePickerOpen = true
     }
 
     function resolvePathValue(target, path, fallbackValue) {
@@ -856,6 +871,40 @@ ContentPage {
             function onVisibleChanged() {
                 if (iconPickerLoader.item && !iconPickerLoader.item.visible && !page.iconPickerOpen)
                     iconPickerLoader.active = false
+            }
+        }
+    }
+
+    Loader {
+        id: servicePickerLoader
+        parent: page
+        x: 0
+        y: 0
+        width: page.width
+        height: page.height
+        z: 2000
+        active: page.servicePickerOpen
+        sourceComponent: ServicePickerDialog {
+            onPicked: service => page.updateCustomResource(page.servicePickerTarget, {
+                serviceName: service.name,
+                serviceScope: service.scope
+            })
+        }
+        onActiveChanged: {
+            if (active) {
+                item.show = true
+                item.forceActiveFocus()
+            }
+        }
+        Connections {
+            target: servicePickerLoader.item
+            function onDismiss() {
+                servicePickerLoader.item.show = false
+                page.servicePickerOpen = false
+            }
+            function onVisibleChanged() {
+                if (servicePickerLoader.item && !servicePickerLoader.item.visible && !page.servicePickerOpen)
+                    servicePickerLoader.active = false
             }
         }
     }

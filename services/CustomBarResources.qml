@@ -48,9 +48,9 @@ Singleton {
         if (def.mode === "service") {
             if (!def.serviceName) return
             const turnOn = !root.isRunning(id)
-            Quickshell.execDetached(["systemctl", "--user", turnOn ? "start" : "stop", def.serviceName])
+            const scopeArgs = (def.serviceScope ?? "user") === "user" ? ["--user"] : []
+            Quickshell.execDetached(["systemctl", ...scopeArgs, turnOn ? "start" : "stop", def.serviceName])
             root._setRunning(id, turnOn) // optimistic; corrected by the next poll
-            servicePollDelay.restart()
         } else {
             root._setRunning(id, !root.isRunning(id))
         }
@@ -75,44 +75,29 @@ Singleton {
         }
     }
 
-    // systemctl can report multiple unit states in one call - poll all
-    // "service" mode definitions together rather than one process each.
-    function pollServices() {
-        if (root.serviceDefinitions.length === 0) return
-        if (serviceStatusProc.running) return
-        serviceStatusProc.pendingIds = root.serviceDefinitions.map(d => d.id)
-        serviceStatusProc.command = ["systemctl", "--user", "is-active", ...root.serviceDefinitions.map(d => d.serviceName)]
-        serviceStatusProc.running = true
-    }
+    Instantiator {
+        model: root.serviceDefinitions
+        delegate: QtObject {
+            id: servicePoller
+            required property var modelData
 
-    Process {
-        id: serviceStatusProc
-        property list<string> pendingIds: []
-        stdout: StdioCollector {
-            id: serviceStatusCollector
-        }
-        onExited: {
-            const lines = serviceStatusCollector.text.split("\n")
-            for (let i = 0; i < serviceStatusProc.pendingIds.length; i++) {
-                root._setRunning(serviceStatusProc.pendingIds[i], (lines[i] ?? "").trim() === "active")
+            // Process is not a visual Item and has no default child property,
+            // so keep its polling timer as a sibling QObject instead of nesting
+            // it inside the process declaration.
+            property Process serviceProc: Process {
+                command: ["systemctl", ...((servicePoller.modelData.serviceScope ?? "user") === "user" ? ["--user"] : []), "is-active", servicePoller.modelData.serviceName]
+                stdout: StdioCollector { id: serviceOutput }
+                Component.onCompleted: running = true
+                onExited: root._setRunning(servicePoller.modelData.id, serviceOutput.text.trim() === "active")
+            }
+            property Timer servicePollTimer: Timer {
+                interval: 5000
+                repeat: true
+                running: true
+                triggeredOnStart: true
+                onTriggered: if (!servicePoller.serviceProc.running) servicePoller.serviceProc.running = true
             }
         }
     }
 
-    // Re-poll shortly after a manual toggle so the UI reflects the real
-    // outcome (e.g. a service that failed to start) rather than staying on
-    // the optimistic guess until the next periodic poll.
-    Timer {
-        id: servicePollDelay
-        interval: 700
-        onTriggered: root.pollServices()
-    }
-
-    Timer {
-        interval: 5000
-        running: root.serviceDefinitions.length > 0
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: root.pollServices()
-    }
 }
