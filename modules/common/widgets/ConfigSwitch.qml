@@ -22,7 +22,6 @@ RippleButton {
         OptionalMaterialSymbol {
             id: iconWidget
             icon: root.buttonIcon
-            opacity: root.enabled ? 1 : 0.4
             iconSize: Appearance.font.pixelSize.larger
         }
         StyledText {
@@ -31,15 +30,14 @@ RippleButton {
             text: root.text
             font: root.font
             color: Appearance.colors.colOnSecondaryContainer
-            opacity: root.enabled ? 1 : 0.4
         }
         StyledSwitch {
             id: switchWidget
             down: root.down
             Layout.fillWidth: false
+            enabled: root.enabled
             checked: root.checked
             onClicked: root.clicked()
         }
     }
 }
-

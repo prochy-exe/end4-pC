@@ -13,16 +13,36 @@ RowLayout {
 
     property string text: ""
     property string buttonIcon: ""
-    property alias value: slider.value
+    // Keep caller values on the wrapper until the child slider has finished
+    // constructing. A direct alias receives `value` before a caller's
+    // `from`/`to` assignments, so Qt clamps it against Slider's initial 0..1
+    // range and can write that bad value back to config.
+    property real value: 0
     property alias stopIndicatorValues: slider.stopIndicatorValues
     // 0 (the Slider default) keeps continuous dragging, matching every
     // existing caller; only set this to opt into discrete steps.
     property alias stepSize: slider.stepSize
     property bool usePercentTooltip: true
-    property real from: slider.from
-    property real to: slider.to
+    property real from: 0
+    property real to: 1
     property real textWidth: 120
     property bool showLabel: true
+    property bool sliderReady: false
+    property bool syncingSlider: false
+
+    function syncSlider() {
+        if (!sliderReady)
+            return;
+        syncingSlider = true;
+        slider.from = from;
+        slider.to = to;
+        slider.value = value;
+        syncingSlider = false;
+    }
+
+    onValueChanged: syncSlider()
+    onFromChanged: syncSlider()
+    onToChanged: syncSlider()
 
     RowLayout {
         id: row
@@ -33,30 +53,42 @@ RowLayout {
             id: iconWidget
             icon: root.buttonIcon
             iconSize: Appearance.font.pixelSize.larger
+            opacity: root.enabled ? 1 : 0.4
         }
         StyledText {
             id: labelWidget
             Layout.preferredWidth: root.textWidth
             text: root.text
             color: Appearance.colors.colOnSecondaryContainer
+            opacity: root.enabled ? 1 : 0.4
         }
     }
     StyledSlider {
         id: slider
         configuration: StyledSlider.Configuration.XS
+        enabled: root.enabled
         usePercentTooltip: root.usePercentTooltip
-        // from/to MUST be applied before value. QML assigns in declaration
-        // order, so with value first it was set against Slider's default 0..1
-        // range: Qt clamps it and remembers `position`, then recomputes value
-        // from that position once the real range arrives, landing on a
-        // different (often extreme) number. The call site's onValueChanged then
-        // wrote that back to config and broke the binding - which is how simply
-        // opening a settings page could rewrite the values on it.
-        from: root.from
-        to: root.to
-        value: root.value
-        // No-op when stepSize is 0 (continuous), so this is safe to set
-        // unconditionally for every caller.
+        // Keep this range broad until the delayed bindings below take over.
+        from: -1000000
+        to: 1000000
         snapMode: Slider.SnapAlways
+
+        onValueChanged: {
+            if (root.sliderReady && !root.syncingSlider && root.value !== value)
+                root.value = value;
+        }
+    }
+
+    // Config values can finish loading after the settings component itself.
+    // Start on the next event-loop turn, then only forward actual slider input
+    // back to the wrapper; syncSlider() suppresses programmatic updates.
+    Timer {
+        interval: 1
+        running: true
+        repeat: false
+        onTriggered: {
+            root.sliderReady = true;
+            root.syncSlider();
+        }
     }
 }

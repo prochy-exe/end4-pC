@@ -70,6 +70,8 @@ Flow {
 
             bounce: false
             toggled: root.currentValue === modelData
+            enabled: root.enabled
+            opacity: root.enabled ? 1 : 0.4
             leftRadius: (toggled || leftmost) ? (height / 2) : Appearance.rounding.unsharpenmore
             rightRadius: (toggled || rightmost) ? (height / 2) : Appearance.rounding.unsharpenmore
             horizontalPadding: 12

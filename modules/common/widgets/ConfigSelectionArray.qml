@@ -72,6 +72,8 @@ RowLayout {
                 buttonIcon: modelData.icon || ""
                 buttonText: modelData.displayName
                 toggled: root.currentValue == modelData.value
+                enabled: root.enabled
+                opacity: root.enabled ? 1 : 0.4
                 onClicked: {
                     root.selected(modelData.value);
                 }

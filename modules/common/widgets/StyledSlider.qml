@@ -61,6 +61,7 @@ Slider {
     property real effectiveDraggingWidth: width - leftPadding - rightPadding
 
     Layout.fillWidth: true
+    opacity: root.enabled ? 1 : 0.4
     from: 0
     to: 1
 

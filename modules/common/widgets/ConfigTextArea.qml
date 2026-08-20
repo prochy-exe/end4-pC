@@ -34,6 +34,7 @@ RowLayout {
     property color colConfirmBackgroundActive: Appearance.colors.colPrimaryContainerActive
     property color colOnConfirmBackground: Appearance.colors.colOnPrimaryContainer
     signal confirmClicked()
+    signal focusLost()
 
     spacing: 10
     Layout.leftMargin: 8
@@ -72,6 +73,7 @@ RowLayout {
         Layout.alignment: Qt.AlignVCenter
         radius: root.cornerRadius
         clip: true
+        opacity: root.enabled ? 1 : 0.4
         color: textArea.activeFocus ? root.colBackgroundFocused : root.colBackground
         border.width: (hoverHandler.hovered || textArea.activeFocus) ? (textArea.activeFocus ? 2 : 1) : 0
         border.color: textArea.activeFocus ? root.colBorderFocused : root.colBorder
@@ -112,12 +114,18 @@ RowLayout {
                 hintingPreference: Font.PreferFullHinting
                 variableAxes: Appearance.font.variableAxes.main
             }
+            property bool hadFocus: false
+            onActiveFocusChanged: {
+                if (activeFocus) hadFocus = true
+                else if (hadFocus) root.focusLost()
+            }
         }
     }
 
     Rectangle {
         id: confirmBtn
         visible: root.confirmButtonVisible
+        opacity: root.enabled ? 1 : 0.4
         Layout.preferredWidth: 40
         Layout.preferredHeight: 40
         Layout.alignment: Qt.AlignVCenter
@@ -140,6 +148,7 @@ RowLayout {
         MouseArea {
             id: confirmMouseArea
             anchors.fill: parent
+            enabled: root.enabled
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
             onClicked: root.confirmClicked()
