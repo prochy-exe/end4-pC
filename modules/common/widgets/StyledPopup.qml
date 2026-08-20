@@ -15,17 +15,26 @@ LazyLoader {
     property bool keepOpenWhileHovered: false
     property int hoverCloseDelay: 120
     property bool popupHovered: false
+    property bool raisePulse: false
     readonly property bool targetHovered: hoverTarget && hoverTarget.containsMouse
     readonly property bool wantsVisible: targetHovered || (keepOpenWhileHovered && popupHovered)
     readonly property bool ownsHover: !keepOpenWhileHovered || targetHovered || PopupState.activeHoverPopup === root
 
     active: keepOpenWhileHovered
-        ? (ownsHover && (wantsVisible || closeTimer.running))
+        ? (ownsHover && (wantsVisible || closeTimer.running) && !raisePulse)
         : targetHovered
 
+    function raiseToFront() {
+        if (root.raisePulse) return
+        root.raisePulse = true
+        Qt.callLater(() => root.raisePulse = false)
+    }
+
     onTargetHoveredChanged: {
-        if (targetHovered)
+        if (targetHovered) {
             PopupState.activeHoverPopup = root
+            root.raiseToFront()
+        }
     }
 
     onWantsVisibleChanged: {
@@ -41,7 +50,7 @@ LazyLoader {
     onActiveChanged: {
         if (!active) {
             popupHovered = false
-            if (PopupState.activeHoverPopup === root && !targetHovered)
+            if (!root.raisePulse && PopupState.activeHoverPopup === root && !targetHovered)
                 PopupState.activeHoverPopup = null
         }
     }
@@ -119,7 +128,13 @@ LazyLoader {
             bottom: root.barEdge === "bottom" ? root.barThickness : 0
         }
         WlrLayershell.namespace: "quickshell:popup"
-        WlrLayershell.layer: WlrLayer.Overlay
+        // Popup windows are separate layer-shell surfaces, so an ordinary QML
+        // z value cannot raise the one currently being hovered above its
+        // siblings. Promote only the active hover popup to the top layer.
+        WlrLayershell.layer: PopupState.activeHoverPopup === root
+            ? WlrLayer.Top
+            : WlrLayer.Overlay
+        WlrLayershell.aboveWindows: PopupState.activeHoverPopup === root
 
         StyledRectangularShadow {
             target: popupBackground
@@ -150,6 +165,10 @@ LazyLoader {
                 enabled: root.keepOpenWhileHovered
                 onHoveredChanged: {
                     root.popupHovered = hovered
+                    if (hovered) {
+                        PopupState.activeHoverPopup = root
+                        root.raiseToFront()
+                    }
                 }
             }
 
