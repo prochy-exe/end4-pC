@@ -34,6 +34,25 @@ Item {
     property bool editMode: false
     property bool showIconPickerDialog: false
 
+    function clearDialogs() {
+        root.showAudioOutputDialog = false
+        root.showAudioInputDialog = false
+        root.showBluetoothDialog = false
+        root.showNightLightDialog = false
+        root.showWifiDialog = false
+        root.showIconPickerDialog = false
+    }
+
+    function showDialog(dialogName) {
+        root.clearDialogs()
+        if (dialogName === "audioOutput") root.showAudioOutputDialog = true
+        else if (dialogName === "audioInput") root.showAudioInputDialog = true
+        else if (dialogName === "bluetooth") root.showBluetoothDialog = true
+        else if (dialogName === "nightLight") root.showNightLightDialog = true
+        else if (dialogName === "wifi") root.showWifiDialog = true
+        else if (dialogName === "iconPicker") root.showIconPickerDialog = true
+    }
+
     function wallpaperPathForScreen() {
         const screenName = root.QsWindow?.window?.screen?.name ?? "";
         if (Config.options.background.wallpaperMode === "perMonitor") {
@@ -51,18 +70,12 @@ Item {
         function onSidebarRightDialogRequestChanged() {
             if (!GlobalStates.sidebarRightRequestedDialog) return;
             GlobalStates.sidebarRightOpen = true;
-            root.showAudioOutputDialog = GlobalStates.sidebarRightRequestedDialog === "audioOutput";
-            root.showAudioInputDialog = GlobalStates.sidebarRightRequestedDialog === "audioInput";
-            root.showBluetoothDialog = GlobalStates.sidebarRightRequestedDialog === "bluetooth";
-            root.showWifiDialog = GlobalStates.sidebarRightRequestedDialog === "wifi";
+            root.showDialog(GlobalStates.sidebarRightRequestedDialog);
         }
 
         function onSidebarRightOpenChanged() {
             if (!GlobalStates.sidebarRightOpen) {
-                root.showWifiDialog = false;
-                root.showBluetoothDialog = false;
-                root.showAudioOutputDialog = false;
-                root.showAudioInputDialog = false;
+                root.clearDialogs();
             }
         }
     }
@@ -439,11 +452,11 @@ Item {
         active: Config.options.sidebar.quickToggles.style === styleName
         Connections {
             target: quickPanelImplLoader.item
-            function onOpenAudioOutputDialog() { root.showAudioOutputDialog = true; }
-            function onOpenAudioInputDialog() { root.showAudioInputDialog = true; }
-            function onOpenBluetoothDialog() { root.showBluetoothDialog = true; }
-            function onOpenNightLightDialog() { root.showNightLightDialog = true; }
-            function onOpenWifiDialog() { root.showWifiDialog = true; }
+            function onOpenAudioOutputDialog() { root.showDialog("audioOutput"); }
+            function onOpenAudioInputDialog() { root.showDialog("audioInput"); }
+            function onOpenBluetoothDialog() { root.showDialog("bluetooth"); }
+            function onOpenNightLightDialog() { root.showDialog("nightLight"); }
+            function onOpenWifiDialog() { root.showDialog("wifi"); }
         }
     }
 

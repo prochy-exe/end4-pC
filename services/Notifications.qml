@@ -205,13 +205,33 @@ Singleton {
     }
 
     function discardAllNotifications() {
+        root.list.forEach((notif) => {
+            notif.timer?.stop()
+        })
         root.list = []
+        root.unread = 0
         triggerListChange()
         notifFileView.setText(stringifyList(root.list));
         notifServer.trackedNotifications.values.forEach((notif) => {
             notif.dismiss()
         })
         root.discardAll();
+    }
+
+    function replayAllNotifications() {
+        root.list.forEach((notif) => {
+            notif.timer?.stop()
+            notif.popup = true
+
+            const expireTimeout = notif.notification?.expireTimeout
+            if (expireTimeout !== 0) {
+                notif.timer = notifTimerComponent.createObject(root, {
+                    "notificationId": notif.notificationId,
+                    "interval": expireTimeout > 0 ? expireTimeout : (Config?.options.notifications.timeout ?? 7000),
+                })
+            }
+        })
+        root.triggerListChange()
     }
 
     function cancelTimeout(id) {

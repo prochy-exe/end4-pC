@@ -12,10 +12,13 @@ WindowDialog {
     backgroundHeight: 600
 
     WindowDialogTitle {
-        text: Translation.tr("Connect to Wi-Fi")
+        text: Network.ethernet ? Translation.tr("Ethernet") : Translation.tr("Connect to Wi-Fi")
     }
     WindowDialogSeparator {
         visible: !Network.wifiScanning
+        Layout.topMargin: -22
+        Layout.leftMargin: 0
+        Layout.rightMargin: 0
     }
     StyledIndeterminateProgressBar {
         visible: Network.wifiScanning
@@ -26,6 +29,7 @@ WindowDialog {
         Layout.rightMargin: -Appearance.rounding.large
     }
     ListView {
+        visible: !Network.ethernet
         Layout.fillHeight: true
         Layout.fillWidth: true
         Layout.topMargin: -15
@@ -44,8 +48,27 @@ WindowDialog {
             wifiNetwork: modelData
             width: ListView.view.width
         }
+        PagePlaceholder {
+            icon: "wifi_off"
+            title: Translation.tr("No networks")
+            description: Translation.tr("No Wi-Fi networks are currently available")
+            shape: MaterialShape.Shape.Cookie7Sided
+            shown: !Network.wifiScanning && Network.friendlyWifiNetworks.length === 0
+        }
     }
-    WindowDialogSeparator {}
+    Item {
+        visible: Network.ethernet
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+
+        PagePlaceholder {
+            icon: "lan"
+            title: Translation.tr("Connected via Ethernet")
+            description: [Network.networkName, Network.ipAddress].filter(value => value.length > 0).join("\n")
+            shape: MaterialShape.Shape.Cookie7Sided
+            shown: Network.ethernet
+        }
+    }
     WindowDialogButtonRow {
         DialogButton {
             buttonText: Translation.tr("Details")

@@ -22,6 +22,9 @@ WindowDialog {
     }
     WindowDialogSeparator {
         visible: !(Bluetooth.defaultAdapter?.discovering ?? false)
+        Layout.topMargin: -22
+        Layout.leftMargin: 0
+        Layout.rightMargin: 0
     }
     StyledIndeterminateProgressBar {
         visible: Bluetooth.defaultAdapter?.discovering ?? false
@@ -54,8 +57,14 @@ WindowDialog {
                 right: parent?.right
             }
         }
+        PagePlaceholder {
+            icon: "bluetooth_disabled"
+            title: Translation.tr("No devices")
+            description: Translation.tr("No Bluetooth devices are available")
+            shape: MaterialShape.Shape.Cookie7Sided
+            shown: !(Bluetooth.defaultAdapter?.discovering ?? false) && BluetoothStatus.friendlyDeviceList.length === 0
+        }
     }
-    WindowDialogSeparator {}
     WindowDialogButtonRow {
         DialogButton {
             buttonText: Translation.tr("Details")

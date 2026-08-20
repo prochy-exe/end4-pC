@@ -11,6 +11,7 @@ Item {
     signal clicked(event: var)
     property alias iconText: symbol.text
     property bool isActive: false
+    property int acceptedMouseButtons: Qt.LeftButton
     default property alias content: customContent.data
 
     implicitWidth: 26
@@ -53,6 +54,7 @@ Item {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
+        acceptedButtons: root.acceptedMouseButtons
         onClicked: (e) => root.clicked(e)
     }
 }

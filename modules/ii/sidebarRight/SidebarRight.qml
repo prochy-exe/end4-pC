@@ -15,6 +15,9 @@ Scope {
     PanelWindow {
         id: panelWindow
         visible: GlobalStates.sidebarRightOpen
+        readonly property string monitorName: screen?.name ?? ""
+        readonly property bool barVertical: Config.getBarSetting(monitorName, ["vertical"], Config.options.bar.vertical)
+        readonly property bool barAtBottom: Config.getBarSetting(monitorName, ["bottom"], Config.options.bar.bottom)
 
         function hide() {
             GlobalStates.sidebarRightOpen = false;
@@ -34,7 +37,8 @@ Scope {
 
         margins {
             top: {
-                if (!centerOnly) return 0;
+                if (!centerOnly)
+                    return !barVertical && !barAtBottom ? Appearance.sizes.barHeight : 0;
                 switch (Config.options.bar.cornerStyle) {
                     case 0: return -Appearance.sizes.barHeight;
                     case 1: return -Appearance.sizes.barHeight + Appearance.sizes.hyprlandGapsOut;
@@ -43,6 +47,7 @@ Scope {
                     default: return 0;
                 }
             }
+            bottom: !centerOnly && !barVertical && barAtBottom ? Appearance.sizes.barHeight : 0
         }
 
         onVisibleChanged: {

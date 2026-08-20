@@ -9,6 +9,7 @@ Rectangle {
     id: root
 
     property bool show: false
+    property bool showScrim: true
     default property alias data: contentColumn.data
     property real backgroundHeight: dialogBackground.implicitHeight
     property real backgroundWidth: 350
@@ -22,7 +23,7 @@ Rectangle {
         }
     }
 
-    color: root.show ? Appearance.colors.colScrim : ColorUtils.transparentize(Appearance.colors.colScrim)
+    color: root.show && root.showScrim ? Appearance.colors.colScrim : ColorUtils.transparentize(Appearance.colors.colScrim)
     Behavior on color {
         animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
     }
@@ -47,6 +48,8 @@ Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
         radius: Appearance.rounding.large
         color: Appearance.m3colors.m3surfaceContainerHigh // Use opaque version of layer3
+        border.width: 1
+        border.color: Appearance.colors.colLayer0Border
         
         property real targetY: root.height / 2 - root.backgroundHeight / 2
         y: root.show ? targetY : (targetY - root.backgroundAnimationMovementDistance)
@@ -72,6 +75,10 @@ Rectangle {
             anchors.fill: parent
             acceptedButtons: Qt.AllButtons
             hoverEnabled: true
+        }
+
+        StyledRectangularShadow {
+            target: dialogBackground
         }
 
         ColumnLayout {

@@ -4,6 +4,10 @@ import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.ii.sidebarRight.volumeMixer
+import qs.modules.ii.sidebarRight.wifiNetworks
+import qs.modules.ii.sidebarRight.bluetoothDevices
+import Quickshell.Wayland
 
 Item {
     id: root
@@ -14,15 +18,97 @@ Item {
     implicitWidth: root.vertical ? 26 : flow.implicitWidth
     implicitHeight: root.vertical ? flow.implicitHeight : 26
 
-    function openSidebarDialog(dialogName) {
-        GlobalStates.sidebarRightRequestedDialog = dialogName
-        GlobalStates.sidebarRightDialogRequest++
-        GlobalStates.sidebarRightOpen = true
+    property string popupDialogName: ""
+
+    function openPopupDialog(dialogName) {
+        if (popupDialogName === dialogName) {
+            popupDialogName = ""
+            return
+        }
+        GlobalStates.sidebarRightOpen = false
+        popupDialogName = dialogName
     }
 
     component StatusButton: UtilButton {
         property string dialogName: ""
-        onClicked: root.openSidebarDialog(dialogName)
+        onClicked: root.openPopupDialog(dialogName)
+    }
+
+    Component {
+        id: audioOutputDialog
+        VolumeDialog { anchors.fill: parent; isSink: true; showScrim: false }
+    }
+    Component {
+        id: audioInputDialog
+        VolumeDialog { anchors.fill: parent; isSink: false; showScrim: false }
+    }
+    Component {
+        id: bluetoothDialog
+        BluetoothDialog { anchors.fill: parent; showScrim: false }
+    }
+    Component {
+        id: wifiDialog
+        WifiDialog { anchors.fill: parent; showScrim: false }
+    }
+
+    Loader {
+        id: dialogPopupLoader
+        active: root.popupDialogName.length > 0
+        sourceComponent: PanelWindow {
+            id: popupWindow
+            screen: root.QsWindow.window?.screen
+            color: "transparent"
+            implicitWidth: 370
+            implicitHeight: 620
+            readonly property bool barAtBottom: Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom)
+
+            anchors.left: !root.vertical
+            anchors.right: root.vertical && barAtBottom
+            anchors.top: root.vertical || !barAtBottom
+            anchors.bottom: !root.vertical && barAtBottom
+            margins {
+                left: root.vertical ? (barAtBottom ? 0 : Appearance.sizes.verticalBarWidth) : Math.max(0, Math.min(
+                    root.QsWindow.window.mapFromItem(root, (root.width - implicitWidth) / 2, 0).x,
+                    screen.width - implicitWidth
+                ))
+                right: root.vertical && barAtBottom ? Appearance.sizes.verticalBarWidth : 0
+                top: root.vertical ? Math.max(0, Math.min(
+                    root.QsWindow.window.mapFromItem(root, 0, (root.height - implicitHeight) / 2).y,
+                    screen.height - implicitHeight
+                )) : (barAtBottom ? 0 : Appearance.sizes.barHeight)
+                bottom: !root.vertical && barAtBottom ? Appearance.sizes.barHeight : 0
+            }
+
+            exclusiveZone: 0
+            WlrLayershell.namespace: "quickshell:systemIconDialog"
+            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+
+            Component.onCompleted: GlobalFocusGrab.addDismissable(popupWindow)
+            Component.onDestruction: GlobalFocusGrab.removeDismissable(popupWindow)
+
+            Connections {
+                target: GlobalFocusGrab
+                function onDismissed() { root.popupDialogName = "" }
+            }
+
+            Loader {
+                id: dialogLoader
+                anchors.fill: parent
+                sourceComponent: root.popupDialogName === "audioOutput" ? audioOutputDialog
+                    : root.popupDialogName === "audioInput" ? audioInputDialog
+                    : root.popupDialogName === "bluetooth" ? bluetoothDialog
+                    : wifiDialog
+                onLoaded: {
+                    item.show = true
+                    item.forceActiveFocus()
+                }
+                Connections {
+                    target: dialogLoader.item
+                    function onDismiss() { root.popupDialogName = "" }
+                }
+            }
+        }
     }
 
     Flow {
@@ -62,9 +148,15 @@ Item {
             active: Notifications.silent || Notifications.unread > 0
             visible: active
             sourceComponent: Component {
-                StatusButton {
+                UtilButton {
                     id: notificationButton
-                    dialogName: "sidebar"
+                    acceptedMouseButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: (event) => {
+                        if (event.button === Qt.RightButton)
+                            Notifications.discardAllNotifications()
+                        else
+                            Notifications.replayAllNotifications()
+                    }
 
                     NotificationUnreadCount {
                         anchors.centerIn: parent
