@@ -56,7 +56,7 @@ QtObject {
         }
     }
 
-    Connections {
+    property Connections audioSettingsConnection: Connections {
         target: AudioLevels
         function onAudioSettingsChanged() {
             root.proc.running = false;
