@@ -11,31 +11,18 @@ Item {
     signal clicked(event: var)
     property alias iconText: symbol.text
     property bool isActive: false
-    property bool forceHovered: false
+    default property alias content: customContent.data
 
-    implicitWidth: vertical ? 26 : (hovered ? 54 : 26)
-    implicitHeight: vertical ? (hovered ? 54 : 26) : 26
+    implicitWidth: 26
+    implicitHeight: 26
 
-    property bool hovered: mouseArea.containsMouse || forceHovered
-
-    Behavior on implicitWidth {
-        NumberAnimation {
-            duration: Appearance.animation.elementMoveFast.duration
-            easing.type: Appearance.animation.elementMoveFast.easing
-        }
-    }
-
-    Behavior on implicitHeight {
-        NumberAnimation {
-            duration: Appearance.animation.elementMoveFast.duration
-            easing.type: Appearance.animation.elementMoveFast.easing
-        }
-    }
+    property bool hovered: mouseArea.containsMouse
+    readonly property bool highlighted: hovered || isActive
 
     Rectangle {
         anchors.fill: parent
         radius: Appearance.rounding.full
-        color: root.hovered ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0), 0.8)
+        color: root.highlighted ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0), 0.8)
 
         Behavior on color {
             ColorAnimation { duration: Appearance.animation.elementMoveFast.duration }
@@ -47,12 +34,18 @@ Item {
         MaterialSymbol {
             id: symbol
             anchors.centerIn: parent
+            visible: text.length > 0
             iconSize: Appearance.font.pixelSize.large
-            color: root.hovered ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+            color: root.highlighted ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
             Behavior on color {
                 ColorAnimation { duration: Appearance.animation.elementMoveFast.duration }
             }
+        }
+
+        Item {
+            id: customContent
+            anchors.fill: parent
         }
     }
 

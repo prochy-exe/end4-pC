@@ -65,23 +65,23 @@ Item {
     function componentForAction(actionId) {
         switch (actionId) {
             case "screenSnip":
-                return root.isMaterial ? screenSnipM3 : legacyScreenSnip
+                return screenSnipM3
             case "colorPicker":
-                return root.isMaterial ? colorPickerM3 : legacyColorPicker
+                return colorPickerM3
             case "screenRecord":
-                return root.isMaterial ? screenRecordM3 : legacyScreenRecord
+                return screenRecordM3
             case "recordingIndicator":
-                return root.isMaterial ? recordingIndicatorM3 : recordingIndicatorLegacy
+                return recordingIndicatorM3
             case "keyboardToggle":
-                return root.isMaterial ? keyboardM3 : legacyKeyboard
+                return keyboardM3
             case "wallpaperToggle":
-                return root.isMaterial ? wallpaperM3 : legacyWallpaper
+                return wallpaperM3
             case "micToggle":
-                return root.isMaterial ? micM3 : legacyMic
+                return micM3
             case "darkModeToggle":
-                return root.isMaterial ? darkModeM3 : legacyDarkMode
+                return darkModeM3
             case "performanceProfileToggle":
-                return root.isMaterial ? perfM3 : legacyPerf
+                return perfM3
             default:
                 return null
         }
@@ -116,11 +116,13 @@ Item {
         Repeater {
             model: CustomBarResources.definitions
             delegate: UtilButton {
+                id: customResourceButton
                 required property var modelData
                 iconText: CustomBarResources.isRunning(modelData.id) ? (modelData.iconOn || "check_circle") : (modelData.iconOff || "circle")
-                forceHovered: CustomBarResources.isRunning(modelData.id)
+                isActive: CustomBarResources.isRunning(modelData.id)
                 onClicked: CustomBarResources.toggle(modelData.id)
                 StyledToolTip {
+                    extraVisibleCondition: customResourceButton.hovered
                     text: modelData.name || Translation.tr("Custom resource")
                 }
             }
@@ -238,7 +240,7 @@ Item {
             id: screenRecordM3
             UtilButton {
                 iconText: Persistent.states.record.enable ? "stop_circle" : "screen_record"
-                forceHovered: Persistent.states.record.enable
+                isActive: Persistent.states.record.enable
                 onClicked: Quickshell.execDetached([Directories.recordScriptPath])
             }
         }
@@ -247,7 +249,7 @@ Item {
             id: recordingIndicatorM3
             UtilButton {
                 iconText: "radio_button_checked"
-                forceHovered: true
+                isActive: true
                 onClicked: Quickshell.execDetached([Directories.recordScriptPath])
             }
         }

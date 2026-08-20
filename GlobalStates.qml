@@ -16,6 +16,8 @@ Singleton {
     property bool crosshairOpen: false
     property bool sidebarLeftOpen: false
     property bool sidebarRightOpen: false
+    property string sidebarRightRequestedDialog: ""
+    property int sidebarRightDialogRequest: 0
     property bool mediaControlsOpen: false
     property bool mediaTickerOpen: false
     property bool osdBrightnessOpen: false

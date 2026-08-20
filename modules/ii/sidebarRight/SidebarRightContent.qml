@@ -48,6 +48,15 @@ Item {
 
     Connections {
         target: GlobalStates
+        function onSidebarRightDialogRequestChanged() {
+            if (!GlobalStates.sidebarRightRequestedDialog) return;
+            GlobalStates.sidebarRightOpen = true;
+            root.showAudioOutputDialog = GlobalStates.sidebarRightRequestedDialog === "audioOutput";
+            root.showAudioInputDialog = GlobalStates.sidebarRightRequestedDialog === "audioInput";
+            root.showBluetoothDialog = GlobalStates.sidebarRightRequestedDialog === "bluetooth";
+            root.showWifiDialog = GlobalStates.sidebarRightRequestedDialog === "wifi";
+        }
+
         function onSidebarRightOpenChanged() {
             if (!GlobalStates.sidebarRightOpen) {
                 root.showWifiDialog = false;

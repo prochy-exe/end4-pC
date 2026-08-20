@@ -66,7 +66,7 @@ Item {
 
     function shouldPaintMaterialPill(name) {
         if (root.isMaterial !== true) return false;
-        const blacklist = ["workspaces", "divisor", "powerButton", "docktoPanel", "leftSidebarButton", "activeWindow"];
+        const blacklist = ["workspaces", "divisor", "powerButton", "docktoPanel", "leftSidebarButton", "activeWindow", "systemIcons"];
         if (blacklist.includes(name)) {
             return false;
         }

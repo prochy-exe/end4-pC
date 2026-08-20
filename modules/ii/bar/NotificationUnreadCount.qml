@@ -5,12 +5,24 @@ import qs.modules.common.widgets
 
 MaterialSymbol {
     id: root
-    readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
+    property string monitorName: ""
     readonly property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     readonly property bool showUnreadCount: Config.getBarSetting(root.monitorName, ["indicators", "notifications", "showUnreadCount"], Config.options.bar.indicators.notifications.showUnreadCount)
+    property color iconColor: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
     text: Notifications.silent ? "notifications_paused" : "notifications"
     iconSize: Appearance.font.pixelSize.larger
-    color: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+    color: iconColor
+
+    property real pulseScale: 1
+    scale: pulseScale
+
+    SequentialAnimation on pulseScale {
+        running: !Notifications.silent && Notifications.unread > 0
+        loops: Animation.Infinite
+        NumberAnimation { to: 1.14; duration: 450; easing.type: Easing.InOutSine }
+        NumberAnimation { to: 1; duration: 450; easing.type: Easing.InOutSine }
+        PauseAnimation { duration: 700 }
+    }
 
     Rectangle {
         id: notifPing

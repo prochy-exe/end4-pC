@@ -1,75 +1,78 @@
 import QtQuick
-import QtQuick.Layouts
 import Quickshell
-import Quickshell.Services.UPower
 import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
-import qs.modules.common.functions
 
 Item {
     id: root
     readonly property string monitorName: parent?.monitorName ?? root.QsWindow.window?.screen?.name ?? ""
-    property bool borderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
-    property bool showDate: Config.getBarSetting(root.monitorName, ["verbose"], Config.options.bar.verbose)
     property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
     property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
 
-    implicitWidth: root.vertical ? 32 : flow.implicitWidth + 4
-    implicitHeight: root.vertical ? flow.implicitHeight + 4 : 32
+    implicitWidth: root.vertical ? 26 : flow.implicitWidth
+    implicitHeight: root.vertical ? flow.implicitHeight : 26
 
-    MouseArea {
-        anchors.fill: parent
-        onPressed: {
-            GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
-        }
+    function openSidebarDialog(dialogName) {
+        GlobalStates.sidebarRightRequestedDialog = dialogName
+        GlobalStates.sidebarRightDialogRequest++
+        GlobalStates.sidebarRightOpen = true
+    }
+
+    component StatusButton: UtilButton {
+        property string dialogName: ""
+        onClicked: root.openSidebarDialog(dialogName)
     }
 
     Flow {
         id: flow
         anchors.centerIn: parent
         flow: root.vertical ? Flow.TopToBottom : Flow.LeftToRight
-        spacing: isMaterial ? 2 : 10
+        spacing: root.isMaterial ? 2 : 4
 
         Revealer {
             reveal: true
-            MaterialSymbol {
-                text: Audio.sink?.audio?.muted ? "volume_off" : "volume_up"
-                iconSize: Appearance.font.pixelSize.larger
-                color: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+            StatusButton {
+                dialogName: "audioOutput"
+                iconText: Audio.sink?.audio?.muted ? "volume_off" : "volume_up"
             }
         }
+
         Revealer {
             reveal: Audio.source?.audio?.muted ?? false
-            MaterialSymbol {
-                text: "mic_off"
-                iconSize: Appearance.font.pixelSize.larger
-                color: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+            StatusButton {
+                dialogName: "audioInput"
+                iconText: "mic_off"
             }
         }
-        Loader {
-            source: "HyprlandXkbIndicator.qml"
-            onLoaded: item.color = root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+
+        StatusButton {
+            dialogName: "wifi"
+            iconText: Network.materialSymbol
         }
-        MaterialSymbol {
-            text: Network.materialSymbol
-            iconSize: Appearance.font.pixelSize.larger
-            color: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
-        }
-        MaterialSymbol {
+
+        StatusButton {
             visible: BluetoothStatus.available
-            text: BluetoothStatus.connected ? "bluetooth_connected" : BluetoothStatus.enabled ? "bluetooth" : "bluetooth_disabled"
-            iconSize: Appearance.font.pixelSize.larger
-            color: root.isMaterial ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+            dialogName: "bluetooth"
+            iconText: BluetoothStatus.connected ? "bluetooth_connected" : BluetoothStatus.enabled ? "bluetooth" : "bluetooth_disabled"
         }
+
         Loader {
-            id: notifLoader
             active: Notifications.silent || Notifications.unread > 0
             visible: active
-            width: active ? item?.implicitWidth ?? 0 : 0
-            height: active ? item?.implicitHeight ?? 0 : 0
-            source: "NotificationUnreadCount.qml"
+            sourceComponent: Component {
+                StatusButton {
+                    id: notificationButton
+                    dialogName: "sidebar"
+
+                    NotificationUnreadCount {
+                        anchors.centerIn: parent
+                        monitorName: root.monitorName
+                        iconColor: notificationButton.highlighted ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                    }
+                }
+            }
         }
     }
 }
