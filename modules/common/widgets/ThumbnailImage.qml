@@ -23,8 +23,9 @@ StyledImage {
         const md5Hash = Qt.md5(`file://${encodedUrlWithoutFileProtocol}`);
         return `${Directories.genericCache}/thumbnails/${thumbnailSizeName}/${md5Hash}.png`;
     }
-    source: thumbnailPath
     property bool showingFallback: false
+    readonly property url fallbackSource: Qt.resolvedUrl("file://" + FileUtils.trimFileProtocol(sourcePath))
+    source: showingFallback ? fallbackSource : thumbnailPath
 
     asynchronous: true
     smooth: true
@@ -43,21 +44,19 @@ StyledImage {
     onStatusChanged: {
         if (status === Image.Error && !showingFallback) {
             showingFallback = true
-            source = Qt.resolvedUrl(sourcePath)
         }
     }
+    onSourcePathChanged: showingFallback = false
 
     Connections {
         target: Wallpapers
         function onThumbnailGenerated(directory) {
             if (!root.showingFallback || FileUtils.parentDirectory(root.sourcePath) !== FileUtils.trimFileProtocol(directory)) return
             root.showingFallback = false
-            root.source = root.thumbnailPath
         }
         function onThumbnailGeneratedFile(filePath) {
             if (!root.showingFallback || Qt.resolvedUrl(root.sourcePath) !== Qt.resolvedUrl(filePath)) return
             root.showingFallback = false
-            root.source = root.thumbnailPath
         }
     }
     Process {
@@ -70,8 +69,7 @@ StyledImage {
         }
         onExited: (exitCode, exitStatus) => {
             if (exitCode === 1) { // Force reload if thumbnail had to be generated
-                root.source = "";
-                root.source = root.thumbnailPath; // Force reload
+                root.showingFallback = false
             }
         }
     }

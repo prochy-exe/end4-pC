@@ -142,6 +142,43 @@ Variants {
             return Wallpapers.previewPath || Wallpapers.confirmedPath || Config.options.background.wallpaperPath;
         }
 
+        function sharedWallpaperSpanBounds() {
+            if (Config.options.background.wallpaperMode !== "shared"
+                    || Config.options.background.sharedWallpaperLayout !== "span")
+                return null;
+
+            const configured = Config.options.background.sharedWallpaperSpanScreens ?? [];
+            const screens = configured.length === 0
+                ? Quickshell.screens
+                : Quickshell.screens.filter(screen => configured.includes(screen.name));
+            if (screens.length < 2 || !screens.some(screen => screen.name === bgRoot.screen.name))
+                return null;
+
+            let left = Infinity;
+            let top = Infinity;
+            let right = -Infinity;
+            let bottom = -Infinity;
+            for (const screen of screens) {
+                const monitor = Hyprland.monitorFor(screen);
+                const x = monitor?.x ?? 0;
+                const y = monitor?.y ?? 0;
+                const width = monitor?.width ?? screen.width;
+                const height = monitor?.height ?? screen.height;
+                left = Math.min(left, x);
+                top = Math.min(top, y);
+                right = Math.max(right, x + width);
+                bottom = Math.max(bottom, y + height);
+            }
+            return { left, top, width: right - left, height: bottom - top };
+        }
+
+        readonly property var sharedWallpaperSpan: bgRoot.sharedWallpaperSpanBounds()
+        readonly property bool wallpaperSpansMonitors: bgRoot.sharedWallpaperSpan !== null
+        readonly property real wallpaperSpanX: bgRoot.wallpaperSpansMonitors
+            ? -((bgRoot.monitor?.x ?? 0) - bgRoot.sharedWallpaperSpan.left) : 0
+        readonly property real wallpaperSpanY: bgRoot.wallpaperSpansMonitors
+            ? -((bgRoot.monitor?.y ?? 0) - bgRoot.sharedWallpaperSpan.top) : 0
+
         property bool wallpaperIsVideo: bgRoot.effectiveWallpaperPath.endsWith(".mp4") || bgRoot.effectiveWallpaperPath.endsWith(".webm") || bgRoot.effectiveWallpaperPath.endsWith(".mkv") || bgRoot.effectiveWallpaperPath.endsWith(".avi") || bgRoot.effectiveWallpaperPath.endsWith(".mov")
         property string wallpaperPath: wallpaperIsVideo ? Config.options.background.thumbnailPath : bgRoot.effectiveWallpaperPath
         property bool wallpaperSafetyTriggered: {
@@ -208,6 +245,7 @@ Variants {
         // so the datamosh transition ignores it.
         property bool effectsEnabled: ((Config.options.background.effects.enable && bgRoot.effectAllowedHere)
             || bgRoot.datamoshTransition) && !bgRoot.wallpaperSafetyTriggered
+            && !bgRoot.wallpaperSpansMonitors
 
         // On a monitor the effect is excluded from, "datamosh" has no classic
         // shader to fall back to (there is no shaders/datamosh.frag.qsb), so
@@ -345,12 +383,17 @@ Variants {
         }
 
         Item {
+            clip: true
             anchors.fill: parent
 
             Image {
                 id: previousWallpaper
-                anchors.fill: parent
-                fillMode: Image.PreserveAspectCrop
+                anchors.fill: bgRoot.wallpaperSpansMonitors ? null : parent
+                x: bgRoot.wallpaperSpanX
+                y: bgRoot.wallpaperSpanY
+                width: bgRoot.wallpaperSpansMonitors ? bgRoot.sharedWallpaperSpan.width : parent.width
+                height: bgRoot.wallpaperSpansMonitors ? bgRoot.sharedWallpaperSpan.height : parent.height
+                fillMode: bgRoot.wallpaperSpansMonitors ? Image.Stretch : Image.PreserveAspectCrop
                 cache: true
                 smooth: true
                 asynchronous: true
@@ -360,8 +403,12 @@ Variants {
 
             StyledImage {
                 id: wallpaper
-                anchors.fill: parent
-                fillMode: Image.PreserveAspectCrop
+                anchors.fill: bgRoot.wallpaperSpansMonitors ? null : parent
+                x: bgRoot.wallpaperSpanX
+                y: bgRoot.wallpaperSpanY
+                width: bgRoot.wallpaperSpansMonitors ? bgRoot.sharedWallpaperSpan.width : parent.width
+                height: bgRoot.wallpaperSpansMonitors ? bgRoot.sharedWallpaperSpan.height : parent.height
+                fillMode: bgRoot.wallpaperSpansMonitors ? Image.Stretch : Image.PreserveAspectCrop
                 cache: true
                 smooth: true
                 asynchronous: true

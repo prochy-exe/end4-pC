@@ -44,6 +44,54 @@ ContentPage {
             : path
     }
 
+    function desktopWallpaperPathForScreen(screen) {
+        if (Config.options.background.wallpaperMode === "perMonitor") {
+            const override = (Config.options.background.monitorWallpapers ?? [])
+                .find(entry => entry.name === screen?.name)?.path
+            if (override) return override
+        }
+        return Config.options.background.wallpaperPath
+    }
+
+    // This deliberately mirrors Background.qml: a monitor-specific lock
+    // choice wins, then a shared lock wallpaper, then that monitor's desktop.
+    function lockWallpaperPathForScreen(screen) {
+        if (Config.options.background.lockWallpaperMode === "perMonitor") {
+            const override = (Config.options.background.lockMonitorWallpapers ?? [])
+                .find(entry => entry.name === screen?.name)?.path
+            if (override) return override
+        }
+        if (Config.options.background.lockWall !== "")
+            return Config.options.background.lockWall
+        return page.desktopWallpaperPathForScreen(screen)
+    }
+
+    function lockPreviewUsesMonitorPaths() {
+        return Config.options.background.lockWallpaperMode === "perMonitor"
+            || (Config.options.background.lockWall === ""
+                && Config.options.background.wallpaperMode === "perMonitor")
+    }
+
+    function sharedWallpaperSpanScreenNames() {
+        const configured = Config.options.background.sharedWallpaperSpanScreens ?? []
+        return configured.length === 0 ? Quickshell.screens.map(screen => screen.name) : configured
+    }
+
+    function sharedWallpaperSpansScreen(name) {
+        return page.sharedWallpaperSpanScreenNames().includes(name)
+    }
+
+    function setSharedWallpaperSpanScreen(name, enabled) {
+        const allNames = Quickshell.screens.map(screen => screen.name)
+        let names = page.sharedWallpaperSpanScreenNames().filter(screenName => allNames.includes(screenName))
+        if (enabled) {
+            if (!names.includes(name)) names.push(name)
+        } else {
+            names = names.filter(screenName => screenName !== name)
+        }
+        Config.options.background.sharedWallpaperSpanScreens = names.length === allNames.length ? [] : names
+    }
+
     property bool savePresetDialogOpen: false
 
     // Sticky like InterfaceConfig's iconPickerLoader, for the same reason -
@@ -148,6 +196,49 @@ ContentPage {
                         }
                     }
 
+                    ConfigSwitch {
+                        Layout.fillWidth: true
+                        visible: Config.options.background.wallpaperMode === "shared"
+                            && Quickshell.screens.length > 1
+                        buttonIcon: "panorama_wide_angle"
+                        text: Translation.tr("Span one wallpaper across monitors")
+                        checked: Config.options.background.sharedWallpaperLayout === "span"
+                        onClicked: {
+                            Config.options.background.sharedWallpaperLayout =
+                                Config.options.background.sharedWallpaperLayout === "span" ? "independent" : "span"
+                        }
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        visible: Config.options.background.wallpaperMode === "shared"
+                            && Config.options.background.sharedWallpaperLayout === "span"
+                            && Quickshell.screens.length > 1
+                        spacing: 2
+
+                        StyledText {
+                            Layout.leftMargin: 12
+                            text: Translation.tr("Span across these monitors")
+                            color: Appearance.colors.colOnLayer1
+                            font.pixelSize: Appearance.font.pixelSize.small
+                        }
+
+                        Repeater {
+                            model: Quickshell.screens
+                            delegate: ConfigSwitch {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                buttonIcon: "monitor"
+                                text: modelData.name
+                                checked: page.sharedWallpaperSpansScreen(modelData.name)
+                                enabled: page.sharedWallpaperSpanScreenNames().length > 2
+                                    || !page.sharedWallpaperSpansScreen(modelData.name)
+                                onClicked: page.setSharedWallpaperSpanScreen(
+                                    modelData.name, !page.sharedWallpaperSpansScreen(modelData.name))
+                            }
+                        }
+                    }
+
                     ContentSubsection {
                         title: Translation.tr("Desktop wallpapers")
                         Layout.fillWidth: true
@@ -185,21 +276,17 @@ ContentPage {
                         Layout.fillWidth: true
 
                         Carousel {
+                            id: lockWallpaperCarousel
                             Layout.fillWidth: true
-                            implicitHeight: 160
-                            largeItemWidthRatio: 1
-                            itemSpacing: 0
-                            model: Config.options.background.lockWallpaperMode === "perMonitor"
-                                ? Quickshell.screens.map(s => page.displayPathFor(
-                                    (Config.options.background.lockMonitorWallpapers ?? []).find(m => m.name === s.name)?.path
-                                        ?? Config.options.background.wallpaperPath
-                                ))
-                                : [page.displayPathFor(
-                                    Config.options.background.lockWall !== ""
-                                        ? Config.options.background.lockWall
-                                        : Config.options.background.wallpaperPath
-                                )]
-                            labels: Config.options.background.lockWallpaperMode === "perMonitor"
+                            implicitHeight: 220
+                            largeItemWidthRatio: page.lockPreviewUsesMonitorPaths() ? 0.5 : 1
+                            mediumItemWidthRatio: page.lockPreviewUsesMonitorPaths() ? 0.485 : 0.32
+                            itemSpacing: page.lockPreviewUsesMonitorPaths() ? 8 : 0
+                            showCurrentIndicator: false
+                            model: page.lockPreviewUsesMonitorPaths()
+                                ? Quickshell.screens.map(s => page.displayPathFor(page.lockWallpaperPathForScreen(s)))
+                                : [page.displayPathFor(page.lockWallpaperPathForScreen(null))]
+                            labels: page.lockPreviewUsesMonitorPaths()
                                 ? Quickshell.screens.map(s => s.name)
                                 : [Translation.tr(
                                     Config.options.background.lockWall === ""

@@ -421,6 +421,8 @@ Singleton {
                 // no entry there falls back to wallpaperPath so it's never blank.
                 property string wallpaperMode: "shared" // "shared" | "perMonitor"
                 property list<var> monitorWallpapers: [] // [{ name, path }]
+                property string sharedWallpaperLayout: "independent" // "independent" | "span"
+                property list<string> sharedWallpaperSpanScreens: [] // Empty means all monitors
                 property string lockWallpaperMode: "shared" // "shared" | "perMonitor"
                 property list<var> lockMonitorWallpapers: [] // [{ name, path }]
                 property bool centeredWallpaper: false
