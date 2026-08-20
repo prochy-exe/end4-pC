@@ -21,6 +21,15 @@ Singleton {
     property real swapUsedPercentage: swapTotal > 0 ? (swapUsed / swapTotal) : 0
     property real cpuUsage: 0
     property var previousCpuStats
+    property list<var> topCpuProcesses: []
+    property list<var> topMemoryProcesses: []
+    property list<var> topGpuProcesses: []
+    property list<var> topGpuMemoryProcesses: []
+    property real gpuUsage: -1
+    property real gpuMemoryUsed: 0
+    property real gpuMemoryTotal: 0
+    property string gpuName: ""
+    readonly property bool gpuAvailable: gpuUsage >= 0
 
     property string maxAvailableMemoryString: kbToGbString(ResourceUsage.memoryTotal)
     property string maxAvailableSwapString: kbToGbString(ResourceUsage.swapTotal)
@@ -65,6 +74,49 @@ Singleton {
         }
     }
 
+    Process {
+        id: processAndGpuProc
+        command: ["bash", "-c", "ps -eo comm=,%cpu=,%mem= --sort=-%cpu | head -n 4 | awk '{printf \"CPU|%s|%s|%s\\n\",$1,$2,$3}'; ps -eo comm=,%cpu=,%mem= --sort=-%mem | head -n 4 | awk '{printf \"MEM|%s|%s|%s\\n\",$1,$2,$3}'; if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,name --format=csv,noheader,nounits 2>/dev/null | head -n 1 | awk -F', ' '{printf \"GPU|%s|%s|%s|%s\\n\",$1,$2,$3,$4}'; nvidia-smi pmon -c 1 2>/dev/null | awk 'NR>2 && $2 ~ /^[0-9]+$/ && $4 != \"-\" {print $2 \"|\" $4}' | sort -t'|' -k2,2nr | head -n 4 | while IFS='|' read -r pid usage; do commandName=$(ps -p \"$pid\" -o comm= 2>/dev/null | head -n 1); [ -n \"$commandName\" ] && printf \"GPUPROC|%s|%s\\n\" \"$commandName\" \"$usage\"; done; nvidia-smi --query-compute-apps=pid,process_name,used_gpu_memory --format=csv,noheader,nounits 2>/dev/null | sort -t, -k3 -nr | head -n 4 | while IFS=, read -r pid processName memory; do commandName=$(ps -p \"$pid\" -o comm= 2>/dev/null | head -n 1); [ -n \"$commandName\" ] || commandName=${processName##*/}; commandName=${commandName%% *}; printf \"GPUVRAMPROC|%s|%s\\n\" \"$commandName\" \"$memory\"; done; else for busy in /sys/class/drm/card*/device/gpu_busy_percent /sys/class/drm/card*/device/gt_busy_percent; do if [ -r \"$busy\" ]; then usage=$(cat \"$busy\"); usedFile=${busy%/*}/mem_info_vram_used; totalFile=${busy%/*}/mem_info_vram_total; used=0; total=0; [ -r \"$usedFile\" ] && used=$(awk '{printf \"%.0f\",$1/1048576}' \"$usedFile\"); [ -r \"$totalFile\" ] && total=$(awk '{printf \"%.0f\",$1/1048576}' \"$totalFile\"); printf \"GPU|%s|%s|%s|DRM GPU\\n\" \"$usage\" \"$used\" \"$total\"; break; fi; done; fi"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const cpu = []
+                const memory = []
+                const gpuProcesses = []
+                const gpuMemoryProcesses = []
+                let foundGpu = false
+                for (const line of text.trim().split("\n")) {
+                    const parts = line.split("|")
+                    if (parts[0] === "CPU" && parts.length >= 4)
+                        cpu.push({ name: parts[1], cpu: Number(parts[2]), memory: Number(parts[3]) })
+                    else if (parts[0] === "MEM" && parts.length >= 4)
+                        memory.push({ name: parts[1], cpu: Number(parts[2]), memory: Number(parts[3]) })
+                    else if (parts[0] === "GPU" && parts.length >= 5) {
+                        root.gpuUsage = Number(parts[1])
+                        root.gpuMemoryUsed = Number(parts[2])
+                        root.gpuMemoryTotal = Number(parts[3])
+                        root.gpuName = parts.slice(4).join("|").trim()
+                        foundGpu = true
+                    } else if (parts[0] === "GPUPROC" && parts.length >= 3)
+                        gpuProcesses.push({ name: parts[1], usage: Number(parts[2]) })
+                    else if (parts[0] === "GPUVRAMPROC" && parts.length >= 3)
+                        gpuMemoryProcesses.push({ name: parts[1], memory: Number(parts[2]) })
+                }
+                root.topCpuProcesses = cpu
+                root.topMemoryProcesses = memory
+                root.topGpuProcesses = gpuProcesses
+                root.topGpuMemoryProcesses = gpuMemoryProcesses
+                if (!foundGpu) {
+                    root.gpuUsage = -1
+                    root.gpuMemoryUsed = 0
+                    root.gpuMemoryTotal = 0
+                    root.gpuName = ""
+                    root.topGpuProcesses = []
+                    root.topGpuMemoryProcesses = []
+                }
+            }
+        }
+    }
+
     Timer {
         interval: Config?.options.resources.updateInterval ?? 3000
         running: true
@@ -74,6 +126,8 @@ Singleton {
             tempProc.running = true
             diskProc.running = false
             diskProc.running = true
+            processAndGpuProc.running = false
+            processAndGpuProc.running = true
         }
     }
 

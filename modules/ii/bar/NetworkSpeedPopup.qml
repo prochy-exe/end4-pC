@@ -3,9 +3,11 @@ import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.services
+import Quickshell
 
 StyledPopup {
     id: root
+    keepOpenWhileHovered: true
 
     property real downloadSpeed: 0
     property real uploadSpeed: 0
@@ -205,6 +207,7 @@ StyledPopup {
                 icon: "lan"
                 label: Translation.tr("Local IP")
                 value: Network.ipAddress
+                copyAction: () => Quickshell.clipboardText = Network.ipAddress
             }
 
             StyledPopupValueRow {
@@ -213,6 +216,7 @@ StyledPopup {
                 icon: "public"
                 label: Translation.tr("Public IP")
                 value: Network.publicIpAddress
+                copyAction: () => Quickshell.clipboardText = Network.publicIpAddress
             }
 
             StyledPopupValueRow {
@@ -221,6 +225,7 @@ StyledPopup {
                 icon: "router"
                 label: Translation.tr("Gateway")
                 value: Network.gateway
+                copyAction: () => Quickshell.clipboardText = Network.gateway
             }
 
             StyledPopupValueRow {

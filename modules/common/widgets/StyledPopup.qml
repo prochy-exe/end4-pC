@@ -11,7 +11,44 @@ LazyLoader {
     property Item hoverTarget
     default property Item contentItem
     property real popupBackgroundMargin: 0
-    active: hoverTarget && hoverTarget.containsMouse
+
+    property bool keepOpenWhileHovered: false
+    property int hoverCloseDelay: 120
+    property bool popupHovered: false
+    readonly property bool targetHovered: hoverTarget && hoverTarget.containsMouse
+    readonly property bool wantsVisible: targetHovered || (keepOpenWhileHovered && popupHovered)
+    readonly property bool ownsHover: !keepOpenWhileHovered || targetHovered || PopupState.activeHoverPopup === root
+
+    active: keepOpenWhileHovered
+        ? (ownsHover && (wantsVisible || closeTimer.running))
+        : targetHovered
+
+    onTargetHoveredChanged: {
+        if (targetHovered)
+            PopupState.activeHoverPopup = root
+    }
+
+    onWantsVisibleChanged: {
+        if (!keepOpenWhileHovered)
+            return
+
+        if (wantsVisible)
+            closeTimer.stop()
+        else
+            closeTimer.restart()
+    }
+
+    onActiveChanged: {
+        if (!active) {
+            popupHovered = false
+            if (PopupState.activeHoverPopup === root && !targetHovered)
+                PopupState.activeHoverPopup = null
+        }
+    }
+
+    property Timer closeTimer: Timer {
+        interval: root.hoverCloseDelay
+    }
 
     readonly property var targetScreen: hoverTarget?.QsWindow?.window?.screen
         ?? root.QsWindow?.window?.screen
@@ -88,7 +125,7 @@ LazyLoader {
             target: popupBackground
         }
 
-        Rectangle {
+            Rectangle {
             id: popupBackground
             readonly property real margin: 8
 
@@ -109,13 +146,21 @@ LazyLoader {
             border.width: 1
             border.color: Appearance.colors.colLayer0Border
 
-            // Reparent content here once the window is ready
-            Component.onCompleted: {
-                if (popupWindow.innerContent) {
-                    popupWindow.innerContent.parent = popupBackground
-                    popupWindow.innerContent.anchors.centerIn = popupBackground
+            HoverHandler {
+                enabled: root.keepOpenWhileHovered
+                onHoveredChanged: {
+                    root.popupHovered = hovered
                 }
             }
-        }
+
+            // Reparent content here once the window is ready
+                Component.onCompleted: {
+                    if (popupWindow.innerContent) {
+                        popupWindow.innerContent.parent = popupBackground
+                        popupWindow.innerContent.anchors.centerIn = popupBackground
+                    }
+                }
+
+            }
     }
 }

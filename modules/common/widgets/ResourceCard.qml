@@ -13,6 +13,7 @@ Rectangle {
     required property string sublabel
     property color sublabelColor: Appearance.colors.colOnSurfaceVariant
     property int cardWidth: 150 
+    property string detailText: ""
 
     width: cardWidth
     height: 96 
@@ -88,8 +89,10 @@ Rectangle {
             valueBarHeight: 6 
 
         }
+
     }
 
     border.width: root.value > 0.9 ? 1.5 : 0
     border.color: root.value > 0.9 ? Appearance.colors.colError : "transparent"
+
 }

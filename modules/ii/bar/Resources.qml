@@ -30,6 +30,12 @@ BarWidgetSwitcherArea {
                 warningThreshold: Config.getBarSetting(root.monitorName, ["resources", "cpuWarningThreshold"], Config.options.bar.resources.cpuWarningThreshold)
             }
             Resource {
+                iconName: "developer_board"
+                shown: ResourceUsage.gpuAvailable && Config.getBarSetting(root.monitorName, ["resources", "alwaysShowGpu"], Config.options.bar.resources.alwaysShowGpu)
+                percentage: Math.max(0, ResourceUsage.gpuUsage / 100)
+                Layout.leftMargin: shown ? 6 : 0
+            }
+            Resource {
                 iconName: "thermostat"
                 shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpuTemp"], Config.options.bar.resources.alwaysShowCpuTemp)
                 percentage: ResourceUsage.cpuTemp / 100
@@ -67,6 +73,12 @@ BarWidgetSwitcherArea {
                 percentage: ResourceUsage.cpuUsage
                 Layout.leftMargin: shown ? 6 : 0
                 warningThreshold: Config.getBarSetting(root.monitorName, ["resources", "cpuWarningThreshold"], Config.options.bar.resources.cpuWarningThreshold)
+            }
+            Resource {
+                iconName: "developer_board"
+                shown: ResourceUsage.gpuAvailable && Config.getBarSetting(root.monitorName, ["resources", "alwaysShowGpu"], Config.options.bar.resources.alwaysShowGpu)
+                percentage: Math.max(0, ResourceUsage.gpuUsage / 100)
+                Layout.leftMargin: shown ? 6 : 0
             }
             Resource {
                 iconName: "thermostat"
@@ -109,6 +121,13 @@ BarWidgetSwitcherArea {
                 shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpu"], Config.options.bar.resources.alwaysShowCpu)
                 percentage: ResourceUsage.cpuUsage
                 warningThreshold: Config.getBarSetting(root.monitorName, ["resources", "cpuWarningThreshold"], Config.options.bar.resources.cpuWarningThreshold)
+            }
+            Resource {
+                Layout.alignment: Qt.AlignHCenter
+                iconName: "developer_board"
+                vertical: true
+                shown: ResourceUsage.gpuAvailable && Config.getBarSetting(root.monitorName, ["resources", "alwaysShowGpu"], Config.options.bar.resources.alwaysShowGpu)
+                percentage: Math.max(0, ResourceUsage.gpuUsage / 100)
             }
             Resource {
                 Layout.alignment: Qt.AlignHCenter
@@ -157,6 +176,13 @@ BarWidgetSwitcherArea {
             }
             Resource {
                 Layout.alignment: Qt.AlignHCenter
+                iconName: "developer_board"
+                vertical: true
+                shown: ResourceUsage.gpuAvailable && Config.getBarSetting(root.monitorName, ["resources", "alwaysShowGpu"], Config.options.bar.resources.alwaysShowGpu)
+                percentage: Math.max(0, ResourceUsage.gpuUsage / 100)
+            }
+            Resource {
+                Layout.alignment: Qt.AlignHCenter
                 iconName: "thermostat"
                 vertical: true
                 shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpuTemp"], Config.options.bar.resources.alwaysShowCpuTemp)
@@ -180,7 +206,4 @@ BarWidgetSwitcherArea {
         }
     }
 
-    ResourcesPopup {
-        hoverTarget: root
-    }
 }

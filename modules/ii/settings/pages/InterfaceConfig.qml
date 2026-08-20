@@ -1667,6 +1667,12 @@ ContentPage {
                         settingPath: ["resources", "alwaysShowSwap"]
                         fallbackValue: Config.options.bar.resources.alwaysShowSwap
                     }
+                    MonitorConfigSwitch {
+                        buttonIcon: "developer_board"
+                        text: Translation.tr("GPU")
+                        settingPath: ["resources", "alwaysShowGpu"]
+                        fallbackValue: Config.options.bar.resources.alwaysShowGpu
+                    }
                 }
                 ConfigSelectionArray {
                     text: Translation.tr("Style")
