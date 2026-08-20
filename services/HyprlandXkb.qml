@@ -13,6 +13,7 @@ Singleton {
     id: root
     // You can read these
     property list<string> layoutCodes: []
+    property string mainKeyboardName: ""
     property var cachedLayoutCodes: ({})
     property string currentLayoutName: ""
     property string currentLayoutCode: ""
@@ -24,9 +25,20 @@ Singleton {
         const colonIndex = code.indexOf(":")
         return colonIndex >= 0 ? code.slice(0, colonIndex) : code
     }
+
+    function switchLayout(index) {
+        if (index < 0 || index >= root.layoutCodes.length) return
+        switchLayoutProc.command = ["hyprctl", "switchxkblayout", "current", String(index)]
+        switchLayoutProc.running = true
+    }
     // For the service
     property var baseLayoutFilePath: "/usr/share/X11/xkb/rules/base.lst"
     property bool needsLayoutRefresh: false
+
+    Process {
+        id: switchLayoutProc
+        command: []
+    }
 
     // Update the layout code according to the layout name (Hyprland gives the name not the code)
     onCurrentLayoutNameChanged: root.updateLayoutCode()
@@ -91,6 +103,7 @@ Singleton {
             onStreamFinished: {
                 const parsedOutput = JSON.parse(devicesCollector.text);
                 const hyprlandKeyboard = parsedOutput["keyboards"].find(kb => kb.main === true);
+                root.mainKeyboardName = hyprlandKeyboard["name"];
                 root.layoutCodes = hyprlandKeyboard["layout"].split(",");
                 root.currentLayoutName = hyprlandKeyboard["active_keymap"];
                 // console.log("[HyprlandXkb] Fetched | Layouts (multiple: " + (root.layoutCodes.length > 1) + "): "
