@@ -146,7 +146,16 @@ EOF
 set_wallpaper_path() {
     local path="$1"
     if [ -f "$SHELL_CONFIG_FILE" ]; then
-        jq --arg path "$path" '.background.wallpaperPath = $path' "$SHELL_CONFIG_FILE" > "$SHELL_CONFIG_FILE.tmp" && mv "$SHELL_CONFIG_FILE.tmp" "$SHELL_CONFIG_FILE"
+        if [ -n "${monitor_name:-}" ] && [ "$(jq -r '.background.wallpaperMode // "shared"' "$SHELL_CONFIG_FILE")" = "perMonitor" ]; then
+            jq --arg path "$path" --arg monitor "$monitor_name" '
+                .background.wallpaperPath = $path
+                | .background.monitorWallpapers = ((.background.monitorWallpapers // [])
+                    | map(select(.name != $monitor))
+                    + [{name: $monitor, path: $path}])
+            ' "$SHELL_CONFIG_FILE" > "$SHELL_CONFIG_FILE.tmp" && mv "$SHELL_CONFIG_FILE.tmp" "$SHELL_CONFIG_FILE"
+        else
+            jq --arg path "$path" '.background.wallpaperPath = $path' "$SHELL_CONFIG_FILE" > "$SHELL_CONFIG_FILE.tmp" && mv "$SHELL_CONFIG_FILE.tmp" "$SHELL_CONFIG_FILE"
+        fi
     fi
 }
 
@@ -419,6 +428,10 @@ main() {
             --image)
                 imgpath="$2"
                 explicit_image="1"
+                shift 2
+                ;;
+            --monitor)
+                monitor_name="$2"
                 shift 2
                 ;;
             --start-dir)

@@ -21,7 +21,12 @@ QUICKSHELL_CONFIG_NAME="ii"
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+# Qt's PicturesLocation (used by the wallpaper picker) falls back to the
+# conventional Pictures directory when the XDG user-dir entry is invalid.
 PICTURES_DIR=$(get_pictures_dir)
+if [ "$PICTURES_DIR" = "$HOME" ] || [ -z "$PICTURES_DIR" ]; then
+    PICTURES_DIR="$HOME/Pictures"
+fi
 CONFIG_DIR="$XDG_CONFIG_HOME/quickshell/$QUICKSHELL_CONFIG_NAME"
 CACHE_DIR="$XDG_CACHE_HOME/quickshell"
 STATE_DIR="$XDG_STATE_HOME/quickshell"
@@ -40,4 +45,14 @@ if [ "$downloadPath" == "$currentWallpaperPath" ]; then
     downloadPath="$PICTURES_DIR/Wallpapers/random_wallpaper-1.$ext"
 fi
 curl -A "$userAgent" "$link" -o "$downloadPath"
-"$SCRIPT_DIR/../switchwall.sh" --image "$downloadPath"
+
+monitorName=""
+if [ "${1:-}" = "--monitor" ]; then
+    monitorName="${2:-}"
+fi
+
+switchwallArgs=(--image "$downloadPath")
+if [ -n "$monitorName" ]; then
+    switchwallArgs+=(--monitor "$monitorName")
+fi
+"$SCRIPT_DIR/../switchwall.sh" "${switchwallArgs[@]}"

@@ -139,7 +139,11 @@ Singleton {
         {
             action: "konachanwallpaper",
             execute: () => {
-                Quickshell.execDetached([Quickshell.shellPath("scripts/colors/random/random_konachan_wall.sh")]);
+                const monitorName = Hyprland.focusedMonitor?.name ?? "";
+                Quickshell.execDetached([
+                    Quickshell.shellPath("scripts/colors/random/random_konachan_wall.sh"),
+                    "--monitor", monitorName
+                ]);
             }
         },
         {
