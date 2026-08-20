@@ -18,6 +18,7 @@ Scope {
         readonly property string monitorName: screen?.name ?? ""
         readonly property bool barVertical: Config.getBarSetting(monitorName, ["vertical"], Config.options.bar.vertical)
         readonly property bool barAtBottom: Config.getBarSetting(monitorName, ["bottom"], Config.options.bar.bottom)
+        readonly property int currentCornerStyle: Config.getBarSetting(monitorName, ["cornerStyle"], Config.options.bar.cornerStyle)
 
         function hide() {
             GlobalStates.sidebarRightOpen = false;
@@ -39,7 +40,7 @@ Scope {
             top: {
                 if (!centerOnly)
                     return !barVertical && !barAtBottom ? Appearance.sizes.barHeight : 0;
-                switch (Config.options.bar.cornerStyle) {
+                switch (panelWindow.currentCornerStyle) {
                     case 0: return -Appearance.sizes.barHeight;
                     case 1: return -Appearance.sizes.barHeight + Appearance.sizes.hyprlandGapsOut;
                     case 2: return -Appearance.sizes.barHeight + Appearance.sizes.hyprlandGapsOut;

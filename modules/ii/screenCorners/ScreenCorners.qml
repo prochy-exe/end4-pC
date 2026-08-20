@@ -23,7 +23,10 @@ Scope {
         id: cornerPanelWindow
         property var brightnessMonitor: Brightness.getMonitorForScreen(screen)
         property bool fullscreen
-        visible: (Config.options.appearance.fakeScreenRounding === 1 || (Config.options.appearance.fakeScreenRounding === 2 && !fullscreen))
+        visible: !fullscreen && (Config.options.sidebar.cornerOpen.enable
+            || Config.options.sidebar.cornerOpen.visualize
+            || Config.options.appearance.fakeScreenRounding === 1
+            || Config.options.appearance.fakeScreenRounding === 2)
         property var corner
 
         exclusionMode: ExclusionMode.Ignore

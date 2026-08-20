@@ -142,6 +142,10 @@ Scope { // Scope
         sourceComponent: PanelWindow { // Window
             id: panelWindow
             visible: GlobalStates.sidebarLeftOpen
+            readonly property string monitorName: screen?.name ?? ""
+            readonly property bool barVertical: Config.getBarSetting(monitorName, ["vertical"], Config.options.bar.vertical)
+            readonly property bool barAtBottom: Config.getBarSetting(monitorName, ["bottom"], Config.options.bar.bottom)
+            readonly property int currentCornerStyle: Config.getBarSetting(monitorName, ["cornerStyle"], Config.options.bar.cornerStyle)
             
             property bool extend: false
             property real sidebarWidth: panelWindow.extend ? Appearance.sizes.sidebarWidthExtended : Appearance.sizes.sidebarWidth
@@ -167,8 +171,9 @@ Scope { // Scope
 
             margins {
                 top: {
-                    if (!centerOnly) return 0;
-                    switch (Config.options.bar.cornerStyle) {
+                    if (!centerOnly)
+                        return !barVertical && !barAtBottom ? Appearance.sizes.barHeight : 0;
+                    switch (panelWindow.currentCornerStyle) {
                         case 0: return -Appearance.sizes.barHeight;
                         case 1: return -Appearance.sizes.barHeight + Appearance.sizes.hyprlandGapsOut;
                         case 2: return -Appearance.sizes.barHeight + Appearance.sizes.hyprlandGapsOut;
@@ -176,6 +181,7 @@ Scope { // Scope
                         default: return 0;
                     }
                 }
+                bottom: !centerOnly && !barVertical && barAtBottom ? Appearance.sizes.barHeight : 0
             }
 
             mask: Region {
