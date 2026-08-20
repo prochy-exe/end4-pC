@@ -58,6 +58,8 @@ RowLayout {
         StyledText {
             id: labelWidget
             Layout.preferredWidth: root.textWidth
+            Layout.maximumWidth: root.textWidth
+            elide: Text.ElideRight
             text: root.text
             color: Appearance.colors.colOnSecondaryContainer
             opacity: root.enabled ? 1 : 0.4
@@ -66,6 +68,7 @@ RowLayout {
     StyledSlider {
         id: slider
         configuration: StyledSlider.Configuration.XS
+        animateValue: false
         enabled: root.enabled
         usePercentTooltip: root.usePercentTooltip
         // Keep this range broad until the delayed bindings below take over.
