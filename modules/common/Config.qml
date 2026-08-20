@@ -1068,6 +1068,10 @@ Singleton {
                 property string savePath: Directories.videos.replace("file://","") // strip "file://"
                 property bool recordSystemAudio: false
                 property bool recordMicAudio: false
+                property bool showInputOverlay: false
+                property bool showMouseInput: true
+                property bool onlyShowInputChords: false
+                property int inputOverlayVerticalOffset: 24
                 property int frameRate: 30
             }
 

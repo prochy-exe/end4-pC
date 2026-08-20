@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
@@ -123,9 +124,11 @@ ContentPage {
 
             GroupedList {
                 ConfigSlider {
+                    id: recordingFrameRateSlider
                     Layout.fillWidth: true
                     buttonIcon: "videocam"
                     text: Translation.tr("Recording frame rate")
+                    textWidth: 180
                     usePercentTooltip: false
                     value: Config.options.screenRecord.frameRate
                     from: 10
@@ -133,7 +136,73 @@ ContentPage {
                     stepSize: 1
                     stopIndicatorValues: [30, 60, 90, 120]
                     onValueChanged: {
-                        Config.options.screenRecord.frameRate = value;
+                        if (recordingFrameRateSlider.completed)
+                            Config.options.screenRecord.frameRate = value;
+                    }
+
+                    property bool completed: false
+                    Component.onCompleted: Qt.callLater(() => completed = true)
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Input overlay")
+
+                GroupedList {
+                    ConfigSwitch {
+                        buttonIcon: "keyboard"
+                        text: Translation.tr("Show input overlay while recording")
+                        checked: Config.options.screenRecord.showInputOverlay
+                        onCheckedChanged: Config.options.screenRecord.showInputOverlay = checked
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "mouse"
+                        text: Translation.tr("Show mouse button input")
+                        enabled: Config.options.screenRecord.showInputOverlay
+                            && !Config.options.screenRecord.onlyShowInputChords
+                        checked: Config.options.screenRecord.showMouseInput
+                        onCheckedChanged: Config.options.screenRecord.showMouseInput = checked
+                    }
+
+                    ConfigSwitch {
+                        buttonIcon: "keyboard_command_key"
+                        text: Translation.tr("Only show key combinations")
+                        enabled: Config.options.screenRecord.showInputOverlay
+                        checked: Config.options.screenRecord.onlyShowInputChords
+                        onCheckedChanged: Config.options.screenRecord.onlyShowInputChords = checked
+                    }
+
+                    ConfigSlider {
+                        id: inputOverlayOffsetSlider
+                        Layout.fillWidth: true
+                        enabled: Config.options.screenRecord.showInputOverlay
+                        buttonIcon: "vertical_align_center"
+                        text: Translation.tr("Vertical offset")
+                        textWidth: 180
+                        usePercentTooltip: false
+                        value: Config.options.screenRecord.inputOverlayVerticalOffset
+                        from: 0
+                        to: 200
+                        stepSize: 1
+                        onValueChanged: {
+                            if (inputOverlayOffsetSlider.completed) {
+                                Config.options.screenRecord.inputOverlayVerticalOffset = value
+                                GlobalStates.recordingInputOverlayPreview = true
+                                inputOverlayPreviewTimer.restart()
+                            }
+                        }
+
+                        property bool completed: false
+                        Component.onCompleted: Qt.callLater(() => completed = true)
+                        Component.onDestruction: GlobalStates.recordingInputOverlayPreview = false
+
+                        Timer {
+                            id: inputOverlayPreviewTimer
+                            interval: 450
+                            repeat: false
+                            onTriggered: GlobalStates.recordingInputOverlayPreview = false
+                        }
                     }
                 }
             }

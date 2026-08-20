@@ -22,6 +22,7 @@ Toolbar {
     property var selectionMode
     property bool recordSystemAudio: false
     property bool recordMicAudio: false
+    property bool showInputOverlay: false
     property bool copyToClipboard: true
     property bool allMonitorsMode: false
     property bool socialMode: false
@@ -173,6 +174,16 @@ Toolbar {
         }
         StyledToolTip {
             text: Translation.tr("Microphone")
+        }
+    }
+
+    IconToolbarButton {
+        visible: recordingMode
+        text: "keyboard"
+        toggled: root.showInputOverlay
+        onClicked: root.showInputOverlay = !root.showInputOverlay
+        StyledToolTip {
+            text: Translation.tr("Show keyboard and mouse input")
         }
     }
 

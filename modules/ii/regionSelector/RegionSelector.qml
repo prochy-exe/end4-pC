@@ -53,6 +53,7 @@ Scope {
     property var selectionMode: RegionSelection.SelectionMode.RectCorners
     property bool recordSystemAudio: Config.options.screenRecord.recordSystemAudio
     property bool recordMicAudio: Config.options.screenRecord.recordMicAudio
+    property bool showInputOverlay: Config.options.screenRecord.showInputOverlay
     property string controlsMonitorName: ""
     property string hoveredMonitorName: ""
     // Name of the monitor whose RegionSelection window currently has a locked
@@ -131,10 +132,12 @@ Scope {
                 onActionChanged: root.action = action
                 onRecordSystemAudioChanged: root.recordSystemAudio = recordSystemAudio
                 onRecordMicAudioChanged: root.recordMicAudio = recordMicAudio
+                onShowInputOverlayChanged: root.showInputOverlay = showInputOverlay
                 action: root.action
                 selectionMode: root.selectionMode
                 recordSystemAudio: root.recordSystemAudio
                 recordMicAudio: root.recordMicAudio
+                showInputOverlay: root.showInputOverlay
                 showControls: regionSelectorLoader.modelData.name === root.controlsMonitorName
                 cursorGlobalX: root.cursorGlobalX
                 cursorGlobalY: root.cursorGlobalY
@@ -206,6 +209,7 @@ Scope {
         root.selectionMode = RegionSelection.SelectionMode.RectCorners
         root.recordSystemAudio = Config.options.screenRecord.recordSystemAudio
         root.recordMicAudio = Config.options.screenRecord.recordMicAudio
+        root.showInputOverlay = Config.options.screenRecord.showInputOverlay
         // If already open then re-trigger to stop recording
         if (GlobalStates.regionSelectorOpen) GlobalStates.regionSelectorOpen = false
         root.openSelector()

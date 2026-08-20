@@ -54,6 +54,7 @@ PanelWindow {
     property var selectionMode: RegionSelection.SelectionMode.RectCorners
     property bool recordSystemAudio: Config.options.screenRecord.recordSystemAudio
     property bool recordMicAudio: Config.options.screenRecord.recordMicAudio
+    property bool showInputOverlay: Config.options.screenRecord.showInputOverlay
     property bool copyToClipboard: true
     // Toggled via the toolbar, same as recordSystemAudio/recordMicAudio -
     // clicking a monitor still commits/starts the capture, this just picks
@@ -116,6 +117,7 @@ PanelWindow {
     signal ocrTranslateRequested(text: string)
     onRecordSystemAudioChanged: Config.options.screenRecord.recordSystemAudio = root.recordSystemAudio
     onRecordMicAudioChanged: Config.options.screenRecord.recordMicAudio = root.recordMicAudio
+    onShowInputOverlayChanged: Config.options.screenRecord.showInputOverlay = root.showInputOverlay
 
     Shortcut {
         sequence: "Escape"
@@ -1083,6 +1085,9 @@ PanelWindow {
                 }
                 Synchronizer on recordMicAudio {
                     property alias source: root.recordMicAudio
+                }
+                Synchronizer on showInputOverlay {
+                    property alias source: root.showInputOverlay
                 }
                 Synchronizer on copyToClipboard {
                     property alias source: root.copyToClipboard

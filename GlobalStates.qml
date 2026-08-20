@@ -22,6 +22,7 @@ Singleton {
     property bool mediaTickerOpen: false
     property bool osdBrightnessOpen: false
     property bool settingsOpen: false
+    property bool recordingInputOverlayPreview: false
     property bool osdVolumeOpen: false
     property bool popupEditorOpen: false
     property bool oskOpen: false
