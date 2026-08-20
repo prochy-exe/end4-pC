@@ -221,6 +221,7 @@ ContentPage {
         { id: "micToggle",               name: Translation.tr("Mic toggle"),          icon: "mic" },
         { id: "darkModeToggle",          name: Translation.tr("Dark/Light toggle"),   icon: "dark_mode" },
         { id: "performanceProfileToggle",name: Translation.tr("Performance Profile"), icon: "speed" },
+        { id: "caffeineToggle",          name: Translation.tr("Caffeine / Idle inhibitor"), icon: "coffee" },
     ]
 
     readonly property var knownUtilButtonActionOrder: utilButtonActions.map(action => action.id)
@@ -403,6 +404,7 @@ ContentPage {
         if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showMicToggle"], Config.options.bar.utilButtons.showMicToggle)) legacy.push("micToggle")
         if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showDarkModeToggle"], Config.options.bar.utilButtons.showDarkModeToggle)) legacy.push("darkModeToggle")
         if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showPerformanceProfileToggle"], Config.options.bar.utilButtons.showPerformanceProfileToggle)) legacy.push("performanceProfileToggle")
+        if (page.getMonitorBarSetting(monitorName, ["utilButtons", "showCaffeineToggle"], Config.options.bar.utilButtons.showCaffeineToggle)) legacy.push("caffeineToggle")
         return legacy
     }
 

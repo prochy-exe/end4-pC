@@ -645,7 +645,7 @@ Singleton {
                 // serviceName, iconOn, iconOff}. See services/CustomBarResources.qml.
                 property list<var> customResources: []
                 property JsonObject utilButtons: JsonObject {
-                    property list<string> order: ["screenSnip", "keyboardToggle", "darkModeToggle"]
+                    property list<string> order: ["screenSnip", "keyboardToggle", "darkModeToggle", "caffeineToggle"]
                     property bool showScreenSnip: true
                     property bool showColorPicker: false
                     property bool showMicToggle: false
@@ -653,6 +653,7 @@ Singleton {
                     property bool showWallpaperToggle: false
                     property bool showDarkModeToggle: true
                     property bool showPerformanceProfileToggle: false
+                    property bool showCaffeineToggle: true
                     property bool showScreenRecord: false       
                     property bool showScreenRecordingIndicator: false
                     property bool isRecording: false

@@ -26,7 +26,8 @@ Item {
         "wallpaperToggle",
         "micToggle",
         "darkModeToggle",
-        "performanceProfileToggle"
+        "performanceProfileToggle",
+        "caffeineToggle"
     ]
     readonly property var configuredActionOrder: Config.getBarSetting(root.monitorName, ["utilButtons", "order"], Config.options.bar.utilButtons.order)
 
@@ -59,6 +60,7 @@ Item {
         if (Config.getBarSetting(root.monitorName, ["utilButtons", "showMicToggle"], Config.options.bar.utilButtons.showMicToggle)) legacy.push("micToggle")
         if (Config.getBarSetting(root.monitorName, ["utilButtons", "showDarkModeToggle"], Config.options.bar.utilButtons.showDarkModeToggle)) legacy.push("darkModeToggle")
         if (Config.getBarSetting(root.monitorName, ["utilButtons", "showPerformanceProfileToggle"], Config.options.bar.utilButtons.showPerformanceProfileToggle)) legacy.push("performanceProfileToggle")
+        if (Config.getBarSetting(root.monitorName, ["utilButtons", "showCaffeineToggle"], Config.options.bar.utilButtons.showCaffeineToggle)) legacy.push("caffeineToggle")
         return legacy
     }
 
@@ -82,6 +84,8 @@ Item {
                 return darkModeM3
             case "performanceProfileToggle":
                 return perfM3
+            case "caffeineToggle":
+                return caffeineM3
             default:
                 return null
         }
@@ -375,6 +379,20 @@ Item {
                     } else {
                         PowerProfiles.profile = PowerProfiles.profile == PowerProfile.Balanced ? PowerProfile.PowerSaver : PowerProfile.Balanced
                     }
+                }
+            }
+        }
+
+        Component {
+            id: caffeineM3
+            UtilButton {
+                id: caffeineButton
+                iconText: "coffee"
+                isActive: Idle.inhibit
+                onClicked: Idle.toggleInhibit()
+                StyledToolTip {
+                    extraVisibleCondition: caffeineButton.hovered
+                    text: Translation.tr("Caffeine / Prevent idle suspend")
                 }
             }
         }
