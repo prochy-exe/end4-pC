@@ -60,6 +60,7 @@ Item {
         { name: Translation.tr("Quick"),      icon: "instant_mix",    component: Qt.resolvedUrl("pages/QuickConfig.qml") },
         { name: Translation.tr("General"),    icon: "browse",         component: Qt.resolvedUrl("pages/GeneralConfig.qml") },
         { name: Translation.tr("Appearance"), icon: "palette",        component: Qt.resolvedUrl("pages/AppearanceConfig.qml") },
+        { name: Translation.tr("Wallpaper effects"), icon: "blur_on", component: Qt.resolvedUrl("pages/WallpaperEffectsConfig.qml") },
         { name: Translation.tr("Interface"),  icon: "bottom_app_bar", component: Qt.resolvedUrl("pages/InterfaceConfig.qml") },
         { name: Translation.tr("Services"),   icon: "settings",       component: Qt.resolvedUrl("pages/ServicesConfig.qml") },
         { name: Translation.tr("Windows"),    icon: "select_window_2", component: Qt.resolvedUrl("pages/WindowsConfig.qml") },
@@ -93,7 +94,7 @@ Item {
                 id: navRailWrapper
                 Layout.fillHeight: true
                 Layout.margins: 0
-                implicitWidth: navRail.expanded ? 195 : fab.baseSize
+                implicitWidth: navRail.expanded ? 240 : fab.baseSize
                 color: Appearance.m3colors.m3surfaceContainerLow
                 radius: Appearance.rounding.normal
 
@@ -103,7 +104,13 @@ Item {
 
                 NavigationRail {
                     id: navRail
-                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 20 }
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: parent.top
+                        bottom: parent.bottom
+                        leftMargin: navRail.expanded ? 20 : 0
+                    }
                     spacing: 10
                     expanded: root.width > 900
 

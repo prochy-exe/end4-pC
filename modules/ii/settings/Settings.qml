@@ -91,8 +91,8 @@ Scope {
 
         Rectangle {
             id: settingsWindow
-            width: Math.min(parent.width - 80, 980)
-            height: Math.min(parent.height - 80, 665)
+            width: Math.min(parent.width - 64, 1150)
+            height: Math.min(parent.height - 64, 760)
             color: Appearance.colors.colLayer0
             border.width: 1
             border.color: Appearance.colors.colLayer0Border

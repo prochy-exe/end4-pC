@@ -306,8 +306,12 @@ ContentPage {
                 }
             }
 
-            GroupedList {
-                Layout.topMargin: -2
+            ContentSubsection {
+                title: Translation.tr("Wallpaper behavior")
+                Layout.fillWidth: true
+
+                GroupedList {
+                    Layout.topMargin: -2
 
                 ConfigSwitch {
                     id: syncWallpaperSwitch
@@ -341,6 +345,17 @@ ContentPage {
                         Config.options.background.enableWallpaperPreview = checked;
                     }
                 }
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Wallpaper change transitions")
+                // Moved to the dedicated Wallpaper effects page.
+                visible: false
+                Layout.fillWidth: true
+
+                GroupedList {
+                    Layout.topMargin: -2
 
                 ConfigSpinBox {
                     icon: "timer"
@@ -354,10 +369,10 @@ ContentPage {
                     }
                 }
 
-                ConfigComboBox {
+                    ConfigComboBox {
                     Layout.fillWidth: true
                     buttonIcon: "texture"
-                    text: Translation.tr("Transitions")
+                    text: Translation.tr("Change effect")
                     fieldWidth: 50
                     model: [
                         { displayName: Translation.tr("None"), icon: "block", value: "" },
@@ -377,7 +392,7 @@ ContentPage {
                     }
                 }
 
-                ConfigSpinBox {
+                    ConfigSpinBox {
                     icon: "schedule"
                     text: Translation.tr("Transition duration (ms)")
                     enabled: Config.options.background.wallpaperAnimation !== ""
@@ -389,17 +404,17 @@ ContentPage {
                         Config.options.background.transitionDuration = value;
                     }
                 }
-                ConfigSwitch {
-                    Layout.fillWidth: true
-                    buttonIcon: "sync_alt"
-                    text: Translation.tr("Synchronize direction across monitors")
-                    // Only meaningful for the datamosh switch transition - the
-                    // classic shuffle transitions have no per-monitor character.
-                    enabled: Config.options.background.wallpaperAnimation === "datamosh"
-                    checked: Config.options.background.effects.transitionMode === "synchronized"
-                    onClicked: {
-                        Config.options.background.effects.transitionMode =
-                            Config.options.background.effects.transitionMode === "synchronized" ? "independent" : "synchronized";
+                    ConfigSwitch {
+                        Layout.fillWidth: true
+                        buttonIcon: "sync_alt"
+                        text: Translation.tr("Synchronize Datamosh direction")
+                        // Only meaningful for the Datamosh change effect.
+                        enabled: Config.options.background.wallpaperAnimation === "datamosh"
+                        checked: Config.options.background.effects.transitionMode === "synchronized"
+                        onClicked: {
+                            Config.options.background.effects.transitionMode =
+                                Config.options.background.effects.transitionMode === "synchronized" ? "independent" : "synchronized";
+                        }
                     }
                 }
             }
@@ -417,14 +432,13 @@ ContentPage {
             }
 
             ContentSubsection {
-                title: Translation.tr("Datamosh transition")
+                title: Translation.tr("Datamosh change style")
+                // Moved to the dedicated Wallpaper effects page.
+                visible: false
                 Layout.fillWidth: true
 
-                // The switch's own look, separate from the ambient effect below.
-                // Deliberately has no monitor option: a wallpaper switch runs on
-                // every screen, with the same seed, so it looks identical on all
-                // of them. Duration lives with the Transitions dropdown above,
-                // since it applies to every wallpaper animation.
+                // This styles only the Datamosh change effect above. The live
+                // wallpaper shader and its audio response have separate controls.
                 GroupedList {
                     enabled: Config.options.background.wallpaperAnimation === "datamosh"
 
@@ -533,12 +547,13 @@ ContentPage {
             }
 
             ContentSubsection {
-                title: Translation.tr("Shader effects")
+                title: Translation.tr("Live wallpaper distortion")
+                // Moved to the dedicated Wallpaper effects page.
+                visible: false
                 Layout.fillWidth: true
 
-                // Continuous effect on the wallpaper that is already set. The
-                // datamosh switch transition is not here - it is the "Datamosh"
-                // entry in the Transitions dropdown above.
+                // Continuous processing for the wallpaper already on screen.
+                // Wallpaper-change transitions are configured separately above.
                 GroupedList {
                     ConfigComboBox {
                         Layout.fillWidth: true
@@ -594,7 +609,7 @@ ContentPage {
                     ConfigSwitch {
                         Layout.fillWidth: true
                         buttonIcon: "animation"
-                        text: Translation.tr("Animate current wallpaper")
+                        text: Translation.tr("Enable live distortion")
                         checked: Config.options.background.effects.enable
                         onClicked: {
                             Config.options.background.effects.enable = !Config.options.background.effects.enable;
@@ -603,7 +618,7 @@ ContentPage {
                     ConfigComboBox {
                         Layout.fillWidth: true
                         buttonIcon: "monitor"
-                        text: Translation.tr("Show on")
+                        text: Translation.tr("Apply to")
                         fieldWidth: 90
                         // Live monitor list, so this is always the real outputs
                         // rather than names typed from memory.
@@ -620,72 +635,17 @@ ContentPage {
                             Config.options.background.effects.screenMode = newValue;
                         }
                     }
-                    ConfigSwitch {
-                        Layout.fillWidth: true
-                        buttonIcon: "music_note"
-                        text: Translation.tr("React to music")
-                        checked: Config.options.background.effects.musicReactive
-                        enabled: Config.options.background.effects.enable
-                        onClicked: {
-                            Config.options.background.effects.musicReactive = !Config.options.background.effects.musicReactive;
-                        }
-                    }
-                    ConfigSlider {
-                        text: Translation.tr("Music intensity")
-                        buttonIcon: "graphic_eq"
-                        enabled: Config.options.background.effects.enable && Config.options.background.effects.musicReactive
-                            && !Config.options.background.effects.randomizePerMonitor
-                        value: Config.options.background.effects.musicIntensity
-                        from: 0
-                        to: 1
-                        onValueChanged: {
-                            Config.options.background.effects.musicIntensity = value;
-                        }
-                    }
-                    ConfigComboBox {
-                        Layout.fillWidth: true
-                        buttonIcon: "playlist_play"
-                        text: Translation.tr("React only to")
-                        fieldWidth: 90
-                        enabled: Config.options.background.effects.enable && Config.options.background.effects.musicReactive
-                        // Whatever MPRIS currently knows about, plus whatever is
-                        // already configured in case that player is closed.
-                        model: {
-                            const seen = [];
-                            const out = [{ displayName: Translation.tr("Any audio"), icon: "done_all", value: "" }];
-                            const add = name => {
-                                const v = (name ?? "").trim();
-                                if (v.length === 0 || seen.includes(v.toLowerCase()))
-                                    return;
-                                seen.push(v.toLowerCase());
-                                out.push({ displayName: v, icon: "music_note", value: v });
-                            };
-                            (MprisController.players ?? []).forEach(p => add(p?.identity));
-                            add(Config.options.background.effects.player);
-                            return out;
-                        }
-                        currentValue: Config.options.background.effects.player
-                        onSelected: newValue => {
-                            Config.options.background.effects.player = newValue;
-                        }
-                    }
-                    ConfigSlider {
-                        text: Translation.tr("Beat intensity")
-                        buttonIcon: "resize"
-                        enabled: Config.options.background.effects.enable && Config.options.background.effects.musicReactive
-                            && !Config.options.background.effects.randomizePerMonitor
-                        value: Config.options.background.effects.beatIntensity
-                        from: 0
-                        to: 1
-                        onValueChanged: {
-                            Config.options.background.effects.beatIntensity = value;
-                        }
-                    }
                 }
+            }
 
-                // Look of the ambient effect only - the Datamosh transition
-                // rerolls its own character on every switch and ignores these.
-                // Moot once every monitor is picking its own preset.
+            ContentSubsection {
+                title: Translation.tr("Live distortion mix")
+                // Moved to the dedicated Wallpaper effects page.
+                visible: false
+                Layout.fillWidth: true
+
+                // The live shader's character. Datamosh wallpaper changes use
+                // their own controls above, and audio response lives below.
                 GroupedList {
                     Layout.topMargin: 0
                     enabled: Config.options.background.effects.enable
@@ -827,6 +787,453 @@ ContentPage {
                         to: 1
                         onValueChanged: {
                             Config.options.background.effects.noise = value;
+                        }
+                    }
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Music response")
+                // Moved to the dedicated Wallpaper effects page.
+                visible: false
+                Layout.fillWidth: true
+
+                GroupedList {
+                    ConfigSwitch {
+                        Layout.fillWidth: true
+                        buttonIcon: "music_note"
+                        text: Translation.tr("React live distortion to music")
+                        checked: Config.options.background.effects.musicReactive
+                        enabled: Config.options.background.effects.enable
+                        onClicked: {
+                            Config.options.background.effects.musicReactive = !Config.options.background.effects.musicReactive;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Music intensity")
+                        buttonIcon: "graphic_eq"
+                        enabled: Config.options.background.effects.enable && Config.options.background.effects.musicReactive
+                            && !Config.options.background.effects.randomizePerMonitor
+                        value: Config.options.background.effects.musicIntensity
+                        from: 0
+                        to: 1
+                        onValueChanged: {
+                            Config.options.background.effects.musicIntensity = value;
+                        }
+                    }
+                    ConfigComboBox {
+                        Layout.fillWidth: true
+                        buttonIcon: "playlist_play"
+                        text: Translation.tr("Audio source")
+                        fieldWidth: 90
+                        enabled: Config.options.background.effects.enable && Config.options.background.effects.musicReactive
+                        model: {
+                            const seen = [];
+                            const out = [{ displayName: Translation.tr("Any audio"), icon: "done_all", value: "" }];
+                            const add = name => {
+                                const v = (name ?? "").trim();
+                                if (v.length === 0 || seen.includes(v.toLowerCase()))
+                                    return;
+                                seen.push(v.toLowerCase());
+                                out.push({ displayName: v, icon: "music_note", value: v });
+                            };
+                            (MprisController.players ?? []).forEach(p => add(p?.identity));
+                            add(Config.options.background.effects.player);
+                            return out;
+                        }
+                        currentValue: Config.options.background.effects.player
+                        onSelected: newValue => {
+                            Config.options.background.effects.player = newValue;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Beat intensity")
+                        buttonIcon: "resize"
+                        enabled: Config.options.background.effects.enable && Config.options.background.effects.musicReactive
+                            && !Config.options.background.effects.randomizePerMonitor
+                        value: Config.options.background.effects.beatIntensity
+                        from: 0
+                        to: 1
+                        onValueChanged: {
+                            Config.options.background.effects.beatIntensity = value;
+                        }
+                    }
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Audio trigger routing")
+                // Moved to the dedicated Wallpaper effects page.
+                visible: false
+                Layout.fillWidth: true
+
+                // Live effects keep their present hand-tuned response in Auto.
+                // Picking a source here replaces that mix for just this effect;
+                // wallpaper-change transitions remain independently configured.
+                component AudioTriggerSelector: ConfigComboBox {
+                    property string routingKey: ""
+                    Layout.fillWidth: true
+                    fieldWidth: 110
+                    model: [
+                        { displayName: Translation.tr("Auto"), icon: "auto_awesome", value: "auto" },
+                        { displayName: Translation.tr("Volume"), icon: "graphic_eq", value: "volume" },
+                        { displayName: Translation.tr("Kick / beat"), icon: "ads_click", value: "beat" },
+                        { displayName: Translation.tr("Bass"), icon: "low_priority", value: "bass" },
+                        { displayName: Translation.tr("Mid"), icon: "equalizer", value: "mid" },
+                        { displayName: Translation.tr("Treble"), icon: "high_quality", value: "treble" },
+                    ]
+                    currentValue: Config.options.background.effects.audioRouting?.[routingKey] ?? "auto"
+                    onSelected: newValue => {
+                        Config.options.background.effects.audioRouting[routingKey] = newValue;
+                    }
+                }
+
+                GroupedList {
+                    enabled: Config.options.background.effects.enable
+                        && Config.options.background.effects.musicReactive
+
+                    AudioTriggerSelector { routingKey: "melt"; text: Translation.tr("Melt trigger"); buttonIcon: "water_drop" }
+                    AudioTriggerSelector { routingKey: "pointCloud"; text: Translation.tr("Point cloud trigger"); buttonIcon: "scatter_plot" }
+                    AudioTriggerSelector { routingKey: "feedback"; text: Translation.tr("Feedback trigger"); buttonIcon: "motion_blur" }
+                    AudioTriggerSelector { routingKey: "pixelSort"; text: Translation.tr("Pixel sort trigger"); buttonIcon: "sort" }
+                    AudioTriggerSelector { routingKey: "blockCorruption"; text: Translation.tr("Block corruption trigger"); buttonIcon: "grid_view" }
+                    AudioTriggerSelector { routingKey: "chromaticAberration"; text: Translation.tr("RGB separation trigger"); buttonIcon: "gradient" }
+                    AudioTriggerSelector { routingKey: "noise"; text: Translation.tr("Noise trigger"); buttonIcon: "grain" }
+                    AudioTriggerSelector { routingKey: "lidar"; text: Translation.tr("LiDAR accents trigger"); buttonIcon: "radar" }
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Cross-monitor fragments")
+                // Moved to the dedicated Wallpaper effects page.
+                visible: false
+                Layout.fillWidth: true
+
+                // These import the other monitor's already-distorted output.
+                // The live shader's melt/block/sort look stays in its own section.
+                GroupedList {
+                    ConfigSwitch {
+                        id: neighborBleedSwitch
+                        Layout.fillWidth: true
+                        buttonIcon: "splitscreen"
+                        text: Translation.tr("Blend neighboring wallpapers")
+                        checked: Config.options.background.effects.neighborBleed
+                        onClicked: {
+                            Config.options.background.effects.neighborBleed =
+                                !Config.options.background.effects.neighborBleed;
+                        }
+                    }
+                }
+
+                GroupedList {
+                    enabled: neighborBleedSwitch.checked
+                    ConfigComboBox {
+                        Layout.fillWidth: true
+                        buttonIcon: "palette"
+                        text: Translation.tr("Fragment preset")
+                        fieldWidth: 120
+                        model: SeamPresets.comboModel()
+                        currentValue: SeamPresets.currentName()
+                        onSelected: newValue => {
+                            if (newValue !== "custom")
+                                SeamPresets.apply(newValue);
+                        }
+                    }
+                    ConfigComboBox {
+                        Layout.fillWidth: true
+                        buttonIcon: "swap_horiz"
+                        text: Translation.tr("Fragment direction")
+                        fieldWidth: 140
+                        model: [
+                            { displayName: Translation.tr("Primary outward"), icon: "arrow_forward", value: "primary" },
+                            { displayName: Translation.tr("Mutual neighbours"), icon: "sync_alt", value: "mutual" },
+                        ]
+                        currentValue: Config.options.background.effects.neighborBleedMode
+                        onSelected: newValue => {
+                            Config.options.background.effects.neighborBleedMode = newValue;
+                        }
+                    }
+                    ConfigSwitch {
+                        Layout.fillWidth: true
+                        buttonIcon: "music_note"
+                        text: Translation.tr("React fragments to music")
+                        checked: Config.options.background.effects.neighborBleedMusicReactive
+                        onClicked: {
+                            Config.options.background.effects.neighborBleedMusicReactive =
+                                !Config.options.background.effects.neighborBleedMusicReactive;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Fragment reach")
+                        buttonIcon: "width"
+                        value: Config.options.background.effects.neighborBleedWidth
+                        from: 0.04
+                        to: 1
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedWidth = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Source influence")
+                        buttonIcon: "arrow_forward"
+                        value: Config.options.background.effects.neighborBleedStrength
+                        from: 0
+                        to: 1
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedStrength = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Fragment threshold")
+                        buttonIcon: "filter_alt"
+                        value: Config.options.background.effects.neighborBleedFragmentThreshold
+                        from: 0
+                        to: 0.8
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedFragmentThreshold = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Fragment softness")
+                        buttonIcon: "blur_linear"
+                        value: Config.options.background.effects.neighborBleedFragmentSoftness
+                        from: 0.01
+                        to: 0.8
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedFragmentSoftness = value;
+                        }
+                    }
+                    ConfigSwitch {
+                        Layout.fillWidth: true
+                        buttonIcon: "colorize"
+                        text: Translation.tr("Carry colour trails")
+                        checked: Config.options.background.effects.neighborBleedColorTrails
+                        onClicked: {
+                            Config.options.background.effects.neighborBleedColorTrails =
+                                !Config.options.background.effects.neighborBleedColorTrails;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Colour trail threshold")
+                        buttonIcon: "filter_alt"
+                        enabled: Config.options.background.effects.neighborBleedColorTrails
+                        value: Config.options.background.effects.neighborBleedColorThreshold
+                        from: 0
+                        to: 0.8
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedColorThreshold = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Colour trail softness")
+                        buttonIcon: "blur_linear"
+                        enabled: Config.options.background.effects.neighborBleedColorTrails
+                        value: Config.options.background.effects.neighborBleedColorSoftness
+                        from: 0.01
+                        to: 0.8
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedColorSoftness = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Colour trail strength")
+                        buttonIcon: "gradient"
+                        enabled: Config.options.background.effects.neighborBleedColorTrails
+                        value: Config.options.background.effects.neighborBleedColorStrength
+                        from: 0
+                        to: 1
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedColorStrength = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Edge softness")
+                        buttonIcon: "gradient"
+                        value: Config.options.background.effects.neighborBleedEdgeSoftness
+                        from: 0.02
+                        to: 0.98
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedEdgeSoftness = value;
+                        }
+                    }
+                }
+
+                GroupedList {
+                    Layout.topMargin: 0
+                    enabled: neighborBleedSwitch.checked
+                    ConfigSlider {
+                        text: Translation.tr("Edge raggedness")
+                        buttonIcon: "polyline"
+                        usePercentTooltip: false
+                        value: Config.options.background.effects.neighborBleedRaggedness
+                        from: 0
+                        to: 2
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedRaggedness = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Fragment grain")
+                        buttonIcon: "grain"
+                        usePercentTooltip: false
+                        value: Config.options.background.effects.neighborBleedGrain
+                        from: 0.25
+                        to: 4
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedGrain = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Fragment motion speed")
+                        buttonIcon: "speed"
+                        usePercentTooltip: false
+                        value: Config.options.background.effects.neighborBleedMotionSpeed
+                        from: 0
+                        to: 4
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedMotionSpeed = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Fragment feedback")
+                        buttonIcon: "motion_blur"
+                        usePercentTooltip: false
+                        value: Config.options.background.effects.neighborBleedFeedback
+                        from: 0
+                        to: 2
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedFeedback = value;
+                        }
+                    }
+                    ConfigSwitch {
+                        Layout.fillWidth: true
+                        buttonIcon: "sports_martial_arts"
+                        text: Translation.tr("Let monitors contend")
+                        checked: Config.options.background.effects.neighborBleedBattle
+                        onClicked: {
+                            Config.options.background.effects.neighborBleedBattle =
+                                !Config.options.background.effects.neighborBleedBattle;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Contention intensity")
+                        buttonIcon: "bolt"
+                        enabled: Config.options.background.effects.neighborBleedBattle
+                        value: Config.options.background.effects.neighborBleedBattleStrength
+                        from: 0
+                        to: 1
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedBattleStrength = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Outgoing force")
+                        buttonIcon: "north_east"
+                        enabled: Config.options.background.effects.neighborBleedBattle
+                        usePercentTooltip: false
+                        value: Config.options.background.effects.neighborBleedPrimaryPush
+                        from: 0
+                        to: 2
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedPrimaryPush = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Receiving resistance")
+                        buttonIcon: "shield"
+                        enabled: Config.options.background.effects.neighborBleedBattle
+                        usePercentTooltip: false
+                        value: Config.options.background.effects.neighborBleedSecondaryResistance
+                        from: 0
+                        to: 2
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedSecondaryResistance = value;
+                        }
+                    }
+                }
+
+                ConfigRow {
+                    uniform: false
+                    enabled: neighborBleedSwitch.checked
+                    Item { Layout.fillWidth: true }
+                    RippleButtonWithIcon {
+                        materialIcon: "restart_alt"
+                        mainText: Translation.tr("Reset cross-monitor controls")
+                        onClicked: SeamPresets.apply("balanced")
+                    }
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("LiDAR image accents")
+                // Moved to the dedicated Wallpaper effects page.
+                visible: false
+                Layout.fillWidth: true
+
+                // LiDAR traces the current wallpaper locally. When a seam is
+                // also enabled, the same controls accent its imported source
+                // fragments too.
+                GroupedList {
+                    ConfigSwitch {
+                        id: lidarSwitch
+                        Layout.fillWidth: true
+                        buttonIcon: "radar"
+                        text: Translation.tr("Enable LiDAR image accents")
+                        enabled: Config.options.background.effects.enable
+                        checked: Config.options.background.effects.neighborBleedLidar
+                        onClicked: {
+                            Config.options.background.effects.neighborBleedLidar =
+                                !Config.options.background.effects.neighborBleedLidar;
+                        }
+                    }
+                    ConfigComboBox {
+                        Layout.fillWidth: true
+                        buttonIcon: "detection_and_zone"
+                        text: Translation.tr("LiDAR mask")
+                        fieldWidth: 160
+                        enabled: lidarSwitch.enabled && lidarSwitch.checked
+                        model: [
+                            { displayName: Translation.tr("Scanning raster"), icon: "scan", value: "scan" },
+                            { displayName: Translation.tr("Current image outlines"), icon: "gesture", value: "outlines" },
+                        ]
+                        currentValue: Config.options.background.effects.neighborBleedLidarMode
+                        onSelected: newValue => {
+                            Config.options.background.effects.neighborBleedLidarMode = newValue;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Accent intensity")
+                        buttonIcon: "flare"
+                        enabled: lidarSwitch.enabled && lidarSwitch.checked
+                        value: Config.options.background.effects.neighborBleedLidarStrength
+                        from: 0
+                        to: 1
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedLidarStrength = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Scan-line density")
+                        buttonIcon: "format_line_spacing"
+                        enabled: lidarSwitch.enabled && lidarSwitch.checked
+                        usePercentTooltip: false
+                        value: Config.options.background.effects.neighborBleedLidarDensity
+                        from: 4
+                        to: 96
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedLidarDensity = value;
+                        }
+                    }
+                    ConfigSlider {
+                        text: Translation.tr("Sweep speed")
+                        buttonIcon: "speed"
+                        enabled: lidarSwitch.enabled && lidarSwitch.checked
+                        usePercentTooltip: false
+                        value: Config.options.background.effects.neighborBleedLidarSpeed
+                        from: 0
+                        to: 4
+                        onValueChanged: {
+                            Config.options.background.effects.neighborBleedLidarSpeed = value;
                         }
                     }
                 }
