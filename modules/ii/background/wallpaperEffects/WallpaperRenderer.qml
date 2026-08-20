@@ -14,6 +14,29 @@ Item {
     /** Items used as textures. Both need layer.enabled or an Image layer. */
     property Item sourceA
     property Item sourceB
+    /** Old and new local copies of the primary wallpaper borrowed by this monitor. */
+    property Item neighborWallpaperA
+    property Item neighborWallpaperB
+    /** Granular source A -> B handover for the permanent cross-monitor seam. */
+    property real neighborTransitionMix: 1.0
+    /** Shared 0 -> 1 wallpaper-change clock for the cross-monitor sweep. */
+    property real neighborTransitionPhase: 1.0
+    property bool neighborTransitioning: false
+    /** The primary's destructive switch envelope, shared with its seam. */
+    property real neighborTransition: 0.0
+    property vector2d neighborTransitionDirection: Qt.vector2d(0, 0)
+    /** Unit vector from this monitor toward that neighbour. */
+    property vector2d neighborDirection: Qt.vector2d(0, 0)
+    /** This receiver's bounds in the primary monitor's virtual canvas. */
+    property vector2d neighborCanvasOrigin: Qt.vector2d(0, 0)
+    property vector2d neighborCanvasScale: Qt.vector2d(1, 1)
+    property vector2d neighborCanvasResolution: Qt.vector2d(1, 1)
+    /** Resolved look of the monitor that owns the borrowed wallpaper. */
+    property var neighborEffectValues: null
+    property real neighborEffectStrength: 0
+    property real neighborTransitionAxisMode: 2
+    property real neighborTransitionAxisSign: 1
+    property bool neighborReady: false
     property EffectController controller
     /**
      * False while the window this lives in is not on screen. Everything that
@@ -34,6 +57,34 @@ Item {
         property variant sourceB: root.sourceB
         property variant previousFrame: feedbackBuffer
         property variant spectrum: spectrumStrip
+        property variant neighborWallpaperA: root.neighborWallpaperA
+        property variant neighborWallpaperB: root.neighborWallpaperB
+        property real neighborTransitionMix: root.neighborTransitionMix
+        property real neighborTransitionPhase: root.neighborTransitionPhase
+        property real neighborTransition: root.neighborTransition
+        property vector2d neighborTransitionDirection: root.neighborTransitionDirection
+        property vector2d neighborDirection: root.neighborDirection
+        property vector2d neighborCanvasOrigin: root.neighborCanvasOrigin
+        property vector2d neighborCanvasScale: root.neighborCanvasScale
+        property vector2d neighborCanvasResolution: root.neighborCanvasResolution
+        property real neighborEffectStrength: root.neighborEffectStrength
+        property real neighborPointAmount: root.neighborEffectValues?.pointCloud ?? root.controller?.pointAmount ?? 0
+        property real neighborMusicIntensity: root.neighborEffectValues?.musicIntensity ?? root.controller?.musicIntensity ?? 0
+        property real neighborBeatIntensity: root.neighborEffectValues?.beatIntensity ?? root.controller?.beatIntensity ?? 0
+        property real neighborPointSpacing: root.neighborEffectValues?.pointSpacing ?? root.controller?.pointSpacing ?? 10
+        property real neighborMeltAmount: root.neighborEffectValues?.melt ?? root.controller?.meltAmount ?? 0
+        property real neighborMeltReach: root.neighborEffectValues?.meltReach ?? root.controller?.meltReach ?? 0.55
+        property real neighborMeltWidth: root.neighborEffectValues?.meltWidth ?? root.controller?.meltWidth ?? 14
+        property real neighborSortAmount: root.neighborEffectValues?.pixelSort ?? root.controller?.sortAmount ?? 0
+        property real neighborSortThreshold: root.neighborEffectValues?.sortThreshold ?? root.controller?.sortThreshold ?? 0.65
+        property real neighborSortLength: root.neighborEffectValues?.sortLength ?? root.controller?.sortLength ?? 0.1
+        property real neighborBlockSize: root.neighborEffectValues?.blockSize ?? root.controller?.blockSize ?? 8
+        property real neighborBlockAmount: root.neighborEffectValues?.blockCorruption ?? root.controller?.blockAmount ?? 0
+        property real neighborChromaticAberration: root.neighborEffectValues?.chromaticAberration ?? root.controller?.chromaticAberration ?? 0
+        property real neighborNoiseAmount: root.neighborEffectValues?.noise ?? root.controller?.noiseAmount ?? 0
+        property real neighborTrAxisMode: root.neighborTransitionAxisMode
+        property real neighborTrAxisSign: root.neighborTransitionAxisSign
+        property real neighborReady: root.neighborReady ? 1.0 : 0.0
 
         property real bass: root.controller?.bass ?? 0
         property real mid: root.controller?.mid ?? 0
@@ -42,6 +93,16 @@ Item {
         property real beat: root.controller?.beat ?? 0
 
         property real effectStrength: root.controller?.effectStrength ?? 0
+        property real musicIntensity: root.controller?.musicIntensity ?? 0
+        property real beatIntensity: root.controller?.beatIntensity ?? 0
+        property real meltTrigger: root.controller?.meltTrigger ?? 0
+        property real pointTrigger: root.controller?.pointTrigger ?? 0
+        property real feedbackTrigger: root.controller?.feedbackTrigger ?? 0
+        property real sortTrigger: root.controller?.sortTrigger ?? 0
+        property real blockTrigger: root.controller?.blockTrigger ?? 0
+        property real aberrationTrigger: root.controller?.aberrationTrigger ?? 0
+        property real noiseTrigger: root.controller?.noiseTrigger ?? 0
+        property real lidarTrigger: root.controller?.lidarTrigger ?? 0
         property real transition: root.controller?.transition ?? 0
         property real transitionMix: root.controller?.transitionMix ?? 1
         property real transitionSeed: root.controller?.transitionSeed ?? 0
@@ -63,6 +124,32 @@ Item {
         property real trFeedback: root.controller?.trFeedback ?? 0
         property real trAberration: root.controller?.trAberration ?? 0
         property real trNoise: root.controller?.trNoise ?? 0
+        property real neighborBleed: root.controller?.neighborBleed ?? 0
+        property real neighborBleedMusicReactive: root.controller?.neighborBleedMusicReactive ?? 0
+        property real neighborBleedWidth: root.controller?.neighborBleedWidth ?? 0.16
+        property real neighborBleedStrength: root.controller?.neighborBleedStrength ?? 0.9
+        property real neighborBleedFragmentThreshold: root.controller?.neighborBleedFragmentThreshold ?? 0.08
+        property real neighborBleedFragmentSoftness: root.controller?.neighborBleedFragmentSoftness ?? 0.24
+        property real neighborBleedColorTrails: root.controller?.neighborBleedColorTrails ?? 1
+        property real neighborBleedColorThreshold: root.controller?.neighborBleedColorThreshold ?? 0.12
+        property real neighborBleedColorSoftness: root.controller?.neighborBleedColorSoftness ?? 0.20
+        property real neighborBleedColorStrength: root.controller?.neighborBleedColorStrength ?? 0.7
+        property real neighborBleedLidar: root.controller?.neighborBleedLidar ?? 0
+        property real neighborBleedLidarOutlines: root.controller?.neighborBleedLidarOutlines ?? 0
+        property real neighborBleedLidarStrength: root.controller?.neighborBleedLidarStrength ?? 0.55
+        property real neighborBleedLidarDensity: root.controller?.neighborBleedLidarDensity ?? 24
+        property real neighborBleedLidarSpeed: root.controller?.neighborBleedLidarSpeed ?? 0.75
+        property real lidarEnabled: root.controller?.lidarEnabled ?? 0
+        property real neighborBleedEdgeSoftness: root.controller?.neighborBleedEdgeSoftness ?? 0.32
+        property real neighborBleedRaggedness: root.controller?.neighborBleedRaggedness ?? 1
+        property real neighborBleedGrain: root.controller?.neighborBleedGrain ?? 1
+        property real neighborBleedMotionSpeed: root.controller?.neighborBleedMotionSpeed ?? 1
+        property real neighborBleedFeedback: root.controller?.neighborBleedFeedback ?? 1
+        property real neighborBleedBattle: root.controller?.neighborBleedBattle ?? 1
+        property real neighborBleedBattleStrength: root.controller?.neighborBleedBattleStrength ?? 1
+        property real neighborBleedPrimaryPush: root.controller?.neighborBleedPrimaryPush ?? 1
+        property real neighborBleedSecondaryResistance: root.controller?.neighborBleedSecondaryResistance ?? 1
+        property real neighborBleedEffectStrength: root.controller?.neighborBleedEffectStrength ?? 0
         property real trAxisMode: root.controller?.trAxisMode ?? 2
         property real trAxisSign: root.controller?.trAxisSign ?? 1
         property real blockSize: root.controller?.blockSize ?? 8
@@ -130,7 +217,7 @@ Item {
         sourceItem: shader
         hideSource: false
         recursive: true
-        live: root.active && (root.controller?.animating ?? false)
+        live: root.active && ((root.controller?.animating ?? false) || root.neighborTransitioning)
         wrapMode: ShaderEffectSource.ClampToEdge
         // Allocate the (double-buffered, screen-sized) FBOs up front. Left to
         // `live` flipping true at the start of a transition, that allocation
@@ -141,13 +228,18 @@ Item {
     // Drives `time`. Stopping this when nothing is animating is what makes the
     // idle case free: no repaint is requested, so the wallpaper is a still image.
     FrameAnimation {
-        running: root.active && (root.controller?.animating ?? false)
+        running: root.active && ((root.controller?.animating ?? false) || root.neighborTransitioning
+            || root.neighborEffectStrength > 0.0005)
         onTriggered: {
-            shader.time += frameTime;
+            // Every monitor evaluates its procedural effects against this
+            // singleton timeline, so a primary effect and its extension agree
+            // on the same block/noise phase at the shared physical edge.
+            shader.time = TransitionSeed.effectTime;
             // Republish the spectrum from inside the render tick - see
             // liveSpectrum. Stops dead with this animation, so nothing keeps
             // dirtying scene-graph items once the window is gone.
             root.liveSpectrum = root.controller?.spectrum ?? [];
         }
     }
+
 }

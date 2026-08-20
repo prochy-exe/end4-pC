@@ -142,6 +142,34 @@ Variants {
             return Wallpapers.previewPath || Wallpapers.confirmedPath || Config.options.background.wallpaperPath;
         }
 
+        function wallpaperPathForMonitor(name) {
+            if (GlobalStates.screenLocked) {
+                if (Config.options.background.lockWallpaperMode === "perMonitor") {
+                    const lockOverride = (Config.options.background.lockMonitorWallpapers ?? [])
+                        .find(m => m.name === name);
+                    if (lockOverride?.path)
+                        return lockOverride.path;
+                }
+                if (Config.options.background.lockWall !== "")
+                    return Config.options.background.lockWall;
+            }
+            if (Config.options.background.wallpaperMode === "perMonitor") {
+                const override = (Config.options.background.monitorWallpapers ?? [])
+                    .find(m => m.name === name);
+                if (override?.path)
+                    return override.path;
+            }
+            return Wallpapers.previewPath || Wallpapers.confirmedPath || Config.options.background.wallpaperPath;
+        }
+
+        function shaderWallpaperPathForMonitor(name) {
+            const path = bgRoot.wallpaperPathForMonitor(name);
+            return path.endsWith(".mp4") || path.endsWith(".webm") || path.endsWith(".mkv")
+                || path.endsWith(".avi") || path.endsWith(".mov")
+                ? Config.options.background.thumbnailPath
+                : path;
+        }
+
         function sharedWallpaperSpanBounds() {
             if (Config.options.background.wallpaperMode !== "shared"
                     || Config.options.background.sharedWallpaperLayout !== "span")
@@ -179,6 +207,92 @@ Variants {
         readonly property real wallpaperSpanY: bgRoot.wallpaperSpansMonitors
             ? -((bgRoot.monitor?.y ?? 0) - bgRoot.sharedWallpaperSpan.top) : 0
 
+        function bleedOriginFor(source) {
+            const mine = bgRoot.monitor;
+            if (!mine || !source || mine.name === source.name)
+                return null;
+
+            const dx = source.x + source.width / 2 - (mine.x + mine.width / 2);
+            const dy = source.y + source.height / 2 - (mine.y + mine.height / 2);
+            const direction = Math.abs(dx) >= Math.abs(dy)
+                ? (dx >= 0 ? "right" : "left")
+                : (dy >= 0 ? "down" : "up");
+            return {
+                name: source.name,
+                direction,
+                source: bgRoot.shaderWallpaperPathForMonitor(source.name),
+                // This monitor's local (0,0)-(1,1) expressed in the source
+                // monitor's canvas. The seam shader extends that source field
+                // past its real edge instead of pasting in a fresh overlay.
+                canvasOriginX: (mine.x - source.x) / Math.max(source.width, 1),
+                canvasOriginY: (mine.y - source.y) / Math.max(source.height, 1),
+                canvasScaleX: mine.width / Math.max(source.width, 1),
+                canvasScaleY: mine.height / Math.max(source.height, 1),
+                canvasWidth: source.width,
+                canvasHeight: source.height
+            };
+        }
+
+        // Every secondary monitor receives the primary monitor's wallpaper in
+        // the original one-way mode. The direction follows the real monitor
+        // centres, so the mosh enters from the side on which the primary sits.
+        function primaryBleedOrigin() {
+            const primaryName = (Config.options.hyprland.primaryMonitor ?? "").trim();
+            const mine = bgRoot.monitor;
+            const primaryScreen = Quickshell.screens.find(screen => screen.name === primaryName);
+            const primary = primaryScreen ? Hyprland.monitorFor(primaryScreen) : null;
+            if (!mine || !primary || primaryName === "" || primaryName === mine.name)
+                return null;
+
+            return bgRoot.bleedOriginFor(primary);
+        }
+
+        // Each renderer can sample one foreign wallpaper texture. In mutual
+        // mode choose the physically touching output with the largest common
+        // edge, which gives each side of a two-monitor seam the other side as
+        // its emitter. Outputs that only meet at a corner do not count.
+        function mutualBleedOrigin() {
+            const mine = bgRoot.monitor;
+            if (!mine)
+                return null;
+
+            const mineRight = mine.x + mine.width;
+            const mineBottom = mine.y + mine.height;
+            const candidates = [];
+            const addIfTouching = (other, direction, gap, overlap) => {
+                if (gap <= 2 && overlap > 2)
+                    candidates.push({ monitor: other, gap, overlap, direction });
+            };
+
+            for (const other of Hyprland.monitors.values) {
+                if (!other || other.name === mine.name)
+                    continue;
+                const otherRight = other.x + other.width;
+                const otherBottom = other.y + other.height;
+                const verticalOverlap = Math.max(0, Math.min(mineBottom, otherBottom)
+                    - Math.max(mine.y, other.y));
+                const horizontalOverlap = Math.max(0, Math.min(mineRight, otherRight)
+                    - Math.max(mine.x, other.x));
+                addIfTouching(other, "right", Math.abs(mineRight - other.x), verticalOverlap);
+                addIfTouching(other, "left", Math.abs(mine.x - otherRight), verticalOverlap);
+                addIfTouching(other, "down", Math.abs(mineBottom - other.y), horizontalOverlap);
+                addIfTouching(other, "up", Math.abs(mine.y - otherBottom), horizontalOverlap);
+            }
+            if (candidates.length === 0)
+                return null;
+
+            candidates.sort((a, b) => a.gap - b.gap || b.overlap - a.overlap
+                || a.monitor.name.localeCompare(b.monitor.name));
+            const origin = bgRoot.bleedOriginFor(candidates[0].monitor);
+            if (origin)
+                origin.direction = candidates[0].direction;
+            return origin;
+        }
+
+        readonly property var seamBleed: Config.options.background.effects.neighborBleedMode === "mutual"
+            ? bgRoot.mutualBleedOrigin()
+            : bgRoot.primaryBleedOrigin()
+
         property bool wallpaperIsVideo: bgRoot.effectiveWallpaperPath.endsWith(".mp4") || bgRoot.effectiveWallpaperPath.endsWith(".webm") || bgRoot.effectiveWallpaperPath.endsWith(".mkv") || bgRoot.effectiveWallpaperPath.endsWith(".avi") || bgRoot.effectiveWallpaperPath.endsWith(".mov")
         property string wallpaperPath: wallpaperIsVideo ? Config.options.background.thumbnailPath : bgRoot.effectiveWallpaperPath
         property bool wallpaperSafetyTriggered: {
@@ -199,11 +313,11 @@ Variants {
         // Settings-page snapshot) so it tracks reconnects/rearranges. Only
         // computed when synchronized mode + datamosh are both active - "" means
         // "no override, use today's per-switch random axis".
-        property string transitionDirection: {
+        function transitionDirectionForMonitor(name) {
             if (Config.options.background.effects.transitionMode !== "synchronized" || !bgRoot.datamoshTransition)
                 return "";
-            const mine = Hyprland.monitors.values.find(m => m.name === bgRoot.screen.name);
-            const others = Hyprland.monitors.values.filter(m => m.name !== bgRoot.screen.name);
+            const mine = Hyprland.monitors.values.find(m => m.name === name);
+            const others = Hyprland.monitors.values.filter(m => m.name !== name);
             if (!mine || others.length === 0)
                 return "";
             const centerOf = m => ({ x: m.x + m.width / 2, y: m.y + m.height / 2 });
@@ -219,6 +333,7 @@ Variants {
                 return dx > 0 ? "right" : "left";
             return dy > 0 ? "down" : "up";
         }
+        property string transitionDirection: bgRoot.transitionDirectionForMonitor(bgRoot.screen.name)
 
         // Which monitors the shader wallpaper is allowed on. "all",
         // "allButPrimary", or an explicit monitor name.
@@ -226,25 +341,38 @@ Variants {
         // Primary comes from Config.options.hyprland.primaryMonitor, the value
         // Settings -> Hyprland actually sets. Hyprland's own monitor id 0 is
         // just whichever output came up first and does not track that choice.
-        property bool effectAllowedHere: {
+        function effectAllowedOnMonitor(name) {
             const mode = Config.options.background.effects.screenMode ?? "all";
             if (mode === "all")
                 return true;
             if (mode === "allButPrimary") {
                 const primary = (Config.options.hyprland?.primaryMonitor ?? "").trim();
                 if (primary.length > 0)
-                    return bgRoot.screen.name !== primary;
+                    return name !== primary;
                 // No primary chosen: fall back to Hyprland's first output.
-                return (bgRoot.monitor?.id ?? 0) !== 0;
+                return (Hyprland.monitors.values.find(m => m.name === name)?.id ?? 0) !== 0;
             }
-            return bgRoot.screen.name === mode;
+            return name === mode;
         }
+        property bool effectAllowedHere: bgRoot.effectAllowedOnMonitor(bgRoot.screen.name)
+        readonly property var seamSourceEffectValues: {
+            const effects = Config.options.background.effects ?? {};
+            if (!effects.randomizePerMonitor || !bgRoot.seamBleed?.name)
+                return effects;
+            return EffectPresets.valuesForMonitor(bgRoot.seamBleed.name) ?? effects;
+        }
+        readonly property bool seamSourceAmbientAllowed: bgRoot.seamBleed !== null
+            && bgRoot.effectAllowedOnMonitor(bgRoot.seamBleed.name)
+        readonly property string seamSourceTransitionDirection: bgRoot.seamBleed
+            ? bgRoot.transitionDirectionForMonitor(bgRoot.seamBleed.name) : ""
 
         // The monitor picker scopes the *ambient* effect only. A wallpaper switch
         // happens on every screen - with the same seed, so it looks identical -
         // so the datamosh transition ignores it.
+        property bool neighborBleedActive: (Config.options.background.effects.neighborBleed ?? false)
+            && bgRoot.seamBleed !== null
         property bool effectsEnabled: ((Config.options.background.effects.enable && bgRoot.effectAllowedHere)
-            || bgRoot.datamoshTransition) && !bgRoot.wallpaperSafetyTriggered
+            || bgRoot.datamoshTransition || bgRoot.neighborBleedActive) && !bgRoot.wallpaperSafetyTriggered
             && !bgRoot.wallpaperSpansMonitors
 
         // On a monitor the effect is excluded from, "datamosh" has no classic
@@ -383,8 +511,8 @@ Variants {
         }
 
         Item {
-            clip: true
             anchors.fill: parent
+            clip: true
 
             Image {
                 id: previousWallpaper
@@ -467,6 +595,17 @@ Variants {
                     ambientAllowedHere: bgRoot.effectAllowedHere
                     monitorName: bgRoot.screen.name
                     transitionDirection: bgRoot.transitionDirection
+                    neighborSource: bgRoot.seamBleed?.source ?? ""
+                    neighborDirection: bgRoot.seamBleed?.direction ?? ""
+                    neighborCanvasOrigin: Qt.vector2d(bgRoot.seamBleed?.canvasOriginX ?? 0,
+                        bgRoot.seamBleed?.canvasOriginY ?? 0)
+                    neighborCanvasScale: Qt.vector2d(bgRoot.seamBleed?.canvasScaleX ?? 1,
+                        bgRoot.seamBleed?.canvasScaleY ?? 1)
+                    neighborCanvasResolution: Qt.vector2d(bgRoot.seamBleed?.canvasWidth ?? width,
+                        bgRoot.seamBleed?.canvasHeight ?? height)
+                    neighborEffectValues: bgRoot.seamSourceEffectValues
+                    neighborAmbientAllowed: bgRoot.seamSourceAmbientAllowed
+                    neighborSourceTransitionDirection: bgRoot.seamSourceTransitionDirection
                 }
             }
 

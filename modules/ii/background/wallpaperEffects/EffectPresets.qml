@@ -31,21 +31,21 @@ Singleton {
             label: "DnB",
             icon: "bolt",
             values: {
-                pointCloud: 0.75,
-                pointSpacing: 9,
-                musicIntensity: 0.30,
-                beatIntensity: 0.95,
-                melt: 0.85,
-                meltReach: 0.70,
-                meltWidth: 12,
-                feedback: 0.50,
-                pixelSort: 0.60,
-                sortThreshold: 0.60,
-                sortLength: 0.10,
-                blockSize: 8,
-                blockCorruption: 0.80,
-                chromaticAberration: 0.40,
-                noise: 0.25
+                pointCloud: 0.45,
+                pointSpacing: 12,
+                musicIntensity: 0.22,
+                beatIntensity: 0.65,
+                melt: 0.55,
+                meltReach: 0.55,
+                meltWidth: 16,
+                feedback: 0.30,
+                pixelSort: 0.35,
+                sortThreshold: 0.65,
+                sortLength: 0.12,
+                blockSize: 10,
+                blockCorruption: 0.45,
+                chromaticAberration: 0.30,
+                noise: 0.15
             }
         },
         lofi: {
@@ -56,21 +56,21 @@ Singleton {
             label: "Lofi / VHS",
             icon: "videocam",
             values: {
-                pointCloud: 0.25,
-                pointSpacing: 16,
-                musicIntensity: 0.45,
-                beatIntensity: 0.35,
-                melt: 0.45,
-                meltReach: 0.40,
-                meltWidth: 22,
-                feedback: 0.85,
-                pixelSort: 0.25,
-                sortThreshold: 0.70,
+                pointCloud: 0.12,
+                pointSpacing: 20,
+                musicIntensity: 0.25,
+                beatIntensity: 0.25,
+                melt: 0.32,
+                meltReach: 0.32,
+                meltWidth: 26,
+                feedback: 0.55,
+                pixelSort: 0.18,
+                sortThreshold: 0.75,
                 sortLength: 0.16,
-                blockSize: 4,
-                blockCorruption: 0.20,
-                chromaticAberration: 0.75,
-                noise: 0.60
+                blockSize: 6,
+                blockCorruption: 0.12,
+                chromaticAberration: 0.42,
+                noise: 0.32
             }
         },
         cyberpunk: {
@@ -79,21 +79,21 @@ Singleton {
             label: "Cyberpunk",
             icon: "electric_bolt",
             values: {
-                pointCloud: 0.90,
-                pointSpacing: 6,
-                musicIntensity: 0.35,
-                beatIntensity: 0.85,
-                melt: 0.20,
-                meltReach: 0.35,
-                meltWidth: 8,
-                feedback: 0.35,
-                pixelSort: 0.70,
-                sortThreshold: 0.50,
-                sortLength: 0.06,
+                pointCloud: 0.50,
+                pointSpacing: 9,
+                musicIntensity: 0.25,
+                beatIntensity: 0.65,
+                melt: 0.12,
+                meltReach: 0.30,
+                meltWidth: 12,
+                feedback: 0.25,
+                pixelSort: 0.45,
+                sortThreshold: 0.60,
+                sortLength: 0.08,
                 blockSize: 18,
-                blockCorruption: 0.95,
-                chromaticAberration: 0.85,
-                noise: 0.35
+                blockCorruption: 0.55,
+                chromaticAberration: 0.55,
+                noise: 0.18
             }
         },
         paint: {
@@ -102,21 +102,21 @@ Singleton {
             label: "Paint drip",
             icon: "water_drop",
             values: {
-                pointCloud: 0.05,
-                pointSpacing: 12,
-                musicIntensity: 0.50,
-                beatIntensity: 0.70,
-                melt: 1.00,
-                meltReach: 0.85,
-                meltWidth: 18,
-                feedback: 0.45,
-                pixelSort: 0.10,
-                sortThreshold: 0.80,
-                sortLength: 0.10,
-                blockSize: 8,
-                blockCorruption: 0.05,
-                chromaticAberration: 0.10,
-                noise: 0.05
+                pointCloud: 0.02,
+                pointSpacing: 16,
+                musicIntensity: 0.28,
+                beatIntensity: 0.50,
+                melt: 0.75,
+                meltReach: 0.70,
+                meltWidth: 22,
+                feedback: 0.25,
+                pixelSort: 0.05,
+                sortThreshold: 0.82,
+                sortLength: 0.12,
+                blockSize: 10,
+                blockCorruption: 0.03,
+                chromaticAberration: 0.08,
+                noise: 0.03
             }
         },
         ambient: {
@@ -125,21 +125,21 @@ Singleton {
             label: "Ambient",
             icon: "spa",
             values: {
-                pointCloud: 0.30,
-                pointSpacing: 20,
-                musicIntensity: 0.18,
-                beatIntensity: 0.25,
-                melt: 0.30,
-                meltReach: 0.25,
-                meltWidth: 26,
-                feedback: 0.55,
-                pixelSort: 0.15,
-                sortThreshold: 0.75,
-                sortLength: 0.14,
-                blockSize: 6,
-                blockCorruption: 0.08,
-                chromaticAberration: 0.20,
-                noise: 0.10
+                pointCloud: 0.15,
+                pointSpacing: 24,
+                musicIntensity: 0.12,
+                beatIntensity: 0.18,
+                melt: 0.16,
+                meltReach: 0.18,
+                meltWidth: 30,
+                feedback: 0.28,
+                pixelSort: 0.06,
+                sortThreshold: 0.80,
+                sortLength: 0.15,
+                blockSize: 8,
+                blockCorruption: 0.04,
+                chromaticAberration: 0.10,
+                noise: 0.04
             }
         }
     })
@@ -258,6 +258,10 @@ Singleton {
         const v = preset.values;
         for (const key in v)
             target[key] = v[key];
+        // Built-ins are safe starting points. A custom preset is an explicit
+        // user choice, so it keeps the current seam character intact.
+        if (root.presets[name])
+            SeamPresets.calmCurrent();
     }
 
     /** Looks up a preset (built-in or "custom:<name>") by its combo-box key. */

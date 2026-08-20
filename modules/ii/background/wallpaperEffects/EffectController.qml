@@ -29,6 +29,10 @@ QtObject {
     // Set from Background.qml - this controller's own monitor name, needed
     // only for per-monitor randomization below.
     property string monitorName: ""
+    // Set by WallpaperEffect when this screen has a physical neighbour whose
+    // wallpaper texture can be sampled locally. Keeps the cross-monitor seam
+    // from requesting frames on isolated monitors.
+    property bool neighborAvailable: false
 
     // Set from Background.qml's transitionDirection. "" means no override -
     // the transition keeps its existing per-switch random axis.
@@ -55,17 +59,80 @@ QtObject {
     // --- ambient: IDLE / MUSIC / BEAT ---------------------------------------
     readonly property bool ambientEnabled: (root.opts?.enable ?? false) && root.ambientAllowedHere
     readonly property bool musicReactive: root.ambientEnabled && (root.opts?.musicReactive ?? true)
+    // A datamosh transition is allowed to use live audio even when the
+    // continuous ambient effect is disabled. Otherwise a transition's own
+    // beat scalar changes slightly, but the seam and its spectrum/melt field
+    // remain frozen at zero unless the user also enables ambient animation.
+    readonly property bool transitionMusicReactive: root.opts?.musicReactive ?? true
+    readonly property bool transitionAudioActive: root.datamoshSwitch
+        && root.transitionMusicReactive && root.transitionProgress < 0.999
+    readonly property bool neighborBleed: (root.opts?.neighborBleed ?? false) && root.neighborAvailable
+    readonly property bool neighborBleedMusicReactive: root.opts?.neighborBleedMusicReactive ?? true
+    // The receiving monitor can be excluded by "Show on" while the primary
+    // still drives its seam. This is deliberately gated by the global ambient
+    // toggle, not `musicReactive` (which also includes this monitor's local
+    // screen filter), so only the bridge extends the primary effect outward.
+    readonly property bool neighborBleedAudioActive: root.neighborBleed
+        && root.neighborBleedMusicReactive && (root.opts?.enable ?? false)
+        && (root.opts?.musicReactive ?? true)
+    readonly property real neighborBleedWidth: root.opts?.neighborBleedWidth ?? 0.16
+    readonly property real neighborBleedStrength: root.opts?.neighborBleedStrength ?? 0.9
+    readonly property real neighborBleedFragmentThreshold: root.opts?.neighborBleedFragmentThreshold ?? 0.08
+    readonly property real neighborBleedFragmentSoftness: root.opts?.neighborBleedFragmentSoftness ?? 0.24
+    readonly property bool neighborBleedColorTrails: root.opts?.neighborBleedColorTrails ?? true
+    readonly property real neighborBleedColorThreshold: root.opts?.neighborBleedColorThreshold ?? 0.12
+    readonly property real neighborBleedColorSoftness: root.opts?.neighborBleedColorSoftness ?? 0.20
+    readonly property real neighborBleedColorStrength: root.opts?.neighborBleedColorStrength ?? 0.7
+    readonly property bool neighborBleedLidar: root.opts?.neighborBleedLidar ?? false
+    readonly property bool neighborBleedLidarOutlines: (root.opts?.neighborBleedLidarMode ?? "scan") === "outlines"
+    readonly property real neighborBleedLidarStrength: root.opts?.neighborBleedLidarStrength ?? 0.55
+    readonly property real neighborBleedLidarDensity: root.opts?.neighborBleedLidarDensity ?? 24
+    readonly property real neighborBleedLidarSpeed: root.opts?.neighborBleedLidarSpeed ?? 0.75
+    // LiDAR is no longer a seam-only feature. It follows the same master
+    // enable/show-on scope as the local wallpaper effects and keeps a render
+    // tick alive for its scan and audio pulse even at a silent idle.
+    readonly property bool lidarEnabled: root.ambientEnabled && root.neighborBleedLidar
+    readonly property real neighborBleedEdgeSoftness: root.opts?.neighborBleedEdgeSoftness ?? 0.32
+    readonly property real neighborBleedRaggedness: root.opts?.neighborBleedRaggedness ?? 1.0
+    readonly property real neighborBleedGrain: root.opts?.neighborBleedGrain ?? 1.0
+    readonly property real neighborBleedMotionSpeed: root.opts?.neighborBleedMotionSpeed ?? 1.0
+    readonly property real neighborBleedFeedback: root.opts?.neighborBleedFeedback ?? 1.0
+    readonly property bool neighborBleedBattle: root.opts?.neighborBleedBattle ?? true
+    readonly property real neighborBleedBattleStrength: root.opts?.neighborBleedBattleStrength ?? 1.0
+    readonly property real neighborBleedPrimaryPush: root.opts?.neighborBleedPrimaryPush ?? 1.0
+    readonly property real neighborBleedSecondaryResistance: root.opts?.neighborBleedSecondaryResistance ?? 1.0
     readonly property real musicIntensity: root.ambientEnabled ? (root.effectiveValues?.musicIntensity ?? 0.35) : 0
     readonly property real beatIntensity: root.effectiveValues?.beatIntensity ?? 0.75
+    // Audio routes deliberately stay global rather than joining the visual
+    // presets: a monitor can use a different look without silently changing
+    // which musical event drives it. Numeric values keep the shader compact.
+    function triggerFor(key) {
+        switch (root.opts?.audioRouting?.[key] ?? "auto") {
+        case "volume": return 1.0;
+        case "beat": return 2.0;
+        case "bass": return 3.0;
+        case "mid": return 4.0;
+        case "treble": return 5.0;
+        default: return 0.0; // Auto: preserve the tuned legacy mix.
+        }
+    }
+    readonly property real meltTrigger: root.triggerFor("melt")
+    readonly property real pointTrigger: root.triggerFor("pointCloud")
+    readonly property real feedbackTrigger: root.triggerFor("feedback")
+    readonly property real sortTrigger: root.triggerFor("pixelSort")
+    readonly property real blockTrigger: root.triggerFor("blockCorruption")
+    readonly property real aberrationTrigger: root.triggerFor("chromaticAberration")
+    readonly property real noiseTrigger: root.triggerFor("noise")
+    readonly property real lidarTrigger: root.triggerFor("lidar")
 
-    readonly property real bass: root.musicReactive ? AudioLevels.bass : 0
-    readonly property real mid: root.musicReactive ? AudioLevels.mid : 0
-    readonly property real treble: root.musicReactive ? AudioLevels.treble : 0
-    readonly property real volume: root.musicReactive ? AudioLevels.volume : 0
-    readonly property real beat: root.musicReactive ? AudioLevels.beat : 0
+    readonly property real bass: root.musicReactive || root.transitionAudioActive || root.neighborBleedAudioActive ? AudioLevels.bass : 0
+    readonly property real mid: root.musicReactive || root.transitionAudioActive || root.neighborBleedAudioActive ? AudioLevels.mid : 0
+    readonly property real treble: root.musicReactive || root.transitionAudioActive || root.neighborBleedAudioActive ? AudioLevels.treble : 0
+    readonly property real volume: root.musicReactive || root.transitionAudioActive || root.neighborBleedAudioActive ? AudioLevels.volume : 0
+    readonly property real beat: root.musicReactive || root.transitionAudioActive || root.neighborBleedAudioActive ? AudioLevels.beat : 0
     // The spectrum the melt front traces. Empty when not reacting to music, in
     // which case a transition supplies its own curve.
-    readonly property var spectrum: root.musicReactive ? AudioLevels.points : []
+    readonly property var spectrum: root.musicReactive || root.transitionAudioActive || root.neighborBleedAudioActive ? AudioLevels.points : []
 
     // The states take over from each other rather than stacking, so a kick
     // peaks at exactly beatIntensity and stays clearly below a transition at
@@ -74,7 +141,24 @@ QtObject {
     //
     // There is no idle floor: with nothing playing this is 0, the wallpaper is
     // a still image and the renderer stops requesting frames entirely.
-    readonly property real effectStrength: Math.max(root.volume * root.musicIntensity, root.beat * root.beatIntensity)
+    function effectStrengthFor(values, allowed) {
+        if (!(root.opts?.enable ?? false) || !allowed || !(root.opts?.musicReactive ?? true))
+            return 0;
+        return Math.max(AudioLevels.volume * (values?.musicIntensity ?? 0.35),
+            AudioLevels.beat * (values?.beatIntensity ?? 0.75));
+    }
+    readonly property real effectStrength: root.effectStrengthFor(root.effectiveValues,
+        root.ambientAllowedHere)
+    // Kept separate from effectStrength: the latter must stay zero on a
+    // secondary monitor excluded by "Show on", while this one wakes only its
+    // cross-monitor seam with the same volume/beat envelope as the primary.
+    readonly property real neighborBleedEffectStrength: root.neighborBleedAudioActive
+        ? Math.max(root.volume * (root.effectiveValues?.musicIntensity ?? 0.35), root.beat * root.beatIntensity)
+        : 0
+    // Render the seam only while a live audio envelope exists. With no signal,
+    // its frame clock stops and the receiver stays completely untouched.
+    readonly property bool neighborBleedAnimating: root.neighborBleed
+        && root.neighborBleedEffectStrength > 0.0005
 
     // --- TRANSITION ---------------------------------------------------------
     // Which switch animation the user picked. "datamosh" is the destructive
@@ -100,7 +184,6 @@ QtObject {
     // see startTransition above). Base 0.85 rather than 0.0 so a transition
     // during silence still plays at nearly full strength instead of visibly
     // dimming.
-    readonly property bool transitionMusicReactive: root.opts?.musicReactive ?? true
     readonly property real transitionIntensity: root.datamoshSwitch
         ? (root.transitionMusicReactive ? 0.85 + 0.15 * AudioLevels.beat : 1.0)
         : 0
@@ -130,9 +213,9 @@ QtObject {
     readonly property real trFeedback: root.trValue("feedback", 31, 0.35, 0.95)
     readonly property real trAberration: root.trValue("chromaticAberration", 41, 0.05, 0.60)
     readonly property real trNoise: root.trValue("noise", 47, 0.10, 0.60)
-    readonly property real trAxisMode: {
-        if (root.hasDirection)
-            return (root.transitionDirection === "up" || root.transitionDirection === "down") ? 1.0 : 0.0;
+    function transitionAxisModeFor(direction) {
+        if (direction !== "")
+            return (direction === "up" || direction === "down") ? 1.0 : 0.0;
         const d = root.trOpts?.glitchDirection ?? "random";
         if (d === "horizontal")
             return 0.0;
@@ -140,16 +223,24 @@ QtObject {
             return 1.0;
         return 2.0; // rolled per switch, in the shader, from the shared seed
     }
+    readonly property real trAxisMode: root.transitionAxisModeFor(root.transitionDirection)
     // +1 = right/down, -1 = left/up. Only meaningful to the shader when
     // hasDirection is true; otherwise it forwards 1.0 and is ignored (the
     // shader falls back to its own per-switch random sign in that case).
-    readonly property real trAxisSign: root.hasDirection
-        ? ((root.transitionDirection === "right" || root.transitionDirection === "down") ? 1.0 : -1.0)
-        : 1.0
+    function transitionAxisSignFor(direction) {
+        return direction !== "" && direction !== "right" && direction !== "down" ? -1.0 : 1.0;
+    }
+    readonly property real trAxisSign: root.transitionAxisSignFor(root.transitionDirection)
 
-    // 0 = showing sourceA untouched, 1 = showing sourceB untouched.
-    // Starts settled so the very first wallpaper appears without a transition.
-    property real transitionProgress: 1.0
+    // 0 = showing sourceA untouched, 1 = showing sourceB untouched. Each
+    // controller joins one shared generation instead of running its own timer;
+    // otherwise differently cached monitor textures start at different times.
+    property int transitionGeneration: 0
+    readonly property bool sharesTransition: root.transitionGeneration !== 0
+        && root.transitionGeneration === TransitionSeed.generation
+        && TransitionSeed.transitioning
+    readonly property real transitionProgress: root.sharesTransition
+        ? TransitionSeed.transitionProgress : 1.0
 
     // Destruction envelope: zero at both ends, peak at the halfway point.
     // The exponent above 1 keeps the wallpaper recognisable at the start and
@@ -170,28 +261,18 @@ QtObject {
         return t * t * (3 - 2 * t);
     }
 
-    readonly property bool transitioning: transitionAnim.running
-
-    property NumberAnimation transitionAnim: NumberAnimation {
-        target: root
-        property: "transitionProgress"
-        from: 0.0
-        to: 1.0
-        duration: root.transitionDuration
-        easing.type: Easing.Linear
-    }
+    readonly property bool transitioning: root.sharesTransition
 
     function startTransition(forPath) {
-        // Keyed on the incoming wallpaper so the first monitor to get here rolls
-        // and the others reuse it, instead of each rolling its own.
-        TransitionSeed.rollFor(forPath ?? "", root.datamoshSwitch);
-        transitionAnim.restart();
+        // The singleton stages every monitor's uploaded images, then advances
+        // one common clock for both local wallpapers and seam extensions.
+        root.transitionGeneration = TransitionSeed.startTransition(
+            forPath ?? "", root.transitionDuration, root.datamoshSwitch);
     }
 
     /** Jump straight to "showing sourceB, no effect", e.g. on first load. */
     function settle() {
-        transitionAnim.stop();
-        root.transitionProgress = 1.0;
+        root.transitionGeneration = 0;
     }
 
     // --- resolved shader parameters -----------------------------------------
@@ -220,4 +301,5 @@ QtObject {
     // Nothing is moving and nothing is being destroyed: the renderer can stop
     // driving frames entirely and just leave the wallpaper on screen.
     readonly property bool animating: root.transitioning || root.effectStrength > 0.0005 || root.transition > 0.0005
+        || root.neighborBleedAnimating || root.lidarEnabled
 }

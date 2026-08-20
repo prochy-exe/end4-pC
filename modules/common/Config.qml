@@ -469,6 +469,39 @@ Singleton {
                     // restarts until rerolled.
                     property bool randomizePerMonitor: false
                     property list<var> monitorPresetAssignments: []
+                    // Cross-monitor seam effect. By default the primary
+                    // wallpaper spills outward; "mutual" lets every monitor
+                    // exchange fragments with its touching neighbour.
+                    property bool neighborBleed: false
+                    property string neighborBleedMode: "primary" // "primary" | "mutual"
+                    property bool neighborBleedMusicReactive: true
+                    property real neighborBleedWidth: 0.16
+                    property real neighborBleedStrength: 0.9
+                    property real neighborBleedFragmentThreshold: 0.08
+                    property real neighborBleedFragmentSoftness: 0.24
+                    property bool neighborBleedColorTrails: true
+                    property real neighborBleedColorThreshold: 0.12
+                    property real neighborBleedColorSoftness: 0.20
+                    property real neighborBleedColorStrength: 0.7
+                    // LiDAR is a wallpaper-level accent. With a seam active it
+                    // also traces imported fragments; otherwise it scans the
+                    // current wallpaper directly.
+                    property bool neighborBleedLidar: false
+                    // "scan" traces a raster/sweep, while "outlines" traces
+                    // the current image's luminance and colour edges.
+                    property string neighborBleedLidarMode: "outlines" // "scan" | "outlines"
+                    property real neighborBleedLidarStrength: 0.55
+                    property real neighborBleedLidarDensity: 24
+                    property real neighborBleedLidarSpeed: 0.75
+                    property real neighborBleedEdgeSoftness: 0.32
+                    property real neighborBleedRaggedness: 1.0
+                    property real neighborBleedGrain: 1.0
+                    property real neighborBleedMotionSpeed: 1.0
+                    property real neighborBleedFeedback: 1.0
+                    property bool neighborBleedBattle: true
+                    property real neighborBleedBattleStrength: 1.0
+                    property real neighborBleedPrimaryPush: 1.0
+                    property real neighborBleedSecondaryResistance: 1.0
                     // "synchronized" only takes effect when wallpaperAnimation
                     // is "datamosh" - see Background.qml's transitionDirection.
                     property string transitionMode: "independent" // "independent" | "synchronized"
@@ -477,6 +510,19 @@ Singleton {
                     // makes the wallpaper a still image with no per-frame work.
                     property real musicIntensity: 0.35 // continuous, scales with loudness
                     property real beatIntensity: 0.75
+                    // Per-effect audio source. "auto" preserves the existing
+                    // tuned mixes; explicit sources let a kick, bass band, or
+                    // another band own an effect outright.
+                    property JsonObject audioRouting: JsonObject {
+                        property string melt: "auto"
+                        property string pointCloud: "auto"
+                        property string feedback: "auto"
+                        property string pixelSort: "auto"
+                        property string blockCorruption: "auto"
+                        property string chromaticAberration: "auto"
+                        property string noise: "auto"
+                        property string lidar: "auto"
+                    }
 
                     // Look of the ambient effect. The "datamosh" transition
                     // deliberately ignores all of these and rerolls its own

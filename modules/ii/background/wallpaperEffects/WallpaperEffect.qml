@@ -32,13 +32,47 @@ Item {
     /** "", "up", "down", "left", "right" - see Background.qml's
      * transitionDirection. Only meaningful while a datamosh switch runs. */
     property string transitionDirection: ""
+    /** Primary-monitor wallpaper path, borrowed by a secondary monitor. */
+    property string neighborSource: ""
+    /** Direction from this monitor toward that neighbour. */
+    property string neighborDirection: ""
+    /** Receiver bounds expressed in the primary monitor's virtual canvas. */
+    property vector2d neighborCanvasOrigin: Qt.vector2d(0, 0)
+    property vector2d neighborCanvasScale: Qt.vector2d(1, 1)
+    property vector2d neighborCanvasResolution: Qt.vector2d(1, 1)
+    /** Resolved effect values from the monitor that owns neighborSource. */
+    property var neighborEffectValues: null
+    /** Whether the source monitor itself is configured to show ambient effects. */
+    property bool neighborAmbientAllowed: false
+    /** The source monitor's synchronized transition direction. */
+    property string neighborSourceTransitionDirection: ""
+    readonly property vector2d neighborDirectionVector: {
+        switch (root.neighborDirection) {
+        case "right": return Qt.vector2d(1, 0);
+        case "left": return Qt.vector2d(-1, 0);
+        case "down": return Qt.vector2d(0, 1);
+        case "up": return Qt.vector2d(0, -1);
+        default: return Qt.vector2d(0, 0);
+        }
+    }
+    // The borrowed primary image travels away from the primary and into this
+    // monitor, the opposite of the vector used to find its facing source edge.
+    readonly property vector2d neighborTransitionDirection: Qt.vector2d(
+        -root.neighborDirectionVector.x, -root.neighborDirectionVector.y)
 
     property EffectController controller: EffectController {
         ambientAllowedHere: root.ambientAllowedHere
         monitorName: root.monitorName
         transitionDirection: root.transitionDirection
+        neighborAvailable: root.neighborDirection !== ""
     }
     readonly property bool transitioning: root.controller.transitioning
+    readonly property real neighborEffectStrength: root.controller.effectStrengthFor(
+        root.neighborEffectValues, root.neighborAmbientAllowed)
+    readonly property real neighborTransitionAxisMode: root.controller.transitionAxisModeFor(
+        root.neighborSourceTransitionDirection)
+    readonly property real neighborTransitionAxisSign: root.controller.transitionAxisSignFor(
+        root.neighborSourceTransitionDirection)
 
     // Two textures, ping-ponged rather than reloaded. `secondIsFront` says which
     // one holds the wallpaper on screen; the incoming one is always loaded into
@@ -58,7 +92,10 @@ Item {
     property string queuedSource: ""
 
     onSourceChanged: root.applySource()
-    Component.onCompleted: root.applySource()
+    Component.onCompleted: {
+        root.applySource();
+        root.applyNeighborSource();
+    }
 
     function applySource() {
         if (!root.controller || root.source === root.shownSource || root.source === root.loadingSource)
@@ -107,9 +144,9 @@ Item {
     function reveal(instant) {
         const loaded = root.pendingSource;
         root.pendingSource = "";
-        // Progress before the flip, both in one go, so the renderer never gets
-        // a frame with the new wallpaper already at full mix.
-        root.controller.transitionProgress = instant ? 1.0 : 0.0;
+        // The shared controller enters its staging phase immediately after the
+        // flip, at progress 0, so the renderer keeps sampling source A until
+        // every monitor has had a chance to upload source B.
         root.secondIsFront = !root.secondIsFront;
         root.shownSource = loaded;
 
@@ -164,11 +201,159 @@ Item {
         onStatusChanged: root.showWhenReady()
     }
 
+    // Windows have independent scene graphs, so a ShaderEffect cannot sample a
+    // neighbour window directly. These two local copies are ping-ponged just
+    // like this monitor's own wallpapers. Keeping the outgoing primary image
+    // resident gives the seam shader an A/B pair to break apart rather than
+    // replacing the borrowed picture in one visible pop.
+    property bool neighborSecondIsFront: false
+    readonly property Image neighborFrontImage: root.neighborSecondIsFront ? neighborImageTwo : neighborImageOne
+    readonly property Image neighborBackImage: root.neighborSecondIsFront ? neighborImageOne : neighborImageTwo
+    property string shownNeighborSource: ""
+    property string loadingNeighborSource: ""
+    property string queuedNeighborSource: ""
+    property string pendingNeighborSource: ""
+    property bool neighborAwaitingSharedTransition: false
+    /** Shared transition generation joined by the currently shown neighbour. */
+    property int neighborTransitionGeneration: 0
+    // This is the primary wallpaper's switch clock, not an animation local to
+    // the secondary monitor. Once its borrowed texture is decoded, the seam
+    // joins the switch at the same progress and with the same seed. Generation
+    // rather than path is intentional: mutual mode has two different paths.
+    readonly property bool neighborTransitioning: root.shownNeighborSource !== ""
+        && root.neighborTransitionGeneration === TransitionSeed.generation
+        && TransitionSeed.transitioning
+    readonly property real neighborTransitionProgress: root.neighborTransitioning
+        ? TransitionSeed.transitionMix : 1.0
+    // Unlike the granular A -> B mix above, this is the uncompressed shared
+    // clock. The seam uses it to travel all the way across the receiving
+    // monitor and back instead of appearing only at the destruction peak.
+    readonly property real neighborTransitionPhase: root.neighborTransitioning
+        ? TransitionSeed.transitionProgress : 1.0
+    readonly property real neighborTransition: root.neighborTransitioning
+        ? TransitionSeed.transitionEnvelope * root.controller.transitionIntensity : 0.0
+    property int neighborWarmupFrames: 0
+
+    onNeighborSourceChanged: root.applyNeighborSource()
+
+    function applyNeighborSource() {
+        const requested = root.neighborSource;
+        if (requested === "" || requested === root.shownNeighborSource || requested === root.loadingNeighborSource)
+            return;
+
+        // The outgoing texture is still sampled while its granular reveal is
+        // in flight. Do not overwrite it with a third wallpaper mid-effect.
+        if (root.neighborTransitioning) {
+            root.queuedNeighborSource = requested;
+            return;
+        }
+
+        root.loadingNeighborSource = requested;
+        root.neighborBackImage.source = requested;
+        root.showNeighborWhenReady();
+    }
+
+    function showNeighborWhenReady() {
+        const loaded = root.loadingNeighborSource;
+        if (loaded === "" || root.neighborBackImage.status === Image.Loading)
+            return;
+        root.loadingNeighborSource = "";
+        if (root.neighborBackImage.status === Image.Error)
+            return;
+        root.pendingNeighborSource = loaded;
+
+        if (!root.animateSwitch || root.shownNeighborSource === "") {
+            root.revealNeighbor(true);
+            return;
+        }
+
+        // Bind the incoming source for two frames before it becomes visible so
+        // its first transition block does not pay the texture-upload cost.
+        root.neighborWarmupFrames = 2;
+        neighborWarmup.running = true;
+    }
+
+    function revealNeighbor(instant) {
+        const loaded = root.pendingNeighborSource;
+        // The source monitor has not started the shared generation yet. Keep
+        // the old seam resident until it does; a local clock would make this
+        // receiver pop in independently of the actual wallpaper handover.
+        if (!instant && !TransitionSeed.transitioning) {
+            root.neighborAwaitingSharedTransition = true;
+            return;
+        }
+
+        root.pendingNeighborSource = "";
+        root.neighborAwaitingSharedTransition = false;
+        root.neighborSecondIsFront = !root.neighborSecondIsFront;
+        root.shownNeighborSource = loaded;
+        root.neighborTransitionGeneration = instant ? 0 : TransitionSeed.generation;
+
+        if (instant) {
+            if (root.neighborBackImage.source === "")
+                root.neighborBackImage.source = loaded;
+            return;
+        }
+
+    }
+
+    FrameAnimation {
+        id: neighborWarmup
+        running: false
+        onTriggered: {
+            if (--root.neighborWarmupFrames > 0)
+                return;
+            neighborWarmup.running = false;
+            root.revealNeighbor(false);
+        }
+    }
+
+    Image {
+        id: neighborImageOne
+        anchors.fill: parent
+        fillMode: Image.PreserveAspectCrop
+        cache: true
+        smooth: true
+        asynchronous: true
+        visible: false
+        layer.enabled: true
+        onStatusChanged: root.showNeighborWhenReady()
+    }
+
+    Image {
+        id: neighborImageTwo
+        anchors.fill: parent
+        fillMode: Image.PreserveAspectCrop
+        cache: true
+        smooth: true
+        asynchronous: true
+        visible: false
+        layer.enabled: true
+        onStatusChanged: root.showNeighborWhenReady()
+    }
+
     WallpaperRenderer {
         anchors.fill: parent
         active: root.active
         sourceA: root.backImage
         sourceB: root.frontImage
+        neighborWallpaperA: root.neighborBackImage
+        neighborWallpaperB: root.neighborFrontImage
+        neighborTransitionMix: root.neighborTransitionProgress
+        neighborTransitionPhase: root.neighborTransitionPhase
+        neighborTransitioning: root.neighborTransitioning
+        neighborTransition: root.neighborTransition
+        neighborTransitionDirection: root.neighborTransitionDirection
+        neighborDirection: root.neighborDirectionVector
+        neighborCanvasOrigin: root.neighborCanvasOrigin
+        neighborCanvasScale: root.neighborCanvasScale
+        neighborCanvasResolution: root.neighborCanvasResolution
+        neighborEffectValues: root.neighborEffectValues
+        neighborEffectStrength: root.neighborEffectStrength
+        neighborTransitionAxisMode: root.neighborTransitionAxisMode
+        neighborTransitionAxisSign: root.neighborTransitionAxisSign
+        neighborReady: root.neighborDirection !== "" && root.shownNeighborSource !== ""
+            && root.neighborFrontImage.status === Image.Ready
         controller: root.controller
     }
 
@@ -180,6 +365,21 @@ Item {
                 return;
             root.queuedSource = "";
             root.applySource();
+        }
+    }
+
+    Connections {
+        target: TransitionSeed
+        function onTransitioningChanged() {
+            if (TransitionSeed.transitioning) {
+                if (root.neighborAwaitingSharedTransition && root.pendingNeighborSource !== "")
+                    root.revealNeighbor(false);
+                return;
+            }
+            if (root.queuedNeighborSource === "")
+                return;
+            root.queuedNeighborSource = "";
+            root.applyNeighborSource();
         }
     }
 }
