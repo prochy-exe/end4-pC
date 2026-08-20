@@ -27,6 +27,17 @@ Singleton {
     readonly property string binary: `${Directories.scriptPath}/audio/qs-audiotap`
     readonly property var opts: Config.options?.background?.effects ?? null
     readonly property var audioOpts: root.opts?.audio ?? null
+    readonly property int analysisUpdateRate: root.audioOpts?.updateRate ?? 90
+    readonly property int analysisBeatDecay: root.audioOpts?.beatDecay ?? 100
+    readonly property int analysisBeatMinInterval: root.audioOpts?.beatMinInterval ?? 110
+    readonly property real analysisBeatSensitivity: root.audioOpts?.beatSensitivity ?? 1.35
+    readonly property real analysisBeatFloor: root.audioOpts?.beatFloor ?? 0.15
+    readonly property real analysisGainRelease: root.audioOpts?.gainRelease ?? 0.9995
+    readonly property real analysisBarDecay: root.audioOpts?.barDecay ?? 0.035
+    readonly property int analysisBars: root.audioOpts?.bars ?? 50
+    readonly property int analysisRangeLow: root.audioOpts?.rangeLow ?? 50
+    readonly property int analysisRangeHigh: root.audioOpts?.rangeHigh ?? 16000
+    signal audioSettingsChanged()
 
     // --- scalars for the wallpaper shader, 0..1 -----------------------------
     property real bass: 0
@@ -162,17 +173,16 @@ Singleton {
     }
 
     function tapCommand(extraArgs) {
-        const a = root.audioOpts;
         const args = [
-            "--bars", String(a?.bars ?? 50),
-            "--range", String(a?.rangeLow ?? 50), String(a?.rangeHigh ?? 16000),
-            "--rate", String(a?.updateRate ?? 90),
-            "--bar-decay", String(a?.barDecay ?? 0.035),
-            "--beat-decay", String((a?.beatDecay ?? 100) / 1000),
-            "--beat-gap", String((a?.beatMinInterval ?? 110) / 1000),
-            "--beat-sensitivity", String(a?.beatSensitivity ?? 1.35),
-            "--beat-floor", String(a?.beatFloor ?? 0.15),
-            "--gain-release", String(a?.gainRelease ?? 0.9995)
+            "--bars", String(root.analysisBars),
+            "--range", String(root.analysisRangeLow), String(root.analysisRangeHigh),
+            "--rate", String(root.analysisUpdateRate),
+            "--bar-decay", String(root.analysisBarDecay),
+            "--beat-decay", String(root.analysisBeatDecay / 1000),
+            "--beat-gap", String(root.analysisBeatMinInterval / 1000),
+            "--beat-sensitivity", String(root.analysisBeatSensitivity),
+            "--beat-floor", String(root.analysisBeatFloor),
+            "--gain-release", String(root.analysisGainRelease)
         ].concat(extraArgs);
         return ["bash", "-c",
             'bin="$1"; shift; [ -x "$bin" ] || "$(dirname "$bin")/build.sh" >&2 || exit 1; exec "$bin" "$@"',
@@ -213,7 +223,18 @@ Singleton {
     // Retarget when the allowed player changes - qs-audiotap follows one node,
     // so switching apps means restarting it with a new --app.
     onOutputTargetArgsChanged: root.restartOutput()
-    onAudioOptsChanged: root.restartOutput()
+    onAudioOptsChanged: root.audioSettingsChanged()
+    onAnalysisUpdateRateChanged: root.audioSettingsChanged()
+    onAnalysisBeatDecayChanged: root.audioSettingsChanged()
+    onAnalysisBeatMinIntervalChanged: root.audioSettingsChanged()
+    onAnalysisBeatSensitivityChanged: root.audioSettingsChanged()
+    onAnalysisBeatFloorChanged: root.audioSettingsChanged()
+    onAnalysisGainReleaseChanged: root.audioSettingsChanged()
+    onAnalysisBarDecayChanged: root.audioSettingsChanged()
+    onAnalysisBarsChanged: root.audioSettingsChanged()
+    onAnalysisRangeLowChanged: root.audioSettingsChanged()
+    onAnalysisRangeHighChanged: root.audioSettingsChanged()
+    onAudioSettingsChanged: root.restartOutput()
     function restartOutput() {
         if (outputProc.running) {
             outputProc.running = false;

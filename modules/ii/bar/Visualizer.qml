@@ -66,7 +66,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 opacity: root.isPlaying ? 0.85 : 0.3
-                Behavior on height { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
+                Behavior on height { NumberAnimation { duration: 35; easing.type: Easing.OutQuad } }
                 Behavior on opacity { NumberAnimation { duration: 300 } }
             }
         }
@@ -95,7 +95,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 opacity: root.isPlaying ? 0.85 : 0.3
-                Behavior on width { NumberAnimation { duration: 80; easing.type: Easing.OutQuad } }
+                Behavior on width { NumberAnimation { duration: 35; easing.type: Easing.OutQuad } }
                 Behavior on opacity { NumberAnimation { duration: 300 } }
             }
         }

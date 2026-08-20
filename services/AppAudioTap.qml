@@ -55,4 +55,12 @@ QtObject {
             }
         }
     }
+
+    Connections {
+        target: AudioLevels
+        function onAudioSettingsChanged() {
+            root.proc.running = false;
+            Qt.callLater(() => root.proc.running = root.shouldRun);
+        }
+    }
 }

@@ -20,7 +20,7 @@ AbstractBackgroundWidget {
     property real barSpacing: 8
     property real maxBarHeight: 220
     property real maxVisualizerValue: 1000
-    property real smoothingDuration: 150
+    property real smoothingDuration: 45
 
     readonly property int barCount: Math.max(1, Math.floor(screenWidth / (barWidth + barSpacing)))
 

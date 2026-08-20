@@ -87,6 +87,112 @@ ContentPage {
         }
 
         ContentSection {
+            icon: "graphic_eq"
+            shape: MaterialShape.Shape.Sunny
+            title: Translation.tr("Audio analysis")
+
+            GroupedList {
+                ConfigSwitch {
+                    Layout.fillWidth: true
+                    buttonIcon: "bolt"
+                    text: Translation.tr("Keep audio analysis running")
+                    checked: Config.options.background.effects.audio.autoStart
+                    onClicked: Config.options.background.effects.audio.autoStart = !Config.options.background.effects.audio.autoStart
+                }
+                ConfigSlider {
+                    text: Translation.tr("Beat sensitivity")
+                    buttonIcon: "sensors"
+                    usePercentTooltip: false
+                    value: Config.options.background.effects.audio.beatSensitivity
+                    from: 1.05
+                    to: 3.0
+                    onValueChanged: Config.options.background.effects.audio.beatSensitivity = value
+                }
+                ConfigSlider {
+                    text: Translation.tr("Beat floor")
+                    buttonIcon: "vertical_align_bottom"
+                    value: Config.options.background.effects.audio.beatFloor
+                    from: 0
+                    to: 0.6
+                    onValueChanged: Config.options.background.effects.audio.beatFloor = value
+                }
+                ConfigSpinBox {
+                    icon: "timer"
+                    text: Translation.tr("Beat decay (ms)")
+                    value: Config.options.background.effects.audio.beatDecay
+                    from: 20
+                    to: 1000
+                    stepSize: 10
+                    onValueChanged: Config.options.background.effects.audio.beatDecay = value
+                }
+                ConfigSpinBox {
+                    icon: "hourglass_bottom"
+                    text: Translation.tr("Minimum beat gap (ms)")
+                    value: Config.options.background.effects.audio.beatMinInterval
+                    from: 20
+                    to: 1000
+                    stepSize: 10
+                    onValueChanged: Config.options.background.effects.audio.beatMinInterval = value
+                }
+            }
+            GroupedList {
+                ConfigSpinBox {
+                    icon: "speed"
+                    text: Translation.tr("Update rate (Hz)")
+                    value: Config.options.background.effects.audio.updateRate
+                    from: 15
+                    to: 240
+                    stepSize: 5
+                    onValueChanged: Config.options.background.effects.audio.updateRate = value
+                }
+                ConfigSpinBox {
+                    icon: "equalizer"
+                    text: Translation.tr("Spectrum bars")
+                    value: Config.options.background.effects.audio.bars
+                    from: 8
+                    to: 256
+                    stepSize: 2
+                    onValueChanged: Config.options.background.effects.audio.bars = value
+                }
+                ConfigSpinBox {
+                    icon: "graphic_eq"
+                    text: Translation.tr("Lowest frequency (Hz)")
+                    value: Config.options.background.effects.audio.rangeLow
+                    from: 20
+                    to: 500
+                    stepSize: 10
+                    onValueChanged: Config.options.background.effects.audio.rangeLow = value
+                }
+                ConfigSpinBox {
+                    icon: "graphic_eq"
+                    text: Translation.tr("Highest frequency (Hz)")
+                    value: Config.options.background.effects.audio.rangeHigh
+                    from: 1000
+                    to: 22000
+                    stepSize: 500
+                    onValueChanged: Config.options.background.effects.audio.rangeHigh = value
+                }
+                ConfigSlider {
+                    text: Translation.tr("Spectrum fall speed")
+                    buttonIcon: "trending_down"
+                    value: Config.options.background.effects.audio.barDecay
+                    from: 0.002
+                    to: 0.2
+                    onValueChanged: Config.options.background.effects.audio.barDecay = value
+                }
+                ConfigSlider {
+                    text: Translation.tr("Auto gain release")
+                    buttonIcon: "tune"
+                    usePercentTooltip: false
+                    value: Config.options.background.effects.audio.gainRelease
+                    from: 0.99
+                    to: 0.99999
+                    onValueChanged: Config.options.background.effects.audio.gainRelease = value
+                }
+            }
+        }
+
+        ContentSection {
             icon: "music_cast"
             shape: MaterialShape.Shape.Oval
             title: Translation.tr("Music Recognition")
