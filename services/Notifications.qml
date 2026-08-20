@@ -78,6 +78,7 @@ Singleton {
     property var filePath: Directories.notificationsPath
     property list<Notif> list: []
     property var popupList: list.filter((notif) => notif.popup);
+    property int popupHoverCount: 0
     property bool popupInhibited: (GlobalStates?.sidebarRightOpen ?? false) || silent
     property var latestTimeForApp: ({})
     Component {
@@ -219,6 +220,7 @@ Singleton {
     }
 
     function replayAllNotifications() {
+        root.popupHoverCount = 0;
         root.list.forEach((notif) => {
             notif.timer?.stop()
             notif.popup = true
@@ -232,6 +234,19 @@ Singleton {
             }
         })
         root.triggerListChange()
+    }
+
+    function resumePopupTimers() {
+        root.popupList.forEach((notif) => {
+            notif.timer?.stop()
+            const expireTimeout = notif.notification?.expireTimeout
+            if (expireTimeout !== 0) {
+                notif.timer = notifTimerComponent.createObject(root, {
+                    "notificationId": notif.notificationId,
+                    "interval": expireTimeout > 0 ? expireTimeout : (Config?.options.notifications.timeout ?? 7000),
+                })
+            }
+        })
     }
 
     function cancelTimeout(id) {

@@ -42,12 +42,18 @@ MouseArea { // Notification group area
     hoverEnabled: true
     onContainsMouseChanged: {
         if (!root.popup) return;
-        if (root.containsMouse) root.notifications.forEach(notif => {
-            Notifications.cancelTimeout(notif.notificationId);
-        });
-        else root.notifications.forEach(notif => {
-            Notifications.timeoutNotification(notif.notificationId);
-        });
+        if (root.containsMouse) {
+            Notifications.popupHoverCount++;
+            root.notifications.forEach(notif => {
+                Notifications.cancelTimeout(notif.notificationId);
+            });
+        } else {
+            Notifications.popupHoverCount = Math.max(0, Notifications.popupHoverCount - 1);
+            Qt.callLater(() => {
+                if (Notifications.popupHoverCount !== 0) return;
+                Notifications.resumePopupTimers();
+            });
+        }
     }
 
     SequentialAnimation { // Drag finish animation
