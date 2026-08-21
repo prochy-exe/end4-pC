@@ -15,10 +15,10 @@ DialogListItem {
     altAction: () => expanded = !expanded
     
     component ActionButton: DialogButton {
-        colBackground: Appearance.colors.colPrimary
-        colBackgroundHover: Appearance.colors.colPrimaryHover
-        colRipple: Appearance.colors.colPrimaryActive
-        colText: Appearance.colors.colOnPrimary
+        colBackground: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+        colBackgroundHover: MonitorThemes.shellColorForItem(root, "colPrimaryHover", Appearance.colors.colPrimaryHover)
+        colRipple: MonitorThemes.shellColorForItem(root, "colPrimaryActive", Appearance.colors.colPrimaryActive)
+        colText: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
     }
 
     contentItem: ColumnLayout {
@@ -37,7 +37,7 @@ DialogListItem {
             MaterialSymbol {
                 iconSize: Appearance.font.pixelSize.larger
                 text: Icons.getBluetoothDeviceMaterialSymbol(root.device?.icon || "")
-                color: Appearance.colors.colOnSurfaceVariant
+                color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
             }
 
             ColumnLayout {
@@ -45,7 +45,7 @@ DialogListItem {
                 Layout.fillWidth: true
                 StyledText {
                     Layout.fillWidth: true
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                     elide: Text.ElideRight
                     text: root.device?.name || Translation.tr("Unknown device")
                     textFormat: Text.PlainText
@@ -54,7 +54,7 @@ DialogListItem {
                     visible: (root.device?.connected || root.device?.paired) ?? false
                     Layout.fillWidth: true
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colSubtext
+                    color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                     elide: Text.ElideRight
                     text: {
                         if (!root.device?.paired) return "";
@@ -69,7 +69,7 @@ DialogListItem {
             MaterialSymbol {
                 text: "keyboard_arrow_down"
                 iconSize: Appearance.font.pixelSize.larger
-                color: Appearance.colors.colOnLayer3
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer3", Appearance.colors.colOnLayer3)
                 rotation: root.expanded ? 180 : 0
                 Behavior on rotation {
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
@@ -85,10 +85,10 @@ DialogListItem {
             }
             ActionButton {
                 readonly property bool p: root.device?.paired ?? false
-                colBackground: p ? Appearance.colors.colError : ColorUtils.transparentize(Appearance.colors.colLayer3, 1)
-                colBackgroundHover: p ? Appearance.colors.colErrorHover : ColorUtils.transparentize(Appearance.colors.colLayer3, 1)
-                colRipple: p ? Appearance.colors.colErrorActive : Appearance.colors.colLayer3Hover
-                colText: p ? Appearance.colors.colOnError : Appearance.colors.colPrimary
+                colBackground: p ? MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer3", Appearance.colors.colLayer3), 1)
+                colBackgroundHover: p ? Appearance.colors.colErrorHover : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer3", Appearance.colors.colLayer3), 1)
+                colRipple: p ? Appearance.colors.colErrorActive : MonitorThemes.shellColorForItem(root, "colLayer3Hover", Appearance.colors.colLayer3Hover)
+                colText: p ? MonitorThemes.shellColorForItem(root, "colOnError", Appearance.colors.colOnError) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
                 buttonText: p ? Translation.tr("Forget") : Translation.tr("Always connect")
                 onClicked: {

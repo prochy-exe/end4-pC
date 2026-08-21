@@ -36,7 +36,7 @@ RippleButton {
     toggled: isShift ? Ydotool.shiftMode : false
 
     enabled: shape != "empty"
-    colBackground: shape == "empty" ? ColorUtils.transparentize(Appearance.colors.colLayer1) : Appearance.colors.colLayer1
+    colBackground: shape == "empty" ? ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)) : MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
     buttonRadius: Appearance.rounding.small
     implicitWidth: baseWidth * widthMultiplier[shape] || baseWidth
     implicitHeight: baseHeight * heightMultiplier[shape] || baseHeight
@@ -112,7 +112,7 @@ RippleButton {
             (isBackspace || isEnter) ? Appearance.font.pixelSize.huge :
             Appearance.font.pixelSize.large
         horizontalAlignment: Text.AlignHCenter
-        color: root.toggled ? Appearance.m3colors.m3onPrimary : Appearance.colors.colOnLayer1
+        color: root.toggled ? MonitorThemes.colorForItem(root, "on_primary", Appearance.m3colors.m3onPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
         text: root.isBackspace ? "backspace" : root.isEnter ? "subdirectory_arrow_left" :
             Ydotool.shiftMode == 2 ? (root.keyData.labelCaps || root.keyData.labelShift || root.keyData.label) :
             Ydotool.shiftMode == 1 ? (root.keyData.labelShift || root.keyData.label) : 

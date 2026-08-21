@@ -85,6 +85,8 @@ MouseArea {
                     const entry = { name: monitorName, path: finalPath };
                     if (index >= 0) list[index] = entry; else list.push(entry);
                     Config.options.background.monitorWallpapers = list;
+                    console.warn(`[Wallpaper DEBUG] monitor wallpaper assigned monitor=${monitorName} path=${finalPath}`)
+                    MonitorThemes.refresh();
                     GlobalStates.wallpaperSelectorTarget = "wallpaper";
                     GlobalStates.wallpaperSelectorOpen = false;
                 });
@@ -193,8 +195,8 @@ MouseArea {
         }
         focus: true
         border.width: 1
-        border.color: Appearance.colors.colLayer0Border
-        color: Appearance.colors.colLayer0
+        border.color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
+        color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
         radius: Appearance.rounding.screenRounding + 5
 
         implicitWidth: gridColumnLayout.implicitWidth
@@ -207,7 +209,7 @@ MouseArea {
             Rectangle {
                 anchors.fill: parent
                 radius: wallpaperGridBackground.radius - 4
-                color: Appearance.colors.colLayer2
+                color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
                 visible: !Config.options.wallpaperSelector.showBlurBackground
             }
 
@@ -303,9 +305,9 @@ MouseArea {
                                         buttonRadius: height / 2
                                         visible: modelData.alwaysVisible
                                         toggled: Wallpapers.directory === Qt.resolvedUrl(modelData.path)
-                                        colBackgroundToggled: Appearance.colors.colSecondaryContainer
-                                        colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
-                                        colRippleToggled: Appearance.colors.colSecondaryContainerActive
+                                        colBackgroundToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+                                        colBackgroundToggledHover: MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+                                        colRippleToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
                                         onClicked: Wallpapers.setDirectory(modelData.path)
                                         contentItem: RowLayout {
                                             anchors.fill: parent
@@ -315,12 +317,12 @@ MouseArea {
                                             MaterialSymbol {
                                                 text: dirBtn.modelData.icon
                                                 iconSize: Appearance.font.pixelSize.larger
-                                                color: dirBtn.toggled ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer1
+                                                color: dirBtn.toggled ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                                                 fill: dirBtn.toggled ? 1 : 0
                                             }
                                             StyledText {
                                                 text: dirBtn.modelData.name
-                                                color: dirBtn.toggled ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer1
+                                                color: dirBtn.toggled ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                                             }
                                         }
                                     }
@@ -340,16 +342,16 @@ MouseArea {
                                         implicitHeight: 38
                                         buttonRadius: height / 2
                                         toggled: root.selectedResolution === modelData
-                                        colBackgroundToggled: Appearance.colors.colSecondaryContainer
-                                        colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
-                                        colRippleToggled: Appearance.colors.colSecondaryContainerActive
+                                        colBackgroundToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+                                        colBackgroundToggledHover: MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+                                        colRippleToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
                                         onClicked: root.selectedResolution = modelData
                                         contentItem: StyledText {
                                             anchors.centerIn: parent
                                             text: modelData
                                             color: parent.toggled
-                                                ? Appearance.colors.colOnSecondaryContainer
-                                                : Appearance.colors.colOnLayer2
+                                                ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
+                                                : MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                                         }
                                     }
                                 }
@@ -386,7 +388,7 @@ MouseArea {
                             implicitHeight: 36
                             buttonRadius: height / 2
                             toggled: root.toolbarVisible
-                            colBackground: Appearance.colors.colSecondaryContainer
+                            colBackground: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
                             onClicked: {
                                 if (Config.options.wallpaperSelector.showSearchbar) {
                                     Config.options.wallpaperSelector.showSearchbar = false
@@ -400,8 +402,8 @@ MouseArea {
                                 text: "search"
                                 iconSize: Appearance.font.pixelSize.larger
                                 color: root.toolbarVisible
-                                    ? Appearance.colors.colOnPrimary
-                                    : Appearance.colors.colOnSecondaryContainer
+                                    ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                                    : MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                             }
                             StyledToolTip {
                                 text: Translation.tr("Toggle search toolbar (Ctrl+F)")

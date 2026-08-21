@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
@@ -14,10 +15,10 @@ GroupButton {
 
     buttonRadius: baseHeight / 2
     buttonRadiusPressed: Appearance.rounding.small
-    colBackground: Appearance.colors.colLayer2
-    colBackgroundHover: Appearance.colors.colLayer2Hover
-    colBackgroundActive: Appearance.colors.colLayer2Active
-    property color colText: toggled ? Appearance.m3colors.m3onPrimary : Appearance.colors.colOnLayer1
+    colBackground: MonitorThemes.shellColorForItem(parent, "colLayer2", Appearance.colors.colLayer2)
+    colBackgroundHover: MonitorThemes.shellColorForItem(parent, "colLayer2Hover", Appearance.colors.colLayer2Hover)
+    colBackgroundActive: MonitorThemes.shellColorForItem(parent, "colLayer2Active", Appearance.colors.colLayer2Active)
+    property color colText: toggled ? MonitorThemes.colorForItem(parent, "on_primary", Appearance.m3colors.m3onPrimary) : MonitorThemes.shellColorForItem(parent, "colOnLayer1", Appearance.colors.colOnLayer1)
 
     contentItem: Item {
         id: content

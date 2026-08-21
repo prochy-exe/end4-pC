@@ -50,7 +50,7 @@ Rectangle {
     }
 
     radius: Appearance.rounding.normal
-    color: Appearance.colors.colLayer1
+    color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
 
     ColumnLayout {
         id: columnLayout
@@ -64,7 +64,7 @@ Rectangle {
         RowLayout { // Header
             Rectangle { // Provider name
                 id: providerNameWrapper
-                color: Appearance.colors.colSecondaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
                 radius: Appearance.rounding.small
                 implicitWidth: providerName.implicitWidth + 10 * 2
                 implicitHeight: Math.max(providerName.implicitHeight + 5 * 2, 30)
@@ -74,7 +74,7 @@ Rectangle {
                     id: providerName
                     anchors.centerIn: parent
                     font.pixelSize: Appearance.font.pixelSize.large
-                    color: Appearance.m3colors.m3onSecondaryContainer
+                    color: MonitorThemes.colorForItem(root, "on_secondary_container", Appearance.m3colors.m3onSecondaryContainer)
                     text: Booru.providers[root.responseData.provider].name
                 }
             }
@@ -89,7 +89,7 @@ Rectangle {
                     id: pageNumber
                     anchors.centerIn: parent
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colOnLayer2
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                     // text: `Page ${root.responseData.page}`
                     text: Translation.tr("Page %1").arg(root.responseData.page)
                 }
@@ -144,7 +144,7 @@ Rectangle {
             Layout.fillWidth: true
             visible: root.responseData.message.length > 0
             font.pixelSize: Appearance.font.pixelSize.small
-            color: Appearance.colors.colOnLayer1
+            color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             text: root.responseData.message
             wrapMode: Text.WordWrap
             Layout.margins: responsePadding
@@ -255,9 +255,9 @@ Rectangle {
             }
 
             buttonRadius: Appearance.rounding.small
-            colBackground: Appearance.colors.colSurfaceContainerHighest
-            colBackgroundHover: Appearance.colors.colSurfaceContainerHighestHover
-            colRipple: Appearance.colors.colSurfaceContainerHighestActive            
+            colBackground: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighest", Appearance.colors.colSurfaceContainerHighest)
+            colBackgroundHover: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighestHover", Appearance.colors.colSurfaceContainerHighestHover)
+            colRipple: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighestActive", Appearance.colors.colSurfaceContainerHighestActive)            
 
             contentItem: Item {
                 anchors.fill: parent
@@ -272,12 +272,12 @@ Rectangle {
                         Layout.alignment: Qt.AlignVCenter
                         verticalAlignment: Text.AlignVCenter
                         text: "Next page"
-                        color: Appearance.m3colors.m3onSurface
+                        color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
                     }
                     MaterialSymbol {
                         Layout.alignment: Qt.AlignVCenter
                         iconSize: Appearance.font.pixelSize.larger
-                        color: Appearance.m3colors.m3onSurface
+                        color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
                         text: "chevron_right"
                     }
                 }

@@ -15,9 +15,9 @@ StyledFlickable {
     property int selectionEnd
     property int cursorPosition
 
-    property color color: Appearance.colors.colPrimary
-    property color selectedTextColor: Appearance.colors.colOnSecondaryContainer
-    property color selectionColor: Appearance.colors.colSecondaryContainer
+    property color color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+    property color selectedTextColor: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
+    property color selectionColor: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
 
     property int charSize: 20
 
@@ -114,8 +114,8 @@ StyledFlickable {
                         ColorAnimation {
                             target: materialShape
                             properties: "color"
-                            from: Appearance.colors.colPrimary
-                            to: Appearance.colors.colOnLayer1
+                            from: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                            to: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                             duration: 1000
                             easing.type: Appearance.animation.elementMoveFast.type
                             easing.bezierCurve: Appearance.animation.elementMoveFast.bezierCurve

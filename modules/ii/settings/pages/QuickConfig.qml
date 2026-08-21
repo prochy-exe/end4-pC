@@ -90,12 +90,12 @@ ContentPage {
     component SmallLightDarkPreferenceButton: RippleButton {
         id: smallLightDarkPreferenceButton
         required property bool dark
-        property color colText: toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer2
+        property color colText: toggled ? MonitorThemes.shellColorForItem(page, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(page, "colOnLayer2", Appearance.colors.colOnLayer2)
         padding: 5
         Layout.fillWidth: true
         Layout.fillHeight: true
         toggled: Appearance.m3colors.darkmode === dark
-        colBackground: Appearance.colors.colLayer2
+        colBackground: MonitorThemes.shellColorForItem(page, "colLayer2", Appearance.colors.colLayer2)
         onClicked: {
             Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode ${dark ? "dark" : "light"} --noswitch`]);
         }
@@ -141,7 +141,7 @@ ContentPage {
                     Layout.preferredWidth: 420
                     Layout.preferredHeight: 280
                     radius: Appearance.rounding.large - 3
-                    color: Appearance.colors.colLayer2
+                    color: MonitorThemes.shellColorForItem(page, "colLayer2", Appearance.colors.colLayer2)
                     clip: true
 
                     Repeater {
@@ -229,9 +229,9 @@ ContentPage {
                                 property bool isSelected: Config.options.appearance.palette.type === modelData.value
                                 property bool hovered: hoverArea.containsMouse
 
-                                color: isSelected ? Appearance.colors.colPrimary 
-                                    : hovered ? Appearance.colors.colSecondaryContainerHover 
-                                    : Appearance.colors.colSecondaryContainer
+                                color: isSelected ? MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary) 
+                                    : hovered ? MonitorThemes.shellColorForItem(page, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover) 
+                                    : MonitorThemes.shellColorForItem(page, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
 
                                 MaterialSymbol {
                                     anchors.top: parent.top
@@ -239,7 +239,7 @@ ContentPage {
                                     anchors.margins: 8
                                     text: modelData.icon
                                     iconSize: Appearance.font.pixelSize.larger
-                                    color: parent.isSelected ? Appearance.colors.colOnPrimary : Appearance.colors.colOnPrimaryContainer
+                                    color: parent.isSelected ? MonitorThemes.shellColorForItem(page, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(page, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                 }
 
                                 StyledText {
@@ -249,7 +249,7 @@ ContentPage {
                                     text: modelData.displayName
                                     font.pixelSize: Appearance.font.pixelSize.smaller
                                     font.weight: Font.Medium
-                                    color: parent.isSelected ? Appearance.colors.colOnPrimary : Appearance.colors.colOnPrimaryContainer
+                                    color: parent.isSelected ? MonitorThemes.shellColorForItem(page, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(page, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                 }
 
                                 MouseArea {
@@ -283,6 +283,32 @@ ContentPage {
                     onCheckedChanged: { Config.options.appearance.transparency.automatic = checked; }
                 }
             }
+            ConfigSwitch {
+                buttonIcon: "devices"
+                text: Translation.tr("Use monitor wallpaper colors")
+                enabled: Config.hasDistinctMonitorWallpapers(false) || Config.hasDistinctMonitorWallpapers(true)
+                checked: Config.options.background.useMonitorSpecificColors
+                onCheckedChanged: Config.options.background.useMonitorSpecificColors = checked
+            }
+            ConfigSwitch {
+                buttonIcon: "blender"
+                text: Translation.tr("Blend monitor palettes")
+                enabled: !Config.options.background.useMonitorSpecificColors
+                    && (Config.hasDistinctMonitorWallpapers(false) || Config.hasDistinctMonitorWallpapers(true))
+                checked: Config.options.background.blendMonitorColors
+                onCheckedChanged: Config.options.background.blendMonitorColors = checked
+            }
+            ConfigComboBox {
+                Layout.fillWidth: true
+                enabled: !Config.options.background.useMonitorSpecificColors
+                    && !Config.options.background.blendMonitorColors
+                    && (Config.hasDistinctMonitorWallpapers(false) || Config.hasDistinctMonitorWallpapers(true))
+                buttonIcon: "monitor"
+                text: Translation.tr("Component color monitor")
+                model: Quickshell.screens.map(screen => ({ displayName: screen.name, icon: "monitor", value: screen.name }))
+                currentValue: Config.options.background.componentColorMonitor
+                onSelected: newValue => Config.options.background.componentColorMonitor = newValue
+            }
         }
 
         ContentSection {
@@ -301,7 +327,7 @@ ContentPage {
                     Layout.fillWidth: true
                     Layout.preferredHeight: barPosCol.implicitHeight + 24
                     radius: Appearance.rounding.normal
-                    color: Appearance.colors.colLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                     border.width: 1
                     border.color: "transparent"
 
@@ -315,12 +341,12 @@ ContentPage {
                             MaterialSymbol {
                                 text: "swap_vert"
                                 iconSize: Appearance.font.pixelSize.normal + 4
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                             }
                             StyledText {
                                 text: Translation.tr("Bar position")
                                 font.pixelSize: Appearance.font.pixelSize.normal
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                                 font.weight: Font.Medium
                             }
                         }
@@ -348,7 +374,7 @@ ContentPage {
                     Layout.fillWidth: true
                     Layout.preferredHeight: barStyleCol.implicitHeight + 24
                     radius: Appearance.rounding.normal
-                    color: Appearance.colors.colLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                     border.width: 1
                     border.color: "transparent"
 
@@ -362,12 +388,12 @@ ContentPage {
                             MaterialSymbol {
                                 text: "settop_component"
                                 iconSize: Appearance.font.pixelSize.normal + 4
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                             }
                             StyledText {
                                 text: Translation.tr("Bar style")
                                 font.pixelSize: Appearance.font.pixelSize.normal
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                                 font.weight: Font.Medium
                             }
                         }
@@ -392,7 +418,7 @@ ContentPage {
                     Layout.fillWidth: true
                     Layout.preferredHeight: screenRoundCol.implicitHeight + 24
                     radius: Appearance.rounding.normal
-                    color: Appearance.colors.colLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                     ColumnLayout {
                         id: groupStyleCol
                         anchors { fill: parent; margins: 12 }
@@ -403,12 +429,12 @@ ContentPage {
                             MaterialSymbol {
                                 text: "tab_group"
                                 iconSize: Appearance.font.pixelSize.normal + 4
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                             }
                             StyledText {
                                 text: Translation.tr("Group style")
                                 font.pixelSize: Appearance.font.pixelSize.normal
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                                 font.weight: Font.Medium
                             }
                         }
@@ -433,7 +459,7 @@ ContentPage {
                     Layout.fillWidth: true
                     Layout.preferredHeight: groupStyleCol.implicitHeight + 24
                     radius: Appearance.rounding.normal
-                    color: Appearance.colors.colLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
 
                     ColumnLayout {
                         id: screenRoundCol
@@ -445,12 +471,12 @@ ContentPage {
                             MaterialSymbol {
                                 text: "rounded_corner"
                                 iconSize: Appearance.font.pixelSize.normal + 4
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                             }
                             StyledText {
                                 text: Translation.tr("Screen round corner")
                                 font.pixelSize: Appearance.font.pixelSize.normal
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                                 font.weight: Font.Medium
                             }
                         }

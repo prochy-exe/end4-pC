@@ -18,13 +18,25 @@ Scope {
         id: sessionLockSurface
         color: "transparent"
         Loader {
+            id: lockSurfaceLoader
             active: GlobalStates.screenLocked
             anchors.fill: parent
+            property var sessionScreen: sessionLockSurface.screen
+            onLoaded: if (item) item.sessionScreen = sessionScreen
+            onSessionScreenChanged: {
+                console.warn(`[LockSurface DEBUG] session screen changed=${sessionScreen?.name ?? "null"}`)
+                if (item) item.sessionScreen = sessionScreen
+            }
             opacity: active ? 1 : 0
             Behavior on opacity {
                 animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
             }
             sourceComponent: root.lockSurface
+        }
+        onScreenChanged: {
+            console.warn(`[LockSurface DEBUG] WlSessionLockSurface screen changed=${screen?.name ?? "null"}`)
+            lockSurfaceLoader.sessionScreen = screen
+            if (lockSurfaceLoader.item) lockSurfaceLoader.item.sessionScreen = screen
         }
     }
 

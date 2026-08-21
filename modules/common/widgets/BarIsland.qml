@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
@@ -13,9 +14,9 @@ Rectangle {
     implicitWidth: container.implicitWidth + padding
 
     radius: Appearance.rounding.full
-    color: Appearance.colors.colLayer0
+    color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
     border.width: 1
-    border.color: Appearance.colors.colLayer0Border
+    border.color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
 
     RowLayout {
         id: container

@@ -34,7 +34,7 @@ ColumnLayout {
         topRightRadius: codeBlockBackgroundRounding
         bottomLeftRadius: Appearance.rounding.unsharpen
         bottomRightRadius: Appearance.rounding.unsharpen
-        color: Appearance.colors.colSurfaceContainerHighest
+        color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighest", Appearance.colors.colSurfaceContainerHighest)
         implicitHeight: codeBlockTitleBarRowLayout.implicitHeight + codeBlockHeaderPadding * 2
 
         RowLayout { // Language and buttons
@@ -55,7 +55,7 @@ ColumnLayout {
                 Layout.leftMargin: 10
                 font.pixelSize: Appearance.font.pixelSize.small
                 font.weight: Font.DemiBold
-                color: Appearance.colors.colOnLayer2
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 text: root.displayLang ? Repository.definitionForName(root.displayLang).name : "plain"
             }
 
@@ -130,7 +130,7 @@ ColumnLayout {
             bottomLeftRadius: codeBlockBackgroundRounding
             topRightRadius: Appearance.rounding.unsharpen
             bottomRightRadius: Appearance.rounding.unsharpen
-            color: Appearance.colors.colLayer2
+            color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
 
             ColumnLayout {
                 id: lineNumberColumnLayout
@@ -151,7 +151,7 @@ ColumnLayout {
                         Layout.alignment: Qt.AlignRight
                         font.family: Appearance.font.family.monospace
                         font.pixelSize: Appearance.font.pixelSize.small
-                        color: Appearance.colors.colSubtext
+                        color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                         horizontalAlignment: Text.AlignRight
                         text: index + 1
                     }
@@ -165,7 +165,7 @@ ColumnLayout {
             bottomLeftRadius: Appearance.rounding.unsharpen
             topRightRadius: Appearance.rounding.unsharpen
             bottomRightRadius: codeBlockBackgroundRounding
-            color: Appearance.colors.colLayer2
+            color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
             implicitHeight: codeColumnLayout.implicitHeight
 
             ColumnLayout {
@@ -203,7 +203,7 @@ ColumnLayout {
                         contentItem: Rectangle {
                             implicitHeight: 6
                             radius: Appearance.rounding.small
-                            color: Appearance.colors.colLayer2Active
+                            color: MonitorThemes.shellColorForItem(root, "colLayer2Active", Appearance.colors.colLayer2Active)
                         }
                     }
 
@@ -216,10 +216,10 @@ ColumnLayout {
                         font.family: Appearance.font.family.monospace
                         font.hintingPreference: Font.PreferNoHinting // Prevent weird bold text
                         font.pixelSize: Appearance.font.pixelSize.small
-                        selectedTextColor: Appearance.m3colors.m3onSecondaryContainer
-                        selectionColor: Appearance.colors.colSecondaryContainer
+                        selectedTextColor: MonitorThemes.colorForItem(root, "on_secondary_container", Appearance.m3colors.m3onSecondaryContainer)
+                        selectionColor: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
                         // wrapMode: TextEdit.Wrap
-                        color: messageData.thinking ? Appearance.colors.colSubtext : Appearance.colors.colOnLayer1
+                        color: messageData.thinking ? MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
 
                         text: segmentContent
                         onTextChanged: {
@@ -261,7 +261,7 @@ ColumnLayout {
                                 contentItem: StyledText {
                                     text: Translation.tr("Reject")
                                     font.pixelSize: Appearance.font.pixelSize.small
-                                    color: Appearance.colors.colOnLayer2
+                                    color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                                 }
                                 onClicked: Ai.rejectCommand(root.messageData)
                             }
@@ -270,7 +270,7 @@ ColumnLayout {
                                 contentItem: StyledText {
                                     text: Translation.tr("Approve")
                                     font.pixelSize: Appearance.font.pixelSize.small
-                                    color: Appearance.colors.colOnPrimary
+                                    color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                                 }
                                 onClicked: Ai.approveCommand(root.messageData)
                             }

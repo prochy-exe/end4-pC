@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import QtQuick
 import QtQuick.Layouts
@@ -9,7 +10,7 @@ Rectangle {
     property real mainAxisPadding: 10
     property real contentSpacing: 3
     property real contentTopMargin: 3
-    property color bgColor: Appearance.colors.colPrimaryContainer
+    property color bgColor: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
     default property alias content: contentLayout.children
 

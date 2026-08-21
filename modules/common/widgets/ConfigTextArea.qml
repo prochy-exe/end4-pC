@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common.widgets
 import qs.modules.common
 import QtQuick
@@ -18,21 +19,21 @@ RowLayout {
     property bool rounded: false
     property real fieldWidth: 220
     property real fieldHeight: 40
-    property color colBackground: filled ? Appearance.colors.colLayer1 : "transparent"
-    property color colBackgroundFocused: filled ? Appearance.colors.colLayer2 : "transparent"
-    property color colBorder: Appearance.colors.colOutlineVariant
-    property color colBorderFocused: Appearance.colors.colPrimary
-    property color colOnBackground: Appearance.colors.colOnLayer1
-    property color colLabel: Appearance.colors.colOnSecondaryContainer
+    property color colBackground: filled ? MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1) : "transparent"
+    property color colBackgroundFocused: filled ? MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2) : "transparent"
+    property color colBorder: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant)
+    property color colBorderFocused: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+    property color colOnBackground: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+    property color colLabel: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
     property real cornerRadius: rounded ? Appearance.rounding.large : Appearance.rounding.small
 
     // Optional trailing confirm button
     property bool confirmButtonVisible: false
     property string confirmButtonIcon: "check"
-    property color colConfirmBackground: Appearance.colors.colPrimaryContainer
-    property color colConfirmBackgroundHover: Appearance.colors.colPrimaryContainerHover
-    property color colConfirmBackgroundActive: Appearance.colors.colPrimaryContainerActive
-    property color colOnConfirmBackground: Appearance.colors.colOnPrimaryContainer
+    property color colConfirmBackground: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+    property color colConfirmBackgroundHover: MonitorThemes.shellColorForItem(root, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover)
+    property color colConfirmBackgroundActive: MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
+    property color colOnConfirmBackground: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
     signal confirmClicked()
     signal focusLost()
 
@@ -60,7 +61,7 @@ RowLayout {
             visible: root.description.length > 0
             text: root.description
             font.pixelSize: Appearance.font.pixelSize.smaller
-            color: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             wrapMode: Text.Wrap
             opacity: root.enabled ? 1 : 0.4
         }
@@ -101,10 +102,10 @@ RowLayout {
             wrapMode: TextArea.Wrap
             verticalAlignment: TextEdit.AlignVCenter
             selectByMouse: true
-            placeholderTextColor: Appearance.colors.colSubtext
+            placeholderTextColor: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             color: root.colOnBackground
-            selectedTextColor: Appearance.colors.colOnSecondaryContainer
-            selectionColor: Appearance.colors.colSecondaryContainer
+            selectedTextColor: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
+            selectionColor: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
             renderType: Text.NativeRendering
             background: null
             padding: 0

@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
@@ -11,7 +12,7 @@ Rectangle {
     required property var iconShape
     required property real value
     required property string sublabel
-    property color sublabelColor: Appearance.colors.colOnSurfaceVariant
+    property color sublabelColor: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
     property int cardWidth: 150 
     property string detailText: ""
 
@@ -19,12 +20,12 @@ Rectangle {
     height: 96 
     radius: 16 
     
-    color: Appearance.colors.colSurfaceContainerLow
+    color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
 
     function usageColor(v) {
-        if (v > 0.9) return Appearance.colors.colError
-        if (v > 0.6) return Appearance.colors.colTertiary || Appearance.m3colors.m3tertiary
-        return Appearance.colors.colPrimary
+        if (v > 0.9) return MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
+        if (v > 0.6) return MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary) || MonitorThemes.colorForItem(root, "tertiary", Appearance.m3colors.m3tertiary)
+        return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
     }
 
     ColumnLayout {
@@ -54,7 +55,7 @@ Rectangle {
                 font.pixelSize: Appearance.font.pixelSize.large || 18
                 font.weight: Font.Bold
                 font.features: { "tnum": 1 }
-                color: Appearance.colors.colOnSurface
+                color: MonitorThemes.shellColorForItem(root, "colOnSurface", Appearance.colors.colOnSurface)
                 Layout.alignment: Qt.AlignVCenter
             }
         }
@@ -67,7 +68,7 @@ Rectangle {
                 text: root.label
                 font.pixelSize: Appearance.font.pixelSize.small
                 font.weight: Font.Medium
-                color: Appearance.colors.colOnSurface
+                color: MonitorThemes.shellColorForItem(root, "colOnSurface", Appearance.colors.colOnSurface)
                 Layout.fillWidth: true
                 elide: Text.ElideRight
             }
@@ -93,6 +94,6 @@ Rectangle {
     }
 
     border.width: root.value > 0.9 ? 1.5 : 0
-    border.color: root.value > 0.9 ? Appearance.colors.colError : "transparent"
+    border.color: root.value > 0.9 ? MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError) : "transparent"
 
 }

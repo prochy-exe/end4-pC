@@ -27,7 +27,7 @@ Rectangle {
     implicitHeight: columnLayout.implicitHeight + root.messagePadding * 2
 
     radius: Appearance.rounding.normal
-    color: Appearance.colors.colLayer1
+    color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
 
     function saveMessage() {
         if (!root.editing) return;
@@ -81,7 +81,7 @@ Rectangle {
             Layout.fillWidth: true
             implicitWidth: headerRowLayout.implicitWidth + 4 * 2
             implicitHeight: headerRowLayout.implicitHeight + 4 * 2
-            color: Appearance.colors.colSecondaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
             radius: Appearance.rounding.small
         
             RowLayout { // Header
@@ -123,7 +123,7 @@ Rectangle {
                                     messageData?.role == 'user' ? 'arch-symbolic' : 'desktop-symbolic'
 
                                 colorize: true
-                                color: Appearance.m3colors.m3onSecondaryContainer
+                                color: MonitorThemes.colorForItem(root, "on_secondary_container", Appearance.m3colors.m3onSecondaryContainer)
                             }
 
                             MaterialSymbol {
@@ -131,7 +131,7 @@ Rectangle {
                                 anchors.centerIn: parent
                                 visible: !modelIcon.visible
                                 iconSize: Appearance.font.pixelSize.larger
-                                color: Appearance.m3colors.m3onSecondaryContainer
+                                color: MonitorThemes.colorForItem(root, "on_secondary_container", Appearance.m3colors.m3onSecondaryContainer)
                                 text: messageData?.role == 'user' ? 'person' : 
                                     messageData?.role == 'interface' ? 'settings' : 
                                     messageData?.role == 'assistant' ? 'neurology' : 
@@ -145,7 +145,7 @@ Rectangle {
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                             font.pixelSize: Appearance.font.pixelSize.normal
-                            color: Appearance.m3colors.m3onSecondaryContainer
+                            color: MonitorThemes.colorForItem(root, "on_secondary_container", Appearance.m3colors.m3onSecondaryContainer)
                             text: messageData?.role == 'assistant' ? Ai.models[messageData?.model].name :
                                 (messageData?.role == 'user' && SystemInfo.username) ? SystemInfo.username :
                                 Translation.tr("Interface")
@@ -166,7 +166,7 @@ Rectangle {
                         id: notVisibleToModelText
                         anchors.centerIn: parent
                         iconSize: Appearance.font.pixelSize.small
-                        color: Appearance.colors.colSubtext
+                        color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                         text: "visibility_off"
                     }
                     StyledToolTip {
@@ -360,4 +360,3 @@ Rectangle {
 
     }
 }
-

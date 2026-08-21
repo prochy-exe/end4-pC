@@ -59,7 +59,7 @@ Rectangle {
     property real horizontalPadding: 10
     property real verticalPadding: 10
     radius: Appearance.rounding.small - anchors.margins
-    color: highlight ? Appearance.colors.colPrimary : Appearance.colors.colLayer2
+    color: highlight ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
     implicitHeight: visible ? (contentItem.implicitHeight + verticalPadding * 2) : 0
 
     readonly property real contentHeight: contentItem.implicitHeight + verticalPadding * 2
@@ -91,7 +91,7 @@ Rectangle {
                     return "file_present";
                 }
                 iconSize: Appearance.font.pixelSize.hugeass
-                color: highlight ? Appearance.colors.colOnPrimary : Appearance.colors.colPrimary
+                color: highlight ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             }
 
             StyledText {
@@ -101,14 +101,14 @@ Rectangle {
                 font.pixelSize: Appearance.font.pixelSize.smaller
                 font.family: Appearance.font.family.monospace
                 wrapMode: Text.Wrap
-                color: highlight ? Appearance.colors.colOnPrimary : Appearance.colors.colPrimary
+                color: highlight ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             }
 
             RippleButton {
                 visible: root.canRemove
                 Layout.alignment: Qt.AlignTop
                 buttonRadius: Appearance.rounding.full
-                colBackground: highlight ? Appearance.m3colors.m3background : Appearance.colors.colLayer2
+                colBackground: highlight ? MonitorThemes.colorForItem(root, "background", Appearance.m3colors.m3background) : MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
                 implicitHeight: 28
                 implicitWidth: 28
                 contentItem: MaterialSymbol {
@@ -116,7 +116,7 @@ Rectangle {
                     text: "close"
                     horizontalAlignment: Text.AlignHCenter
                     iconSize: Appearance.font.pixelSize.larger
-                    color: highlight ? Appearance.colors.colPrimary : Appearance.colors.colOnSurfaceVariant
+                    color: highlight ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                 }
 
                 onClicked: root.remove()
@@ -154,7 +154,7 @@ Rectangle {
                         anchors.fill: parent
                         color: "transparent"
                         border.width: 1
-                        border.color: Appearance.colors.colOutlineVariant
+                        border.color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant)
                         radius: Appearance.rounding.normal
                     }
                 }

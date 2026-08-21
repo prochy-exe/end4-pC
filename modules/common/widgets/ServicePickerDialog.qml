@@ -1,3 +1,4 @@
+import qs.services
 pragma ComponentBehavior: Bound
 import qs.modules.common
 import qs.modules.common.widgets
@@ -96,17 +97,17 @@ WindowDialog {
                 MaterialSymbol {
                     text: modelData.scope === "user" ? "person" : "dns"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
                 StyledText {
                     Layout.fillWidth: true
                     text: modelData.name
                     elide: Text.ElideRight
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 }
                 StyledText {
                     text: modelData.scope === "user" ? Translation.tr("User") : Translation.tr("System")
-                    color: Appearance.colors.colSubtext
+                    color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 }
             }
         }

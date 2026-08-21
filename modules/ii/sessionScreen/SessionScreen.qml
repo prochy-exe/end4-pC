@@ -45,7 +45,7 @@ Scope {
             WlrLayershell.namespace: "quickshell:session"
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-            color: ColorUtils.transparentize(Appearance.m3colors.m3background, Appearance.m3colors.darkmode ? 0.05 : 0.12)
+            color: ColorUtils.transparentize(MonitorThemes.colorForItem(root, "background", Appearance.m3colors.m3background), Appearance.m3colors.darkmode ? 0.05 : 0.12)
 
             anchors {
                 top: true
@@ -252,8 +252,8 @@ Scope {
                     visible: active
                     sourceComponent: DescriptionLabel {
                         text: Translation.tr("There might be a download in progress. Check your Downloads folder.")
-                        textColor: Appearance.m3colors.m3onErrorContainer
-                        color: Appearance.m3colors.m3errorContainer
+                        textColor: MonitorThemes.colorForItem(root, "on_error_container", Appearance.m3colors.m3onErrorContainer)
+                        color: MonitorThemes.colorForItem(root, "error_container", Appearance.m3colors.m3errorContainer)
                     }
                 }
 
@@ -263,8 +263,8 @@ Scope {
                     visible: active
                     sourceComponent: DescriptionLabel {
                         text: Translation.tr("Your package manager is running")
-                        textColor: Appearance.m3colors.m3onErrorContainer
-                        color: Appearance.m3colors.m3errorContainer
+                        textColor: MonitorThemes.colorForItem(root, "on_error_container", Appearance.m3colors.m3onErrorContainer)
+                        color: MonitorThemes.colorForItem(root, "error_container", Appearance.m3colors.m3errorContainer)
                     }
                 }
             }
@@ -274,8 +274,8 @@ Scope {
     component DescriptionLabel: Rectangle {
         id: descriptionLabel
         property string text
-        property color textColor: Appearance.colors.colOnTooltip
-        color: Appearance.colors.colTooltip
+        property color textColor: MonitorThemes.shellColorForItem(parent, "colOnSurface", Appearance.colors.colOnTooltip)
+        color: MonitorThemes.shellColorForItem(parent, "colLayer1", Appearance.colors.colTooltip)
         clip: true
         radius: Appearance.rounding.normal
         implicitHeight: descriptionLabelText.implicitHeight + 10 * 2

@@ -22,8 +22,8 @@ AbstractBackgroundWidget {
     readonly property string customClockColorKey: Config.options.background.widgets.clock.color ?? ""
     readonly property color resolvedClockColor: {
         if (customClockColorKey === "") return root.colText;
-        const propName = "col" + customClockColorKey.charAt(0).toUpperCase() + customClockColorKey.slice(1);
-        return Appearance.colors[propName] ?? root.colText;
+        const role = customClockColorKey.replace(/([A-Z])/g, "_$1").toLowerCase();
+        return MonitorThemes.colorForItem(root, role, root.colText);
     }
     property bool wallpaperSafetyTriggered: false
     needsColText: clockStyle === "digital"

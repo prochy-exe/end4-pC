@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
@@ -13,8 +14,8 @@ TextField {
     implicitWidth: 200
     padding: 10
 
-    placeholderTextColor: Appearance.colors.colSubtext
-    color: Appearance.colors.colOnLayer1
+    placeholderTextColor: MonitorThemes.shellColorForItem(parent, "colSubtext", Appearance.colors.colSubtext)
+    color: MonitorThemes.shellColorForItem(parent, "colOnLayer1", Appearance.colors.colOnLayer1)
     font {
         family: Appearance.font.family.main
         pixelSize: Appearance.font.pixelSize.small
@@ -22,12 +23,12 @@ TextField {
         variableAxes: Appearance.font.variableAxes.main
     }
     renderType: Text.NativeRendering
-    selectedTextColor: Appearance.colors.colOnSecondaryContainer
-    selectionColor: Appearance.colors.colSecondaryContainer
+    selectedTextColor: MonitorThemes.shellColorForItem(parent, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
+    selectionColor: MonitorThemes.shellColorForItem(parent, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
 
     background: Rectangle {
         id: background
-        color: Appearance.colors.colLayer1
+        color: MonitorThemes.shellColorForItem(parent, "colLayer1", Appearance.colors.colLayer1)
         radius: Appearance.rounding.full
     }
 }

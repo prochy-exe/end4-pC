@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
@@ -31,7 +32,7 @@ Item {
     Rectangle {
         id: background
         anchors.fill: parent
-        color: Appearance.m3colors.m3surfaceContainer
+        color: MonitorThemes.colorForItem(root, "surface_container", Appearance.m3colors.m3surfaceContainer)
         implicitHeight: 56
         implicitWidth: toolbarLayout.implicitWidth + root.padding * 2
         radius: height / 2

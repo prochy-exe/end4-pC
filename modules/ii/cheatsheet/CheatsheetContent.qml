@@ -57,7 +57,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: Appearance.colors.colScrim
+        color: MonitorThemes.shellColorForItem(root, "colScrim", Appearance.colors.colScrim)
     }
 
     StyledFlickable {
@@ -93,20 +93,20 @@ Item {
                         MaterialSymbol {
                             text: root.sectionIcons[card.modelData] ?? "keyboard"
                             iconSize: Appearance.font.pixelSize.larger
-                            color: Appearance.colors.colPrimary
+                            color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                         }
                         StyledText {
                             text: card.modelData
                             font.pixelSize: Appearance.font.pixelSize.larger
                             font.weight: Font.Medium
-                            color: Appearance.colors.colOnLayer0
+                            color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                         }
                     }
 
                     Rectangle {
                         Layout.fillWidth: true
                         radius: Appearance.rounding.normal
-                        color: Appearance.colors.colLayer1
+                        color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
                         clip: true
                         implicitHeight: rowsCol.implicitHeight + 16
 
@@ -139,7 +139,7 @@ Item {
                                         Layout.fillWidth: true
                                         Layout.minimumWidth: 0
                                         text: root.displayName(modelData.description)
-                                        color: Appearance.colors.colOnLayer1
+                                        color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                                         wrapMode: Text.WordWrap
                                     }
                                     KeyChips {
@@ -158,7 +158,7 @@ Item {
         ScrollEdgeFade {
             target: flickable
             vertical: false
-            color: Appearance.colors.colLayer0Base
+            color: MonitorThemes.shellColorForItem(root, "colLayer0Base", Appearance.colors.colLayer0Base)
         }
     }
 }

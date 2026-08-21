@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
@@ -14,13 +15,13 @@ RippleButton {
             visible: text !== ""
             text: buttonWithIconRoot.mainText
             font.pixelSize: Appearance.font.pixelSize.small
-            color: Appearance.colors.colOnSecondaryContainer
+            color: MonitorThemes.shellColorForItem(parent, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
         }
     }
     implicitHeight: 35
     horizontalPadding: 10
     buttonRadius: Appearance.rounding.small
-    colBackground: Appearance.colors.colLayer2
+    colBackground: MonitorThemes.shellColorForItem(parent, "colLayer2", Appearance.colors.colLayer2)
 
     contentItem: RowLayout {
         Item {
@@ -33,7 +34,7 @@ RippleButton {
                 sourceComponent: MaterialSymbol {
                     text: buttonWithIconRoot.materialIcon
                     iconSize: Appearance.font.pixelSize.larger
-                    color: Appearance.colors.colOnSecondaryContainer
+                    color: MonitorThemes.shellColorForItem(parent, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                     fill: buttonWithIconRoot.materialIconFill ? 1 : 0
                 }
             }
@@ -45,7 +46,7 @@ RippleButton {
                     text: buttonWithIconRoot.nerdIcon
                     font.pixelSize: Appearance.font.pixelSize.larger
                     font.family: Appearance.font.family.iconNerd
-                    color: Appearance.colors.colOnSecondaryContainer
+                    color: MonitorThemes.shellColorForItem(parent, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                 }
             }
         }

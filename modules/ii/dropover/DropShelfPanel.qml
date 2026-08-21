@@ -51,9 +51,9 @@ PanelWindow {
         id: shelfBg
         anchors.fill: parent
         radius: Appearance.rounding.large
-        color: Appearance.colors.colLayer0
+        color: MonitorThemes.shellColorForItem(parent, "colLayer0", Appearance.colors.colLayer0)
         border.width: 1
-        border.color: Appearance.colors.colLayer0Border
+        border.color: MonitorThemes.shellColorForItem(parent, "colLayer0Border", Appearance.colors.colLayer0Border)
 
         ColumnLayout {
             id: contentColumn
@@ -122,7 +122,7 @@ PanelWindow {
                             Rectangle {
                                 id: fileBg
                                 anchors.fill: parent
-                                color: Appearance.colors.colSurfaceContainerHighest
+                                color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighest", Appearance.colors.colSurfaceContainerHighest)
 
                                 Drag.active: fileDragArea.drag.active
                                 Drag.dragType: Drag.Automatic
@@ -136,7 +136,7 @@ PanelWindow {
                                         Layout.alignment: Qt.AlignHCenter
                                         text: shelfItemLoader.entryPath.endsWith("/") ? "folder" : "draft"
                                         iconSize: 32
-                                        color: Appearance.colors.colOnLayer1
+                                        color: MonitorThemes.shellColorForItem(parent, "colOnLayer1", Appearance.colors.colOnLayer1)
                                     }
                                     StyledText {
                                         Layout.alignment: Qt.AlignHCenter
@@ -144,7 +144,7 @@ PanelWindow {
                                         elide: Text.ElideMiddle
                                         text: shelfItemLoader.entryPath.split("/").pop()
                                         font.pixelSize: Appearance.font.pixelSize.smaller
-                                        color: Appearance.colors.colOnLayer1
+                                        color: MonitorThemes.shellColorForItem(parent, "colOnLayer1", Appearance.colors.colOnLayer1)
                                     }
                                 }
 
@@ -171,7 +171,7 @@ PanelWindow {
                 Layout.alignment: Qt.AlignHCenter
                 text: Translation.tr("%1 elements").arg(DropShelf.items.length)
                 font.pixelSize: Appearance.font.pixelSize.normal
-                color: Appearance.colors.colOnLayer0
+                color: MonitorThemes.shellColorForItem(parent, "colOnLayer0", Appearance.colors.colOnLayer0)
             }
 
             RowLayout {
@@ -183,8 +183,8 @@ PanelWindow {
                     Layout.fillWidth: true
                     implicitHeight: 40
                     buttonRadius: height / 2
-                    colBackground: Appearance.colors.colSecondaryContainer
-                    colBackgroundHover: Appearance.colors.colSecondaryContainerHover
+                    colBackground: MonitorThemes.shellColorForItem(parent, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+                    colBackgroundHover: MonitorThemes.shellColorForItem(parent, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
                     onClicked: DropShelf.copyAll()
                     contentItem: RowLayout {
                         anchors.fill: parent
@@ -194,7 +194,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignHCenter
                             text: Translation.tr("Copy")
-                            color: Appearance.colors.colOnSecondaryContainer
+                            color: MonitorThemes.shellColorForItem(parent, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                         }
                     }
                 }
@@ -204,8 +204,8 @@ PanelWindow {
                     Layout.alignment: Qt.AlignRight
                     implicitHeight: 40
                     buttonRadius: height / 2
-                    colBackground: Appearance.colors.colLayer1
-                    colBackgroundHover: Appearance.colors.colLayer1Hover
+                    colBackground: MonitorThemes.shellColorForItem(parent, "colLayer1", Appearance.colors.colLayer1)
+                    colBackgroundHover: MonitorThemes.shellColorForItem(parent, "colLayer1Hover", Appearance.colors.colLayer1Hover)
                     onClicked: DropShelf.clear()
                     contentItem: RowLayout {
                         anchors.fill: parent
@@ -215,7 +215,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignHCenter
                             text: Translation.tr("Clear")
-                            color: Appearance.colors.colOnLayer1
+                            color: MonitorThemes.shellColorForItem(parent, "colOnLayer1", Appearance.colors.colOnLayer1)
                         }
                     }
                 }
@@ -224,8 +224,8 @@ PanelWindow {
                     Layout.alignment: Qt.AlignRight
                     implicitHeight: 40
                     buttonRadius: height / 2
-                    colBackground: Appearance.colors.colLayer1
-                    colBackgroundHover: Appearance.colors.colLayer1Hover
+                    colBackground: MonitorThemes.shellColorForItem(parent, "colLayer1", Appearance.colors.colLayer1)
+                    colBackgroundHover: MonitorThemes.shellColorForItem(parent, "colLayer1Hover", Appearance.colors.colLayer1Hover)
                     onClicked: DropShelf.hide()
                     contentItem: RowLayout {
                         anchors.fill: parent
@@ -235,7 +235,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignHCenter
                             text: Translation.tr("Close")
-                            color: Appearance.colors.colOnLayer1
+                            color: MonitorThemes.shellColorForItem(parent, "colOnLayer1", Appearance.colors.colOnLayer1)
                         }
                     }
                 }

@@ -194,6 +194,17 @@ switch() {
 
     matugen_args=(--source-color-index 0)
 
+    # When requested, the app/shell accent is generated from the selected
+    # monitor's wallpaper instead of whichever monitor initiated the switch.
+    if [[ -z "$colors_lock_flag" && -f "$SHELL_CONFIG_FILE" ]] \
+        && [[ "$(jq -r '.appearance.wallpaperTheming.useWallpaperColorForApps // true' "$SHELL_CONFIG_FILE")" != "true" ]]; then
+        accent_monitor="$(jq -r '.appearance.wallpaperTheming.accentMonitor // empty' "$SHELL_CONFIG_FILE")"
+        accent_path="$(jq -r --arg monitor "$accent_monitor" '.background.monitorWallpapers // [] | .[] | select(.name == $monitor) | .path' "$SHELL_CONFIG_FILE" | head -n 1)"
+        if [[ -n "$accent_path" && -f "$accent_path" ]]; then
+            imgpath="$accent_path"
+        fi
+    fi
+
     if [[ "$color_flag" == "1" ]]; then
         matugen_args+=(color hex "$color")
         generate_colors_material_args=(--color "$color")
@@ -366,6 +377,15 @@ switch() {
 
     if [[ -z "$colors_lock_flag" ]]; then
         "$SCRIPT_DIR"/applycolor.sh
+    fi
+
+    # Rebuild monitor palettes after the per-monitor path has been persisted.
+    # This must happen here because changing an entry inside monitorWallpapers
+    # does not reliably emit a QML property-change signal. The generator reads
+    # the OS/app accent settings directly from config.json.
+    if [[ -z "$colors_lock_flag" ]] \
+        && [[ "$(jq -r '.background.wallpaperMode // "shared"' "$SHELL_CONFIG_FILE" 2>/dev/null)" == "perMonitor" ]]; then
+        python3 "$CONFIG_DIR/scripts/colors/generate-monitor-themes.py" &
     fi
 
     max_width_desired="$(hyprctl monitors -j | jq '([.[].width] | min)' | xargs)"

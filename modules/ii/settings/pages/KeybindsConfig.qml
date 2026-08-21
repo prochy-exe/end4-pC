@@ -130,7 +130,7 @@ ContentPage {
                 Rectangle {
                     Layout.fillWidth: true
                     radius: Appearance.rounding.normal
-                    color: Appearance.colors.colLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                     visible: page.keybindsForSection(modelData).length > 0 || page.customBindsForSection(modelData).length > 0
                     implicitHeight: rowsColumn.implicitHeight + 16
 
@@ -180,7 +180,7 @@ ContentPage {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
             Layout.bottomMargin: 6
-            color: Appearance.colors.colOutlineVariant
+            color: MonitorThemes.shellColorForItem(page, "colOutlineVariant", Appearance.colors.colOutlineVariant)
             opacity: 0.4
         }
 
@@ -196,14 +196,14 @@ ContentPage {
                 StyledText {
                     Layout.fillWidth: true
                     text: row.keybind.description
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                 }
                 StyledText {
                     Layout.fillWidth: true
                     visible: row.keybind.overridden
                     text: Translation.tr("Default: ") + row.keybind.defaultKey
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colSubtext
+                    color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                 }
             }
 
@@ -243,7 +243,7 @@ ContentPage {
                         id: disabledPillComponent
                         StyledText {
                             text: Translation.tr("Disabled")
-                            color: Appearance.colors.colSubtext
+                            color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                             font.italic: true
                         }
                     }
@@ -269,7 +269,7 @@ ContentPage {
                     anchors.centerIn: parent
                     text: "restart_alt"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                 }
             }
         }
@@ -279,7 +279,7 @@ ContentPage {
             visible: row.isMouseBind
             text: Translation.tr("Bound to a mouse button - not rebindable here")
             font.pixelSize: Appearance.font.pixelSize.smaller
-            color: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
         }
 
         StyledText {
@@ -287,7 +287,7 @@ ContentPage {
             visible: row.conflictWarning.length > 0
             text: row.conflictWarning
             font.pixelSize: Appearance.font.pixelSize.smaller
-            color: Appearance.colors.colError
+            color: MonitorThemes.shellColorForItem(page, "colError", Appearance.colors.colError)
         }
     }
 
@@ -301,7 +301,7 @@ ContentPage {
 
         focus: true
         buttonRadius: Appearance.rounding.small
-        colBackground: Appearance.colors.colPrimaryContainer
+        colBackground: MonitorThemes.shellColorForItem(page, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
         implicitHeight: 32
         horizontalPadding: 10
 
@@ -315,7 +315,7 @@ ContentPage {
 
         contentItem: StyledText {
             text: recorder.liveText || Translation.tr("Press keys… (Esc clears, click away cancels)")
-            color: Appearance.colors.colOnPrimaryContainer
+            color: MonitorThemes.shellColorForItem(page, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
         }
 
         Keys.onPressed: event => {
@@ -352,9 +352,9 @@ ContentPage {
 
         implicitHeight: Math.max(36, textArea.implicitHeight + 16)
         radius: Appearance.rounding.small
-        color: Appearance.colors.colLayer2
+        color: MonitorThemes.shellColorForItem(page, "colLayer2", Appearance.colors.colLayer2)
         border.width: textArea.activeFocus ? 2 : 0
-        border.color: Appearance.colors.colPrimary
+        border.color: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
         clip: true
 
         TextArea {
@@ -363,8 +363,8 @@ ContentPage {
             anchors.margins: 8
             wrapMode: TextArea.Wrap
             selectByMouse: true
-            color: Appearance.colors.colOnLayer2
-            placeholderTextColor: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(page, "colOnLayer2", Appearance.colors.colOnLayer2)
+            placeholderTextColor: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
             placeholderText: fieldRoot.placeholderText
             background: null
             renderType: Text.NativeRendering
@@ -388,7 +388,7 @@ ContentPage {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
             Layout.bottomMargin: 6
-            color: Appearance.colors.colOutlineVariant
+            color: MonitorThemes.shellColorForItem(page, "colOutlineVariant", Appearance.colors.colOutlineVariant)
             opacity: 0.4
         }
 
@@ -404,13 +404,13 @@ ContentPage {
                 StyledText {
                     Layout.fillWidth: true
                     text: customRow.entry.description
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                 }
                 StyledText {
                     Layout.fillWidth: true
                     text: Translation.tr("Custom")
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colSubtext
+                    color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                 }
             }
 
@@ -452,7 +452,7 @@ ContentPage {
                     anchors.centerIn: parent
                     text: "delete"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                 }
             }
         }
@@ -472,7 +472,7 @@ ContentPage {
             visible: customRow.entry.kind === "lua"
             text: Translation.tr("Native Hyprland action")
             font.pixelSize: Appearance.font.pixelSize.smaller
-            color: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
             font.italic: true
         }
 
@@ -481,7 +481,7 @@ ContentPage {
             visible: customRow.conflictWarning.length > 0
             text: customRow.conflictWarning
             font.pixelSize: Appearance.font.pixelSize.smaller
-            color: Appearance.colors.colError
+            color: MonitorThemes.shellColorForItem(page, "colError", Appearance.colors.colError)
         }
     }
 
@@ -512,7 +512,7 @@ ContentPage {
 
             StyledText {
                 text: Translation.tr("Key")
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
             }
 
             Loader {
@@ -544,7 +544,7 @@ ContentPage {
                         id: placeholderComp
                         StyledText {
                             text: Translation.tr("Click to set")
-                            color: Appearance.colors.colSubtext
+                            color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                             font.italic: true
                         }
                     }

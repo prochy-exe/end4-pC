@@ -396,9 +396,9 @@ PanelWindow {
 
         visible: window.isClusterLeader(itemId) || pill.isDraggingThis
         radius: height / 2
-        color: Appearance.colors.colLayer0
+        color: MonitorThemes.shellColorForItem(parent, "colLayer0", Appearance.colors.colLayer0)
         border.width: pill.isDraggingThis ? 2 : 1
-        border.color: pill.isDraggingThis ? Appearance.colors.colPrimary : Appearance.colors.colOutlineVariant
+        border.color: pill.isDraggingThis ? MonitorThemes.shellColorForItem(parent, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(parent, "colOutlineVariant", Appearance.colors.colOutlineVariant)
         width: info.members.length * window.iconSpacing + 8
         height: 28
         z: pill.isDraggingThis ? 50 : 0
@@ -512,7 +512,7 @@ PanelWindow {
         itemId: "ticker"
         label: Translation.tr("Media ticker")
         iconName: "music_note"
-        accentColor: Appearance.colors.colPrimary
+        accentColor: MonitorThemes.shellColorForItem(parent, "colPrimary", Appearance.colors.colPrimary)
         screen: window.screen
         overlay: window.overlay
         monitorMode: Config.options.media.tickerMonitorMode
@@ -532,7 +532,7 @@ PanelWindow {
         visible: window.tickerPreviewHere
         label: Translation.tr("Media ticker")
         iconName: "music_note"
-        accentColor: Appearance.colors.colPrimary
+        accentColor: MonitorThemes.shellColorForItem(parent, "colPrimary", Appearance.colors.colPrimary)
         readonly property var center: window.previewCenterFor("ticker")
         centerX: center.x
         centerY: center.y
@@ -546,7 +546,7 @@ PanelWindow {
         itemId: "notifications"
         label: Translation.tr("Notifications")
         iconName: "notifications"
-        accentColor: Appearance.colors.colTertiary
+        accentColor: MonitorThemes.shellColorForItem(parent, "colTertiary", Appearance.colors.colTertiary)
         screen: window.screen
         overlay: window.overlay
         monitorMode: Config.options.notifications.monitorMode
@@ -566,7 +566,7 @@ PanelWindow {
         visible: window.notificationsPreviewHere
         label: Translation.tr("Notifications")
         iconName: "notifications"
-        accentColor: Appearance.colors.colTertiary
+        accentColor: MonitorThemes.shellColorForItem(parent, "colTertiary", Appearance.colors.colTertiary)
         readonly property var center: window.previewCenterFor("notifications")
         centerX: center.x
         centerY: center.y
@@ -580,7 +580,7 @@ PanelWindow {
         itemId: "osd"
         label: Translation.tr("On-screen display")
         iconName: "tune"
-        accentColor: Appearance.colors.colSecondary
+        accentColor: MonitorThemes.shellColorForItem(parent, "colSecondary", Appearance.colors.colSecondary)
         screen: window.screen
         overlay: window.overlay
         monitorMode: Config.options.osd.monitorMode
@@ -600,7 +600,7 @@ PanelWindow {
         visible: window.osdPreviewHere
         label: Translation.tr("On-screen display")
         iconName: "tune"
-        accentColor: Appearance.colors.colSecondary
+        accentColor: MonitorThemes.shellColorForItem(parent, "colSecondary", Appearance.colors.colSecondary)
         readonly property var center: window.previewCenterFor("osd")
         centerX: center.x
         centerY: center.y
@@ -626,7 +626,7 @@ PanelWindow {
         radius: width / 2
         color: window.overlay.draggingAccentColor
         border.width: 2
-        border.color: Appearance.colors.colLayer0
+        border.color: MonitorThemes.shellColorForItem(parent, "colLayer0", Appearance.colors.colLayer0)
         x: Math.max(ghost.minX, Math.min(ghost.maxX, window.overlay.cursorGlobalX - (window.screen?.x ?? 0) - width / 2))
         y: Math.max(ghost.minY, Math.min(ghost.maxY, window.overlay.cursorGlobalY - (window.screen?.y ?? 0) - height / 2))
         z: 100
@@ -657,7 +657,7 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottomMargin: 80
         radius: Appearance.rounding.normal
-        color: Appearance.colors.colLayer0
+        color: MonitorThemes.shellColorForItem(parent, "colLayer0", Appearance.colors.colLayer0)
         implicitWidth: boundaryHintText.implicitWidth + 24
         implicitHeight: boundaryHintText.implicitHeight + 16
         z: 101
@@ -666,7 +666,7 @@ PanelWindow {
             id: boundaryHintText
             anchors.centerIn: parent
             text: Translation.tr("Can't move to another monitor while \"Follow active monitor\" is on")
-            color: Appearance.colors.colOnLayer0
+            color: MonitorThemes.shellColorForItem(parent, "colOnLayer0", Appearance.colors.colOnLayer0)
         }
     }
 

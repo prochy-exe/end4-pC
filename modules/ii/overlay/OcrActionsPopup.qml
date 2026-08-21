@@ -83,7 +83,7 @@ Scope {
                 enableShadow: true
                 padding: 6
                 radius: height / 2
-                colBackground: Appearance.colors.colLayer1
+                colBackground: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
 
                 ToolbarPairedFab {
                     iconText: "content_copy"

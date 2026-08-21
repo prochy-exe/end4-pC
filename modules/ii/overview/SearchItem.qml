@@ -51,14 +51,14 @@ RippleButton {
     implicitHeight: rowLayout.implicitHeight + root.buttonVerticalPadding * 2
     implicitWidth: rowLayout.implicitWidth + root.buttonHorizontalPadding * 2
     buttonRadius: Appearance.rounding.normal
-    colBackground: (root.down || root.keyboardDown) ? Appearance.colors.colPrimaryContainerActive : 
-        (selected ? Appearance.colors.colPrimaryContainer : 
-        ColorUtils.transparentize(Appearance.colors.colPrimaryContainer, 1))
-    colBackgroundHover: Appearance.colors.colPrimaryContainer
-    colRipple: Appearance.colors.colPrimaryContainerActive
-    property color colForeground: selected ? Appearance.colors.colOnPrimaryContainer : Appearance.m3colors.m3onSurface
+    colBackground: (root.down || root.keyboardDown) ? MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive) : 
+        (selected ? MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : 
+        ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer), 1))
+    colBackgroundHover: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+    colRipple: MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
+    property color colForeground: selected ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) : MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
 
-    readonly property string highlightPrefix: `<u><font color="${Appearance.colors.colPrimary}">`
+    readonly property string highlightPrefix: `<u><font color="${MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)}">`
     readonly property string highlightSuffix: `</font></u>`
     // Note that this highlighting is independent from the search
     // It's close, but does not accurately represent how the fuzzy algorithm works
@@ -194,7 +194,7 @@ RippleButton {
             spacing: 0
             StyledText {
                 font.pixelSize: Appearance.font.pixelSize.smaller
-                color: root.selected ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colSubtext
+                color: root.selected ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) : MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 visible: root.itemType && root.itemType != Translation.tr("App")
                 text: root.itemType
             }
@@ -206,13 +206,13 @@ RippleButton {
                         implicitWidth: activeText.implicitHeight
                         implicitHeight: activeText.implicitHeight
                         radius: Appearance.rounding.full
-                        color: Appearance.colors.colPrimary
+                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                         MaterialSymbol {
                             id: activeText
                             anchors.centerIn: parent
                             text: "check"
                             font.pixelSize: Appearance.font.pixelSize.normal
-                            color: Appearance.m3colors.m3onPrimary
+                            color: MonitorThemes.colorForItem(root, "on_primary", Appearance.m3colors.m3onPrimary)
                         }
                     }
                 }
@@ -240,7 +240,7 @@ RippleButton {
                 visible: root.itemTags !== "" && (root.itemType === Translation.tr("Symbol") || root.itemType === Translation.tr("Bitwarden"))
                 Layout.fillWidth: true
                 font.pixelSize: Appearance.font.pixelSize.smaller
-                color: root.selected ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colSubtext
+                color: root.selected ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) : MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 elide: Text.ElideRight
                 text: root.itemTags
             }
@@ -272,7 +272,7 @@ RippleButton {
             visible: root.selected || root.itemType === Translation.tr("Keybind")
             id: clickAction
             font.pixelSize: Appearance.font.pixelSize.normal
-            color: Appearance.colors.colOnPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
             horizontalAlignment: Text.AlignRight
             text: root.itemClickActionName
         }
@@ -292,8 +292,8 @@ RippleButton {
                     implicitHeight: 34
                     implicitWidth: 34
 
-                    colBackgroundHover: Appearance.colors.colSecondaryContainerHover
-                    colRipple: Appearance.colors.colSecondaryContainerActive
+                    colBackgroundHover: MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+                    colRipple: MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
 
                     contentItem: Item {
                         id: actionContentItem

@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import QtQuick
 
@@ -23,7 +24,7 @@ Flow {
                 visible: index > 0
                 anchors.verticalCenter: parent.verticalCenter
                 text: "+"
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             }
             KeyboardKey {
                 anchors.verticalCenter: parent.verticalCenter

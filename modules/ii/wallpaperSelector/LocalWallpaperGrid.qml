@@ -66,19 +66,19 @@ Item {
             RippleButton {
                 implicitWidth: 36; implicitHeight: 36
                 buttonRadius: height / 2
-                colBackground: Appearance.colors.colPrimaryContainer
+                colBackground: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                 onClicked: contextMenu.visible = false
                 contentItem: MaterialSymbol {
                     anchors.centerIn: parent
                     text: "close"
                     iconSize: Appearance.font.pixelSize.larger
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
             }
             RippleButton {
                 implicitWidth: 36; implicitHeight: 36
                 buttonRadius: height / 2
-                colBackground: Appearance.colors.colErrorContainer
+                colBackground: MonitorThemes.shellColorForItem(root, "colErrorContainer", Appearance.colors.colErrorContainer)
                 onClicked: {
                     contextMenu.visible = false
                     deleteProc.deleteFile(contextMenu.targetPath)
@@ -87,7 +87,7 @@ Item {
                     anchors.centerIn: parent
                     text: "check"
                     iconSize: Appearance.font.pixelSize.larger
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
             }
         }
@@ -159,15 +159,15 @@ Item {
             width: grid.cellWidth
             height: grid.cellHeight
             colBackground: (index === grid?.currentIndex || containsMouse)
-                ? Appearance.colors.colPrimary
+                ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 : (fileModelData.filePath === Config.options.background.wallpaperPath)
-                    ? Appearance.colors.colSecondaryContainer
-                    : ColorUtils.transparentize(Appearance.colors.colPrimaryContainer)
+                    ? MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+                    : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer))
             colText: (index === grid.currentIndex || containsMouse)
-                ? Appearance.colors.colOnPrimary
+                ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 : (fileModelData.filePath === Config.options.background.wallpaperPath)
-                    ? Appearance.colors.colOnSecondaryContainer
-                    : Appearance.colors.colOnLayer0
+                    ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
+                    : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
 
             MouseArea {
                 anchors.fill: parent

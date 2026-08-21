@@ -21,7 +21,7 @@ Item {
         id: scrimOverlay
         anchors.fill: parent
         radius: Appearance.rounding.small
-        color: Appearance.colors.colScrim
+        color: MonitorThemes.shellColorForItem(root, "colScrim", Appearance.colors.colScrim)
         MouseArea {
             hoverEnabled: true
             anchors.fill: parent
@@ -32,7 +32,7 @@ Item {
 
     Rectangle { // The dialog
         id: dialog
-        color: Appearance.m3colors.m3surfaceContainerHigh
+        color: MonitorThemes.colorForItem(root, "surface_container_high", Appearance.m3colors.m3surfaceContainerHigh)
         radius: Appearance.rounding.normal
         anchors.fill: parent
         anchors.margins: dialogMargin
@@ -49,13 +49,13 @@ Item {
                 Layout.leftMargin: dialogPadding
                 Layout.rightMargin: dialogPadding
                 Layout.alignment: Qt.AlignLeft
-                color: Appearance.m3colors.m3onSurface
+                color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
                 font.pixelSize: Appearance.font.pixelSize.larger
                 text: root.titleText
             }
 
             Rectangle {
-                color: Appearance.m3colors.m3outline
+                color: MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
                 implicitHeight: 1
                 Layout.fillWidth: true
                 Layout.leftMargin: dialogPadding
@@ -97,7 +97,7 @@ Item {
             }
 
             Rectangle {
-                color: Appearance.m3colors.m3outline
+                color: MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
                 implicitHeight: 1
                 Layout.fillWidth: true
                 Layout.leftMargin: dialogPadding

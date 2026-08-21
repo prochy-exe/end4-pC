@@ -12,17 +12,27 @@ import qs.modules.common.panels.lock
 import qs.modules.ii.bar as Bar
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import Quickshell.Services.SystemTray
 
 MouseArea {
     id: root
     required property LockContext context
     property bool active: false
+    property var sessionScreen: null
     property bool showInputField: active || context.currentText.length > 0
     property bool capsLockOn: false
     property bool numLockOn: false
     readonly property bool requirePasswordToPower: Config.options.lock.security.requirePasswordToPower
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
+    readonly property string lockMonitorName: root.QsWindow?.window?.screen?.name
+        ?? root.sessionScreen?.name
+        ?? root.parent?.screen?.name
+        ?? root.parent?.window?.screen?.name
+        ?? root.parent?.parent?.screen?.name
+        ?? ""
+    readonly property bool isFocusedMonitor: root.lockMonitorName !== ""
+        && root.lockMonitorName === Hyprland.focusedMonitor?.name
 
     property var    artUrl:      activePlayer?.trackArtUrl ?? ""
 
@@ -80,7 +90,10 @@ MouseArea {
         forceFieldFocus();
         toolbarScale = 1;
         toolbarOpacity = 1;
+        console.warn(`[LockSurface DEBUG] created lockMonitorName=${root.lockMonitorName} focused=${Hyprland.focusedMonitor?.name ?? ""} sessionScreen=${root.sessionScreen?.name ?? "null"} parentScreen=${root.parent?.screen?.name ?? "null"}`)
     }
+    onLockMonitorNameChanged: console.warn(`[LockSurface DEBUG] monitor changed lockMonitorName=${root.lockMonitorName} focused=${Hyprland.focusedMonitor?.name ?? ""}`)
+    onIsFocusedMonitorChanged: console.warn(`[LockSurface DEBUG] focus match=${root.isFocusedMonitor} monitor=${root.lockMonitorName} focused=${Hyprland.focusedMonitor?.name ?? ""}`)
 
     // Key presses
     property bool ctrlHeld: false
@@ -138,7 +151,7 @@ MouseArea {
     //         topMargin: 10
     //     }
     //     implicitHeight: 40
-    //     colBackground: Appearance.colors.colLayer2
+    //     colBackground: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
     //     onClicked: {
     //         context.unlocked(LockContext.ActionEnum.Unlock);
     //         GlobalStates.screenLocked = false;
@@ -151,6 +164,8 @@ MouseArea {
     // Main toolbar: password box
     Toolbar {
         id: mainIsland
+        visible: root.isFocusedMonitor
+        onVisibleChanged: console.warn(`[LockSurface DEBUG] main toolbar visible=${visible} monitor=${root.lockMonitorName} focused=${Hyprland.focusedMonitor?.name ?? ""}`)
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: parent.bottom
@@ -176,7 +191,7 @@ MouseArea {
                 fill: 1
                 text: "fingerprint"
                 iconSize: Appearance.font.pixelSize.hugeass
-                color: Appearance.colors.colOnSurfaceVariant
+                color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
             }
         }
 
@@ -188,8 +203,8 @@ MouseArea {
             // Style
             clip: true
             font.pixelSize: Appearance.font.pixelSize.small
-            selectedTextColor: materialShapeChars ? "transparent" : Appearance.colors.colOnSecondaryContainer
-            selectionColor: materialShapeChars ? "transparent" : Appearance.colors.colSecondaryContainer
+            selectedTextColor: materialShapeChars ? "transparent" : MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
+            selectionColor: materialShapeChars ? "transparent" : MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
 
             // Password
             enabled: !root.context.unlockInProgress
@@ -235,7 +250,7 @@ MouseArea {
 
             // We're drawing dots manually
             property bool materialShapeChars: Config.options.lock.materialShapeChars
-            color: ColorUtils.transparentize(Appearance.colors.colOnLayer1, materialShapeChars ? 1 : 0)
+            color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1), materialShapeChars ? 1 : 0)
             Loader {
                 active: passwordBox.materialShapeChars
                 anchors {
@@ -257,7 +272,7 @@ MouseArea {
             implicitWidth: height
             toggled: true
             enabled: !root.context.unlockInProgress
-            colBackgroundToggled: Appearance.colors.colPrimary
+            colBackgroundToggled: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
             onClicked: root.context.tryUnlock()
 
@@ -275,7 +290,7 @@ MouseArea {
                         return "restart_alt";
                     }
                 }
-                color: confirmButton.enabled ? Appearance.colors.colOnPrimary : Appearance.colors.colSubtext
+                color: confirmButton.enabled ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             }
         }
     }
@@ -283,7 +298,7 @@ MouseArea {
     // Left toolbar
     Toolbar {
         id: leftIsland
-        visible: Config.options.lock.showToolbars
+        visible: Config.options.lock.showToolbars && root.isFocusedMonitor
         anchors {
             right: mainIsland.left
             top: mainIsland.top
@@ -335,7 +350,7 @@ MouseArea {
                         implicitWidth: 40
                         implicitHeight: 40
                         radius: Appearance.rounding.full
-                        color: Appearance.colors.colPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                         Layout.alignment: Qt.AlignVCenter
                         clip: true 
 
@@ -366,7 +381,7 @@ MouseArea {
                             fill: 1
                             text: "music_note"
                             iconSize: Appearance.font.pixelSize.normal
-                            color: Appearance.colors.colOnSecondaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                             visible: root.artUrl === ""
                         }
                     }
@@ -380,7 +395,7 @@ MouseArea {
                             elide: Text.ElideRight
                             maximumLineCount: 1
                             width: Math.min(implicitWidth, 180) 
-                            color: Appearance.colors.colOnSurfaceVariant
+                            color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                             text: {
                                 var artist = activePlayer?.trackArtist || " ";
                                 return artist.length > 25 ? artist.substring(0, 25) + "..." : artist;
@@ -393,7 +408,7 @@ MouseArea {
                             elide: Text.ElideRight
                             maximumLineCount: 1
                             width: Math.min(implicitWidth, 180) 
-                            color: Appearance.colors.colOnSurfaceVariant
+                            color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                             text: {
                                 var title = cleanedTitle;
                                 return title.length > 30 ? title.substring(0, 30) + "..." : title;
@@ -409,7 +424,7 @@ MouseArea {
                         lineWidth: Appearance.rounding.unsharpen
                         value: activePlayer?.position / activePlayer?.length
                         implicitSize: 24
-                        colPrimary: Appearance.colors.colOnSurfaceVariant
+                        colPrimary: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                         enableAnimation: false
                         
                         Item {
@@ -422,7 +437,7 @@ MouseArea {
                                 fill: 1
                                 text: "music_note"
                                 iconSize: Appearance.font.pixelSize.normal
-                                color: Appearance.colors.colOnSurfaceVariant
+                                color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                             }
                         }
                     }
@@ -444,30 +459,17 @@ MouseArea {
                     fill: 1
                     text: "keyboard_alt"
                     iconSize: Appearance.font.pixelSize.huge
-                    color: Appearance.colors.colOnSurfaceVariant
+                    color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                 }
                 Loader {
                     anchors.verticalCenter: parent.verticalCenter
                     sourceComponent: StyledText {
                         text: HyprlandXkb.displayedLayoutCode
-                        color: Appearance.colors.colOnSurfaceVariant
+                        color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
                         animateChange: true
                     }
                 }
             }
-        }
-
-        IconAndTextPair {
-            visible: root.capsLockOn
-            icon: "keyboard_capslock"
-            text: Translation.tr("Caps")
-            color: Appearance.colors.colError
-        }
-
-        IconAndTextPair {
-            visible: root.numLockOn
-            icon: "pin"
-            text: Translation.tr("Num")
         }
 
         // Keyboard layout (Fcitx)
@@ -481,10 +483,30 @@ MouseArea {
         }
     }
 
+    Row {
+        anchors.horizontalCenter: mainIsland.horizontalCenter
+        anchors.bottom: mainIsland.top
+        anchors.bottomMargin: 6
+        spacing: 10
+        visible: root.isFocusedMonitor && (root.capsLockOn || root.numLockOn)
+
+        IconAndTextPair {
+            visible: root.capsLockOn
+            icon: "keyboard_capslock"
+            text: Translation.tr("Caps")
+            color: MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
+        }
+        IconAndTextPair {
+            visible: root.numLockOn
+            icon: "pin"
+            text: Translation.tr("Num")
+        }
+    }
+
     // Right toolbar
     Toolbar {
         id: rightIsland
-        visible: Config.options.lock.showToolbars
+        visible: Config.options.lock.showToolbars && root.isFocusedMonitor
         anchors {
             left: mainIsland.right
             top: mainIsland.top
@@ -499,7 +521,7 @@ MouseArea {
             visible: Battery.available
             icon: Battery.isCharging ? "bolt" : "battery_android_full"
             text: Math.round(Battery.percentage * 100)
-            color: (Battery.isLow && !Battery.isCharging) ? Appearance.colors.colError : Appearance.colors.colOnSurfaceVariant
+            color: (Battery.isLow && !Battery.isCharging) ? MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError) : MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
         }
 
         IconToolbarButton {
@@ -545,7 +567,7 @@ MouseArea {
         id: pair
         required property string icon
         required property string text
-        property color color: Appearance.colors.colOnSurfaceVariant
+        property color color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
 
         spacing: 4
         Layout.fillHeight: true

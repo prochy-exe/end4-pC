@@ -61,7 +61,7 @@ RowLayout {
             Layout.maximumWidth: root.textWidth
             elide: Text.ElideRight
             text: root.text
-            color: Appearance.colors.colOnSecondaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
             opacity: root.enabled ? 1 : 0.4
         }
     }

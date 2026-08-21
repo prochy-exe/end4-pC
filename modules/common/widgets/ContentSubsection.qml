@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
@@ -23,7 +24,7 @@ ColumnLayout {
             text: "info"
             iconSize: Appearance.font.pixelSize.large
             
-            color: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             MouseArea {
                 id: infoMouseArea
                 anchors.fill: parent

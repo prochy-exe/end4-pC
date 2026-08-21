@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import Quickshell
 import qs.modules.common
@@ -6,7 +7,7 @@ import qs.modules.common.widgets
 
 StyledText {
     text: "Some body content"
-    color: Appearance.colors.colOnSurfaceVariant
+    color: MonitorThemes.shellColorForItem(parent, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
     font.pixelSize: Appearance.font.pixelSize.small
     wrapMode: Text.Wrap
 }

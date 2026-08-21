@@ -9,12 +9,12 @@ import Quickshell
 RippleButton {
     id: lightDarkButtonRoot
     required property bool dark
-    property color previewBg: dark ? ColorUtils.colorWithHueOf("#3f3838", Appearance.m3colors.m3primary) : 
-        ColorUtils.colorWithHueOf("#F7F9FF", Appearance.m3colors.m3primary)
+    property color previewBg: dark ? ColorUtils.colorWithHueOf("#3f3838", MonitorThemes.colorForItem(parent, "primary", Appearance.m3colors.m3primary)) : 
+        ColorUtils.colorWithHueOf("#F7F9FF", MonitorThemes.colorForItem(parent, "primary", Appearance.m3colors.m3primary))
     property color previewFg: dark ? Qt.lighter(previewBg, 2.2) : ColorUtils.mix(previewBg, "#292929", 0.85)
     padding: 5
     Layout.fillWidth: true
-    colBackground: Appearance.colors.colLayer2
+    colBackground: MonitorThemes.shellColorForItem(parent, "colLayer2", Appearance.colors.colLayer2)
     toggled: Appearance.m3colors.darkmode === dark
     onClicked: {
         Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode ${dark ? "dark" : "light"} --noswitch`])
@@ -34,7 +34,7 @@ RippleButton {
                 color: lightDarkButtonRoot.previewBg
                 border {
                     width: 1
-                    color: Appearance.m3colors.m3outlineVariant
+                    color: MonitorThemes.colorForItem(parent, "outline_variant", Appearance.m3colors.m3outlineVariant)
                 }
 
                 // Some skeleton items
@@ -74,14 +74,14 @@ RippleButton {
                         value: 0.7
                         wavy: true
                         animateWave: lightDarkButtonRoot.toggled
-                        highlightColor: lightDarkButtonRoot.toggled ? Appearance.m3colors.m3primary : lightDarkButtonRoot.previewFg
+                        highlightColor: lightDarkButtonRoot.toggled ? MonitorThemes.colorForItem(parent, "primary", Appearance.m3colors.m3primary) : lightDarkButtonRoot.previewFg
                         trackColor: ColorUtils.mix(lightDarkButtonRoot.previewBg, lightDarkButtonRoot.previewFg, 0.5)
                     }
                     RowLayout {
                         spacing: 2
                         Rectangle {
                             radius: Appearance.rounding.full
-                            color: lightDarkButtonRoot.toggled ? Appearance.m3colors.m3primary : lightDarkButtonRoot.previewFg
+                            color: lightDarkButtonRoot.toggled ? MonitorThemes.colorForItem(parent, "primary", Appearance.m3colors.m3primary) : lightDarkButtonRoot.previewFg
                             Layout.fillWidth: true
                             implicitHeight: 30
                             MaterialSymbol {
@@ -90,12 +90,12 @@ RippleButton {
                                 horizontalAlignment: Text.AlignHCenter
                                 text: "check"
                                 iconSize: 20
-                                color: lightDarkButtonRoot.toggled ? Appearance.m3colors.m3onPrimary : lightDarkButtonRoot.previewBg
+                                color: lightDarkButtonRoot.toggled ? MonitorThemes.colorForItem(parent, "on_primary", Appearance.m3colors.m3onPrimary) : lightDarkButtonRoot.previewBg
                             }
                         }
                         Rectangle {
                             radius: Appearance.rounding.unsharpenmore
-                            color: lightDarkButtonRoot.toggled ? Appearance.m3colors.m3secondaryContainer : lightDarkButtonRoot.previewFg
+                            color: lightDarkButtonRoot.toggled ? MonitorThemes.colorForItem(parent, "secondary_container", Appearance.m3colors.m3secondaryContainer) : lightDarkButtonRoot.previewFg
                             Layout.fillWidth: true
                             implicitHeight: 30
                         }
@@ -104,7 +104,7 @@ RippleButton {
                             bottomLeftRadius: Appearance.rounding.unsharpenmore
                             topRightRadius: Appearance.rounding.full
                             bottomRightRadius: Appearance.rounding.full
-                            color: lightDarkButtonRoot.toggled ? Appearance.m3colors.m3secondaryContainer : lightDarkButtonRoot.previewFg
+                            color: lightDarkButtonRoot.toggled ? MonitorThemes.colorForItem(parent, "secondary_container", Appearance.m3colors.m3secondaryContainer) : lightDarkButtonRoot.previewFg
                             Layout.fillWidth: true
                             implicitHeight: 30
                         }
@@ -114,7 +114,7 @@ RippleButton {
             StyledText {
                 Layout.fillWidth: true
                 text: dark ? Translation.tr("Dark") : Translation.tr("Light")
-                color: lightDarkButtonRoot.toggled ? Appearance.m3colors.m3onPrimary : Appearance.colors.colOnLayer2
+                color: lightDarkButtonRoot.toggled ? MonitorThemes.colorForItem(parent, "on_primary", Appearance.m3colors.m3onPrimary) : MonitorThemes.shellColorForItem(parent, "colOnLayer2", Appearance.colors.colOnLayer2)
                 horizontalAlignment: Text.AlignHCenter
             }
         }

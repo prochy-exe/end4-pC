@@ -39,8 +39,8 @@ Item {
     }
 
     property color artDominantColor: ColorUtils.mix(
-        colorQuantizer?.colors[0] ?? Appearance.colors.colPrimary,
-        Appearance.colors.colPrimaryContainer,
+        colorQuantizer?.colors[0] ?? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary),
+        MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer),
         0.8)
 
     property QtObject blendedColors: AdaptedMaterialScheme {
@@ -49,7 +49,7 @@ Item {
 
     onArtFilePathChanged: {
         if (!root.artUrl || root.artUrl.length === 0) {
-            root.artDominantColor = Appearance.m3colors.m3secondaryContainer
+            root.artDominantColor = MonitorThemes.colorForItem(root, "secondary_container", Appearance.m3colors.m3secondaryContainer)
             root.artDownloaded = false
             return
         }

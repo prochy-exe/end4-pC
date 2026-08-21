@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import QtQuick
 
@@ -16,7 +17,7 @@ RippleButton {
         text: root.buttonText
         horizontalAlignment: Text.AlignLeft
         font.pixelSize: Appearance.font.pixelSize.small
-        color: root.enabled ? Appearance.m3colors.m3onSurface : Appearance.m3colors.m3outline
+        color: root.enabled ? MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface) : MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
 
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)

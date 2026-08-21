@@ -1,3 +1,4 @@
+import qs.services
 pragma ComponentBehavior: Bound
 import QtQuick
 import qs.modules.common as C
@@ -8,7 +9,7 @@ Rectangle {
     property bool hover: false
     property bool press: false
     property bool drag: false
-    property color contentColor: C.Appearance.m3colors.m3onBackground
+    property color contentColor: C.MonitorThemes.colorForItem(root, "on_background", Appearance.m3colors.m3onBackground)
     color: "transparent"
 
     FadeLoader {

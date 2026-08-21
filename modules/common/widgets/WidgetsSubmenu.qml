@@ -54,7 +54,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Appearance.rounding.verylarge
-        color: Appearance.colors.colLayer0
+        color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
     }
 
     ColumnLayout {
@@ -66,6 +66,7 @@ Item {
             id: showWidgetsSwitch
             Layout.fillWidth: true
             buttonIcon: "widgets"
+            monitorName: root.monitorName
             text: Translation.tr("Show widgets on this monitor")
             onClicked: root.setWidgetsShownOnMonitor(!root.widgetsShownOnMonitor)
 
@@ -80,6 +81,7 @@ Item {
         ConfigSwitch {
             Layout.fillWidth: true
             buttonIcon: "lock"
+            monitorName: root.monitorName
             text: Translation.tr("Lock widget positions")
             checked: Config.options.background.widgetsLocked
             onCheckedChanged: Config.options.background.widgetsLocked = checked
@@ -90,7 +92,7 @@ Item {
             Layout.topMargin: 4
             Layout.bottomMargin: 4
             implicitHeight: 1
-            color: Appearance.colors.colOutlineVariant
+            color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant)
             opacity: 0.4
         }
 
@@ -101,6 +103,7 @@ Item {
                 required property var modelData
                 Layout.fillWidth: true
                 buttonIcon: modelData.icon
+                monitorName: root.monitorName
                 text: modelData.name
                 enabled: root.widgetsShownOnMonitor
                 onClicked: {

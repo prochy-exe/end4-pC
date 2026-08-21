@@ -31,7 +31,7 @@ Item {
     Rectangle {
         id: bg
         anchors.fill: parent
-        color: Appearance.colors.colScrim
+        color: MonitorThemes.shellColorForItem(root, "colScrim", Appearance.colors.colScrim)
         opacity: 0
         Component.onCompleted: {
             opacity = 1
@@ -53,7 +53,7 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             iconSize: 26
             text: "security"
-            color: Appearance.colors.colSecondary
+            color: MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
         }
 
         WindowDialogTitle {

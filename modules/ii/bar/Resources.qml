@@ -11,43 +11,42 @@ BarWidgetSwitcherArea {
     horizontalExtraPadding: 12
 
     hoverEnabled: !Config.getBarSetting(root.monitorName, ["tooltips", "clickToShow"], Config.options.bar.tooltips.clickToShow)
-
     rowDefault: Component {
-        RowLayout {
-            property string monitorName: root.monitorName
-            spacing: 0
-            Resource {
+            RowLayout {
+                property string monitorName: root.monitorName
+                spacing: 0
+                Resource {
                 iconName: "memory"
                 shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowRam"], Config.options.bar.resources.alwaysShowRam)
                 percentage: ResourceUsage.memoryUsedPercentage
                 warningThreshold: Config.getBarSetting(root.monitorName, ["resources", "memoryWarningThreshold"], Config.options.bar.resources.memoryWarningThreshold)
             }
-            Resource {
+                Resource {
                 iconName: "planner_review"
                 shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpu"], Config.options.bar.resources.alwaysShowCpu)
                 percentage: ResourceUsage.cpuUsage
                 Layout.leftMargin: shown ? 6 : 0
                 warningThreshold: Config.getBarSetting(root.monitorName, ["resources", "cpuWarningThreshold"], Config.options.bar.resources.cpuWarningThreshold)
             }
-            Resource {
+                Resource {
                 iconName: "developer_board"
                 shown: ResourceUsage.gpuAvailable && Config.getBarSetting(root.monitorName, ["resources", "alwaysShowGpu"], Config.options.bar.resources.alwaysShowGpu)
                 percentage: Math.max(0, ResourceUsage.gpuUsage / 100)
                 Layout.leftMargin: shown ? 6 : 0
             }
-            Resource {
+                Resource {
                 iconName: "thermostat"
                 shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowCpuTemp"], Config.options.bar.resources.alwaysShowCpuTemp)
                 percentage: ResourceUsage.cpuTemp / 100
                 Layout.leftMargin: shown ? 6 : 0
             }
-            Resource {
+                Resource {
                 iconName: "hard_drive"
                 shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowDisk"], Config.options.bar.resources.alwaysShowDisk)
                 percentage: ResourceUsage.diskUsedPercentage
                 Layout.leftMargin: shown ? 6 : 0
             }
-            Resource {
+                Resource {
                 iconName: "swap_horiz"
                 shown: Config.getBarSetting(root.monitorName, ["resources", "alwaysShowSwap"], Config.options.bar.resources.alwaysShowSwap)
                 percentage: ResourceUsage.swapUsedPercentage

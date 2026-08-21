@@ -10,6 +10,7 @@ import Qt.labs.synchronizer
 
 Item {
     id: root
+    property string monitorName: ""
     required property var scopeRoot
     property int sidebarPadding: 10
     anchors.fill: parent
@@ -206,7 +207,7 @@ Item {
             bottomLeftRadius: Appearance.rounding.normal
             topRightRadius: 0
             bottomRightRadius: Appearance.rounding.normal
-            color: Appearance.colors.colLayer1
+            color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
 
             SwipeView { // Content pages
                 id: swipeView
@@ -260,7 +261,7 @@ Item {
                 StyledText {
                     anchors.centerIn: parent
                     text: root.animeCloset ? Translation.tr("Nothing") : Translation.tr("Enjoy your empty sidebar...")
-                    color: Appearance.colors.colSubtext
+                    color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 }
             }
         }

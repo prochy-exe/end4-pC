@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import qs.modules.common
 import qs.modules.common.widgets
@@ -12,8 +13,8 @@ MaterialShape {
     property real padding: 6
     property var wrappedShape: MaterialShape.Shape.Clover4Leaf
 
-    color: Appearance.colors.colSecondaryContainer
-    colSymbol: Appearance.colors.colOnSecondaryContainer
+    color: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+    colSymbol: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
     shape: root.wrappedShape
     implicitSize: Math.max(symbol.implicitWidth, symbol.implicitHeight) + padding * 2
 

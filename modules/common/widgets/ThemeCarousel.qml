@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -65,7 +66,7 @@ Item {
             clip:   true
 
             color: model.name === "Material"
-                   ? Appearance.colors.colPrimary
+                   ? MonitorThemes.shellColorForItem(parent, "colPrimary", Appearance.colors.colPrimary)
                    : model.baseColor
 
             Behavior on width {

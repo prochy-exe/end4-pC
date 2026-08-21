@@ -194,7 +194,7 @@ Item {
                             ColorOverlay {
                                 anchors.fill: desaturatedIcon
                                 source: desaturatedIcon
-                                color: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.9)
+                                color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.9)
                             }
                         }
                     }
@@ -215,8 +215,8 @@ Item {
                                                 ? 10 : 4
                                 implicitHeight: 4
                                 color: slotItem.appActive
-                                       ? Appearance.colors.colPrimary
-                                       : ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.4)
+                                       ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                                       : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0), 0.4)
                             }
                         }
                     }
@@ -356,7 +356,7 @@ Item {
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                 }
                 clip: true
-                color: Appearance.m3colors.m3surfaceContainer
+                color: MonitorThemes.colorForItem(root, "surface_container", Appearance.m3colors.m3surfaceContainer)
                 radius: Appearance.rounding.normal
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: Appearance.sizes.elevationMargin
@@ -401,13 +401,13 @@ Item {
                                         font.pixelSize: Appearance.font.pixelSize.small
                                         text: windowButton.modelData?.title
                                         elide: Text.ElideRight
-                                        color: Appearance.m3colors.m3onSurface
+                                        color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
                                     }
 
                                     GroupButton {
                                         id: closeButton
                                         colBackground: ColorUtils.transparentize(
-                                            Appearance.colors.colSurfaceContainer)
+                                            MonitorThemes.shellColorForItem(root, "colSurfaceContainer", Appearance.colors.colSurfaceContainer))
                                         baseWidth:    root.windowControlsHeight
                                         baseHeight:   root.windowControlsHeight
                                         buttonRadius: Appearance.rounding.full
@@ -416,7 +416,7 @@ Item {
                                             horizontalAlignment: Text.AlignHCenter
                                             text: "close"
                                             iconSize: Appearance.font.pixelSize.normal
-                                            color: Appearance.m3colors.m3onSurface
+                                            color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
                                         }
                                         onClicked: { windowButton.modelData?.close() }
                                     }

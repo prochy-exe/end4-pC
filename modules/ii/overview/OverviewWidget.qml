@@ -26,7 +26,7 @@ Item {
     property var windowAddresses: HyprlandData.addresses
     property var monitorData: HyprlandData.monitors.find(m => m.id === root.monitor?.id)
     property real scale: Config.options.overview.scale
-    property color activeBorderColor: Appearance.colors.colSecondary
+    property color activeBorderColor: MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
 
     property real workspaceImplicitWidth: (monitorData?.transform % 2 === 1) ? 
         ((monitor.height - monitorData?.reserved[0] - monitorData?.reserved[2]) * root.scale / monitor.scale) :
@@ -80,7 +80,7 @@ Item {
         implicitWidth: workspaceColumnLayout.implicitWidth + padding * 2
         implicitHeight: workspaceColumnLayout.implicitHeight + padding * 2
         radius: root.largeWorkspaceRadius + padding
-        color: Appearance.colors.colBackgroundSurfaceContainer
+        color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colBackgroundSurfaceContainer)
 
         Column { // Workspaces
             id: workspaceColumnLayout
@@ -103,9 +103,9 @@ Item {
                             required property int index
                             property int colIndex: index
                             property int workspaceValue: root.workspaceGroup * root.workspacesShown + getWsInCell(row.index, colIndex)
-                            property color defaultWorkspaceColor: Appearance.colors.colSurfaceContainerLow
-                            property color hoveredWorkspaceColor: ColorUtils.mix(defaultWorkspaceColor, Appearance.colors.colLayer1Hover, 0.1)
-                            property color hoveredBorderColor: Appearance.colors.colLayer2Hover
+                            property color defaultWorkspaceColor: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
+                            property color hoveredWorkspaceColor: ColorUtils.mix(defaultWorkspaceColor, MonitorThemes.shellColorForItem(root, "colLayer1Hover", Appearance.colors.colLayer1Hover), 0.1)
+                            property color hoveredBorderColor: MonitorThemes.shellColorForItem(root, "colLayer2Hover", Appearance.colors.colLayer2Hover)
                             property bool hoveredWhileDragging: false
 
                             implicitWidth: root.workspaceImplicitWidth
@@ -130,7 +130,7 @@ Item {
                                     weight: Font.DemiBold
                                     family: Appearance.font.family.expressive
                                 }
-                                color: ColorUtils.transparentize(Appearance.colors.colOnLayer1, 0.8)
+                                color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1), 0.8)
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }

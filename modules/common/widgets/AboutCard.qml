@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import qs
@@ -11,11 +12,11 @@ Rectangle {
     property string icon: ""
     property string label: ""
     property string value: ""
-    property color cardBgColor: Appearance.colors.colLayer1 
-    property color labelColor: Appearance.colors.colOnSurfaceVariant
-    property color valueColor: Appearance.colors.colOnSurface
-    property color iconContainerColor: Appearance.colors.colSecondaryContainer
-    property color iconColor: Appearance.colors.colOnSecondaryContainer
+    property color cardBgColor: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1) 
+    property color labelColor: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
+    property color valueColor: MonitorThemes.shellColorForItem(root, "colOnSurface", Appearance.colors.colOnSurface)
+    property color iconContainerColor: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+    property color iconColor: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
     property var iconShape: MaterialShape.Shape.Clover4Leaf
 
     property var clickAction: null

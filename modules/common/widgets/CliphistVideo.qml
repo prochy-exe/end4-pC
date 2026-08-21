@@ -33,7 +33,7 @@ Rectangle {
         return Math.min(maxWidth / mediaWidth, maxHeight / mediaHeight, 1)
     }
 
-    color: Appearance.colors.colLayer1
+    color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
     radius: Appearance.rounding.small
     implicitWidth: mediaWidth > 0 ? mediaWidth * scale : Math.min(maxWidth, 180)
     implicitHeight: mediaHeight > 0 ? mediaHeight * scale : Math.min(maxHeight, 100)
@@ -75,11 +75,11 @@ Rectangle {
     Rectangle {
         visible: root.sourcePath.length === 0
         anchors.fill: parent
-        color: Appearance.colors.colLayer2
+        color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
         StyledText {
             anchors.centerIn: parent
             text: Translation.tr("Video")
-            color: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             font.pixelSize: Appearance.font.pixelSize.small
         }
     }

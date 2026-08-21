@@ -141,9 +141,9 @@ PanelWindow {
     // Styles
     property string screenshotDir: Directories.screenshotTemp
     property color overlayColor: ColorUtils.transparentize("#000000", 0.4)
-    property color brightText: Appearance.m3colors.darkmode ? Appearance.colors.colOnLayer0 : Appearance.colors.colLayer0
-    property color brightSecondary: Appearance.m3colors.darkmode ? Appearance.colors.colSecondary : Appearance.colors.colOnSecondary
-    property color brightTertiary: Appearance.m3colors.darkmode ? Appearance.colors.colTertiary : Qt.lighter(Appearance.colors.colPrimary)
+    property color brightText: Appearance.m3colors.darkmode ? MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0) : MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
+    property color brightSecondary: Appearance.m3colors.darkmode ? MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary) : MonitorThemes.shellColorForItem(root, "colOnSecondary", Appearance.colors.colOnSecondary)
+    property color brightTertiary: Appearance.m3colors.darkmode ? MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary) : Qt.lighter(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary))
     property color selectionBorderColor: ColorUtils.mix(brightText, brightSecondary, 0.5)
     property color selectionFillColor: "#33ffffff"
     property color windowBorderColor: brightSecondary
@@ -1208,7 +1208,7 @@ PanelWindow {
 
                 StyledText {
                     text: Translation.tr("Recognizing text...")
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                     font.pixelSize: Appearance.font.pixelSize.normal
                 }
 

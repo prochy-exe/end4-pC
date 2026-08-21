@@ -110,8 +110,8 @@ Item {
                 text: "exclamation"
                 iconSize: 80 * root.scaleFactor
                 padding: 6 * root.scaleFactor
-                color: Appearance.colors.colError
-                colSymbol: Appearance.colors.colOnError
+                color: MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
+                colSymbol: MonitorThemes.shellColorForItem(root, "colOnError", Appearance.colors.colOnError)
                 shape: MaterialShape.Shape.Sunny
             }
             StyledText {
@@ -288,7 +288,7 @@ Item {
         readonly property string translatedText: root.translate(text)
         visible: translatedText != text
 
-        color: ColorUtils.transparentize(Appearance.colors.colSecondaryContainer, 0.4)
+        color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer), 0.4)
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
         }

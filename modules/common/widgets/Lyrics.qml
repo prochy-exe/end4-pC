@@ -12,8 +12,8 @@ Item {
     property color textColor: "white"
     property color activeColor: "white"
     property color dimColor: Qt.rgba(1, 1, 1, 0.35)
-    property color indicatorColor: Appearance.colors.colPrimaryContainer
-    property color indicatorShapeColor: Appearance.colors.colOnPrimaryContainer
+    property color indicatorColor: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+    property color indicatorShapeColor: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
     property int textAlignment: Text.AlignLeft
 
     implicitWidth: 200

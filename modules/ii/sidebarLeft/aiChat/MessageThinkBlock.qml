@@ -56,7 +56,7 @@ Item {
 
         Rectangle { // Header background
             id: header
-            color: Appearance.colors.colSurfaceContainerHighest
+            color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighest", Appearance.colors.colSurfaceContainerHighest)
             Layout.fillWidth: true
             implicitHeight: thinkBlockTitleBarRowLayout.implicitHeight + thinkBlockHeaderPaddingVertical * 2
 
@@ -99,10 +99,10 @@ Item {
                     visible: root.completed
                     implicitWidth: 22
                     implicitHeight: 22
-                    colBackground: headerMouseArea.containsMouse ? Appearance.colors.colLayer2Hover
-                        : ColorUtils.transparentize(Appearance.colors.colLayer2, 1)
-                    colBackgroundHover: Appearance.colors.colLayer2Hover
-                    colRipple: Appearance.colors.colLayer2Active
+                    colBackground: headerMouseArea.containsMouse ? MonitorThemes.shellColorForItem(root, "colLayer2Hover", Appearance.colors.colLayer2Hover)
+                        : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2), 1)
+                    colBackgroundHover: MonitorThemes.shellColorForItem(root, "colLayer2Hover", Appearance.colors.colLayer2Hover)
+                    colRipple: MonitorThemes.shellColorForItem(root, "colLayer2Active", Appearance.colors.colLayer2Active)
 
                     onClicked: { root.collapsed = !root.collapsed }
                     
@@ -112,7 +112,7 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         iconSize: Appearance.font.pixelSize.normal
-                        color: Appearance.colors.colOnLayer2
+                        color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                         rotation: root.collapsed ? 0 : 180
                         Behavior on rotation {
                             NumberAnimation {
@@ -150,7 +150,7 @@ Item {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 implicitHeight: messageTextBlock.implicitHeight
-                color: Appearance.colors.colLayer2
+                color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
 
                 // Load data for the message at the correct scope
                 property bool editing: root.editing

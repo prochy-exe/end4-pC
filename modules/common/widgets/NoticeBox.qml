@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
@@ -10,7 +11,7 @@ Rectangle {
     default property alias data: buttonRow.data
 
     radius: Appearance.rounding.normal
-    color: Appearance.colors.colPrimaryContainer
+    color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
     implicitWidth: mainRowLayout.implicitWidth + mainRowLayout.anchors.margins * 2
     implicitHeight: mainRowLayout.implicitHeight + mainRowLayout.anchors.margins * 2
 
@@ -26,7 +27,7 @@ Rectangle {
             Layout.alignment: Qt.AlignTop
             text: "info"
             iconSize: Appearance.font.pixelSize.huge
-            color: Appearance.colors.colOnPrimaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
         }
 
         ColumnLayout {
@@ -37,7 +38,7 @@ Rectangle {
                 id: noticeText
                 Layout.fillWidth: true
                 text: "Notice message"
-                color: Appearance.colors.colOnPrimaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                 wrapMode: Text.WordWrap
             }
 

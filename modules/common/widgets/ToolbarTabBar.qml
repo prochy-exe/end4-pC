@@ -51,7 +51,7 @@ Item {
     Rectangle {
         id: activeIndicator
         z: 0
-        color: Appearance.colors.colSecondaryContainer
+        color: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
         implicitWidth: contentItem.children[root.currentIndex]?.implicitWidth ?? 0
         implicitHeight: contentItem.children[root.currentIndex]?.implicitHeight ?? 0
         radius: height / 2

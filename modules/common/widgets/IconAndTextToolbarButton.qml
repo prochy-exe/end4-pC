@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
@@ -6,10 +7,10 @@ ToolbarButton {
     id: iconBtn
     required property string iconText
 
-    colBackgroundToggled: Appearance.colors.colSecondaryContainer
-    colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
-    colRippleToggled: Appearance.colors.colSecondaryContainerActive
-    property color colText: toggled ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnSurfaceVariant
+    colBackgroundToggled: MonitorThemes.shellColorForItem(parent, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+    colBackgroundToggledHover: MonitorThemes.shellColorForItem(parent, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+    colRippleToggled: MonitorThemes.shellColorForItem(parent, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
+    property color colText: toggled ? MonitorThemes.shellColorForItem(parent, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : MonitorThemes.shellColorForItem(parent, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
 
     contentItem: Row {
         anchors.centerIn: parent

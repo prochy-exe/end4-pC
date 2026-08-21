@@ -4,6 +4,7 @@ import qs.modules.common.widgets
 import qs.services
 import QtQuick
 import QtQuick.Controls
+import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Wayland
 
@@ -71,7 +72,16 @@ Scope {
             // size of 0. It also keeps contentHeight honest: a zero-height
             // view only ever builds the delegates that fit in its viewport
             // plus cacheBuffer.
-            height: listview.contentHeight
+            height: Math.min(listview.contentHeight, root.screen.height * 0.75)
+
+            layer.enabled: true
+            layer.effect: OpacityMask {
+                maskSource: Rectangle {
+                    width: listview.width
+                    height: listview.height
+                    radius: Appearance.rounding.normal
+                }
+            }
 
             // ONE fixed anchor pair (top+left), for every position - preset,
             // custom, centered, all of it - with the entire placement
@@ -117,7 +127,7 @@ Scope {
                 root.width, root.height,
                 // The width CONSTANT, not listview.width: reading back the
                 // property being positioned is what starts the loop above.
-                Appearance.sizes.notificationPopupWidth + 2 * pad, listview.contentHeight + 2 * pad,
+                Appearance.sizes.notificationPopupWidth + 2 * pad, listview.height + 2 * pad,
                 PopupPlacement.hyprlandGapsOut, false, false, root.customAnchor,
                 PopupPlacement.usableRectFor(root.screen))
 

@@ -36,7 +36,7 @@ RippleButton { // Expand button
             MaterialSymbol {
                 text: "keyboard_arrow_down"
                 iconSize: root.iconSize
-                color: Appearance.colors.colOnLayer2
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 rotation: expanded ? 180 : 0
                 Behavior on rotation {
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)

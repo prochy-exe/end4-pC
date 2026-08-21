@@ -125,7 +125,7 @@ ContentSubsection {
                 width: 3
                 height: 32 
                 radius: 2
-                color: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
                 Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
                 Behavior on y { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
@@ -136,7 +136,7 @@ ContentSubsection {
                     anchors.top: parent.top
                     anchors.topMargin: -4
                     width: 8; height: 8; radius: 4
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
 
                 Rectangle {
@@ -144,7 +144,7 @@ ContentSubsection {
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: -4
                     width: 8; height: 8; radius: 4
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
             }
         }
@@ -210,7 +210,7 @@ ContentSubsection {
                 StyledText {
                     visible: root.availableWidgets.length === 0
                     text: Translation.tr("No widgets available")
-                    color: Appearance.colors.colSubtext
+                    color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                     font.pixelSize: Appearance.font.pixelSize.small
                 }
             }

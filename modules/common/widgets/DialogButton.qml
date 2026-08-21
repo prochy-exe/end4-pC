@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.widgets
@@ -17,9 +18,9 @@ RippleButton {
 
     property color colEnabled: Appearance?.colors.colPrimary ?? "#65558F"
     property color colDisabled: Appearance?.m3colors.m3outline ?? "#8D8C96"
-    colBackground: ColorUtils.transparentize(Appearance.colors.colLayer3)
-    colBackgroundHover: Appearance.colors.colLayer3Hover
-    colRipple: Appearance.colors.colLayer3Active
+    colBackground: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer3", Appearance.colors.colLayer3))
+    colBackgroundHover: MonitorThemes.shellColorForItem(root, "colLayer3Hover", Appearance.colors.colLayer3Hover)
+    colRipple: MonitorThemes.shellColorForItem(root, "colLayer3Active", Appearance.colors.colLayer3Active)
     property alias colText: buttonTextWidget.color
 
     contentItem: StyledText {

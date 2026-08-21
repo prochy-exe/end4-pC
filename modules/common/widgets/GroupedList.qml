@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import QtQuick
 import QtQuick.Layouts
@@ -7,7 +8,7 @@ Item {
     default property list<Item> items
     property real bigRadius: Appearance.rounding.normal
     property real smallRadius: Appearance.rounding.unsharpenmore
-    property color bgcolor: Appearance.colors.colLayer1
+    property color bgcolor: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
     property real itemVerticalPadding: 24
     Layout.fillWidth: true
     implicitHeight: col.implicitHeight

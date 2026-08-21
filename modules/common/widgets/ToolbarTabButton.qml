@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
@@ -16,9 +17,9 @@ RippleButton {
     implicitWidth: implicitContentWidth + horizontalPadding * 2
     buttonRadius: height / 2
 
-    colBackground: ColorUtils.transparentize(Appearance.colors.colSurfaceContainer)
-    colBackgroundHover: ColorUtils.transparentize(Appearance.colors.colOnSurface, current ? 1 : 0.95)
-    colRipple: ColorUtils.transparentize(Appearance.colors.colOnSurface, 0.95)
+    colBackground: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colSurfaceContainer", Appearance.colors.colSurfaceContainer))
+    colBackgroundHover: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnSurface", Appearance.colors.colOnSurface), current ? 1 : 0.95)
+    colRipple: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnSurface", Appearance.colors.colOnSurface), 0.95)
 
     contentItem: Row {
         id: contentRow

@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
@@ -5,14 +6,14 @@ import qs.modules.common
 Item {
     id: root
 
-    property color backgroundColor: Appearance.colors.colPrimary
-    property color handColor:       Appearance.colors.colOnPrimary
-    property color centerDotColor:  Appearance.colors.colOnPrimary
+    property color backgroundColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+    property color handColor:       MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+    property color centerDotColor:  MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
     property string label:          ""
     property color labelColor:      Qt.rgba(
-        Appearance.colors.colOnPrimary.r,
-        Appearance.colors.colOnPrimary.g,
-        Appearance.colors.colOnPrimary.b,
+        MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary).r,
+        MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary).g,
+        MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary).b,
         0.75)
     property real labelSpacing: 12
 

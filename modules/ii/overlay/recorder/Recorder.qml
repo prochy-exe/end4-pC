@@ -86,9 +86,9 @@ StyledOverlayWidget {
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 Layout.fillWidth: false
                 buttonRadius: height / 2
-                colBackground: Appearance.colors.colLayer3
-                colBackgroundHover: Appearance.colors.colLayer3Hover
-                colRipple: Appearance.colors.colLayer3Active
+                colBackground: MonitorThemes.shellColorForItem(root, "colLayer3", Appearance.colors.colLayer3)
+                colBackgroundHover: MonitorThemes.shellColorForItem(root, "colLayer3Hover", Appearance.colors.colLayer3Hover)
+                colRipple: MonitorThemes.shellColorForItem(root, "colLayer3Active", Appearance.colors.colLayer3Active)
                 onClicked: {
                     GlobalStates.overlayOpen = false;
                     Qt.openUrlExternally(`file://${Config.options.screenRecord.savePath}`);
@@ -118,9 +118,9 @@ StyledOverlayWidget {
         implicitWidth: 66
         buttonRadius: height / 2
 
-        colBackground: Appearance.colors.colLayer3
-        colBackgroundHover: Appearance.colors.colLayer3Hover
-        colRipple: Appearance.colors.colLayer3Active
+        colBackground: MonitorThemes.shellColorForItem(root, "colLayer3", Appearance.colors.colLayer3)
+        colBackgroundHover: MonitorThemes.shellColorForItem(root, "colLayer3Hover", Appearance.colors.colLayer3Hover)
+        colRipple: MonitorThemes.shellColorForItem(root, "colLayer3Active", Appearance.colors.colLayer3Active)
 
         contentItem: MaterialSymbol {
             anchors.centerIn: parent

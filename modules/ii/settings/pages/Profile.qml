@@ -112,7 +112,7 @@ ContentPage {
                                 width: 64
                                 height: 64
                                 radius: width / 2
-                                color: Appearance.colors.colLayer2
+                                color: MonitorThemes.shellColorForItem(page, "colLayer2", Appearance.colors.colLayer2)
 
                                 property bool isSelected: FileUtils.trimFileProtocol(filePath.toString()) === Config.options.profile.avatarPicture
 
@@ -140,13 +140,13 @@ ContentPage {
                                     width: 20
                                     height: width
                                     radius: width / 2
-                                    color: Appearance.colors.colPrimary
+                                    color: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
 
                                     MaterialSymbol {
                                         anchors.centerIn: parent
                                         text: "check"
                                         iconSize: Appearance.font.pixelSize.small
-                                        color: Appearance.colors.colOnPrimary
+                                        color: MonitorThemes.shellColorForItem(page, "colOnPrimary", Appearance.colors.colOnPrimary)
                                     }
                                 }
 
@@ -170,13 +170,13 @@ ContentPage {
                             Layout.alignment: Qt.AlignHCenter
                             text: "image"
                             iconSize: 32
-                            color: Appearance.colors.colSubtext
+                            color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                         }
                         StyledText {
                             Layout.alignment: Qt.AlignHCenter
                             text: Translation.tr("Pick a folder above to see avatars here")
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colSubtext
+                            color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                         }
                     }
                 }
@@ -276,7 +276,7 @@ ContentPage {
                 visible: Presets.folderModel.count === 0
                 horizontalAlignment: Text.AlignHCenter
                 text: Translation.tr("No presets yet")
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                 font.pixelSize: Appearance.font.pixelSize.normal
             }
 

@@ -61,7 +61,7 @@ WindowDialog {
                     Layout.alignment: Qt.AlignHCenter
                     text: delegateItem.iconName
                     iconSize: 28
-                    color: Appearance.colors.colOnLayer0
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                 }
 
                 StyledText {
@@ -71,7 +71,7 @@ WindowDialog {
                     elide: Text.ElideRight
                     horizontalAlignment: Text.AlignHCenter
                     font.pixelSize: Appearance.font.pixelSize.smaller
-                    color: Appearance.colors.colSubtext
+                    color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 }
             }
 
@@ -87,7 +87,7 @@ WindowDialog {
                 Rectangle {
                     anchors.fill: parent
                     radius: 10
-                    color: Appearance.colors.colLayer1
+                    color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
                     opacity: mouseArea.containsMouse ? 0.3 : 0
                 }
             }

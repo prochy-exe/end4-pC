@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import qs.modules.common
 import qs.modules.common.widgets
@@ -34,7 +35,7 @@ Item {
         radius: width / 2
         color: root.accentColor
         border.width: 1.5
-        border.color: Appearance.colors.colLayer0
+        border.color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
     }
 
     MaterialSymbol {

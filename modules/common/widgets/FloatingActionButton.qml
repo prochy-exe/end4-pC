@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.services
 
 /**
  * Material 3 FAB.
@@ -15,10 +16,10 @@ RippleButton {
     implicitWidth: expanded ? (Math.max(contentRowLayout.implicitWidth + 10 * 2, baseSize)) : baseSize
     implicitHeight: baseSize
     buttonRadius: baseSize / 14 * 4
-    colBackground: Appearance.colors.colPrimaryContainer
-    colBackgroundHover: Appearance.colors.colPrimaryContainerHover
-    colRipple: Appearance.colors.colPrimaryContainerActive
-    property color colOnBackground: Appearance.colors.colOnPrimaryContainer
+    colBackground: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+    colBackgroundHover: MonitorThemes.shellColorForItem(root, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover)
+    colRipple: MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
+    property color colOnBackground: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
     contentItem: Row {
         id: contentRowLayout
         property real horizontalMargins: (root.baseSize - icon.width) / 2
@@ -54,7 +55,7 @@ RippleButton {
                         verticalCenter: parent.verticalCenter
                     }
                     text: root.buttonText
-                    color: Appearance.colors.colOnPrimaryContainer
+                    color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                     font.pixelSize: 14
                     font.weight: 450
                 }

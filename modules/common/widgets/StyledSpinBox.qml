@@ -2,6 +2,7 @@ import qs.modules.common
 import qs.modules.common.functions
 import QtQuick
 import QtQuick.Controls
+import qs.services
 
 /**
  * Material 3 styled SpinBox component.
@@ -17,7 +18,7 @@ SpinBox {
     opacity: root.enabled ? 1 : 0.4
 
     background: Rectangle {
-        color: Appearance.colors.colLayer2
+        color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
         radius: root.radius
     }
 
@@ -29,7 +30,7 @@ SpinBox {
             id: labelText
             anchors.centerIn: parent
             text: root.value // displayText would make the numbers weird like 1,000 instead of 1000
-            color: Appearance.colors.colOnLayer2
+            color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
             font.family: Appearance.font.family.numbers
             font.variableAxes: Appearance.font.variableAxes.numbers
             font.pixelSize: Appearance.font.pixelSize.small
@@ -52,9 +53,9 @@ SpinBox {
         topRightRadius: root.innerButtonRadius
         bottomRightRadius: root.innerButtonRadius
 
-        color: root.down.pressed ? Appearance.colors.colLayer2Active : 
-            root.down.hovered ? Appearance.colors.colLayer2Hover : 
-            ColorUtils.transparentize(Appearance.colors.colLayer2)
+        color: root.down.pressed ? MonitorThemes.shellColorForItem(root, "colLayer2Active", Appearance.colors.colLayer2Active) : 
+            root.down.hovered ? MonitorThemes.shellColorForItem(root, "colLayer2Hover", Appearance.colors.colLayer2Hover) : 
+            ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2))
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
         }
@@ -63,7 +64,7 @@ SpinBox {
             anchors.centerIn: parent
             text: "remove"
             iconSize: 20
-            color: Appearance.colors.colOnLayer2
+            color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
         }
     }
 
@@ -79,9 +80,9 @@ SpinBox {
         topLeftRadius: root.innerButtonRadius
         bottomLeftRadius: root.innerButtonRadius
 
-        color: root.up.pressed ? Appearance.colors.colLayer2Active : 
-            root.up.hovered ? Appearance.colors.colLayer2Hover : 
-            ColorUtils.transparentize(Appearance.colors.colLayer2)
+        color: root.up.pressed ? MonitorThemes.shellColorForItem(root, "colLayer2Active", Appearance.colors.colLayer2Active) : 
+            root.up.hovered ? MonitorThemes.shellColorForItem(root, "colLayer2Hover", Appearance.colors.colLayer2Hover) : 
+            ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2))
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
         }
@@ -90,7 +91,7 @@ SpinBox {
             anchors.centerIn: parent
             text: "add"
             iconSize: 20
-            color: Appearance.colors.colOnLayer2
+            color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
         }
     }
 }

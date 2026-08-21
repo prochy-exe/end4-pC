@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
@@ -52,9 +53,9 @@ TabButton {
             radius: Appearance.rounding.full
             color: toggled ? 
                 root.showToggledHighlight ?
-                    (root.down ? Appearance.colors.colSecondaryContainerActive : root.hovered ? Appearance.colors.colSecondaryContainerHover : Appearance.colors.colSecondaryContainer)
-                    : ColorUtils.transparentize(Appearance.colors.colSecondaryContainer) :
-                (root.down ? Appearance.colors.colLayer1Active : root.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1))
+                    (root.down ? MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive) : root.hovered ? MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover) : MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer))
+                    : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)) :
+                (root.down ? MonitorThemes.shellColorForItem(root, "colLayer1Active", Appearance.colors.colLayer1Active) : root.hovered ? MonitorThemes.shellColorForItem(root, "colLayer1Hover", Appearance.colors.colLayer1Hover) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer1Hover", Appearance.colors.colLayer1Hover), 1))
 
             states: State {
                 name: "expanded"
@@ -106,7 +107,7 @@ TabButton {
                 fill: toggled ? 1 : 0
                 font.weight: (toggled || root.hovered) ? Font.DemiBold : Font.Normal
                 text: buttonIcon
-                color: toggled ? Appearance.m3colors.m3onSecondaryContainer : Appearance.colors.colOnLayer1
+                color: toggled ? MonitorThemes.colorForItem(root, "on_secondary_container", Appearance.m3colors.m3onSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
 
                 Behavior on color {
                     animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -143,7 +144,7 @@ TabButton {
             }
             text: buttonText
             font.pixelSize: 14
-            color: Appearance.colors.colOnLayer1
+            color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
         }
     }
 

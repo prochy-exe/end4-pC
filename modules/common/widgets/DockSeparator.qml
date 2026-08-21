@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.functions
 import QtQuick
@@ -8,5 +9,5 @@ Rectangle {
     Layout.bottomMargin: Appearance.sizes.hyprlandGapsOut + dockRow.padding + Appearance.rounding.normal
     Layout.fillHeight: true
     implicitWidth: 1
-    color: Appearance.colors.colOutlineVariant
+    color: MonitorThemes.shellColorForItem(parent, "colOutlineVariant", Appearance.colors.colOutlineVariant)
 }

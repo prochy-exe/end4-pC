@@ -71,7 +71,7 @@ Item {
         bottomRightRadius: bottomLeftRadius
         topRightRadius: bottomLeftRadius
 
-        color: Appearance.colors.colPrimary
+        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
         Behavior on topLeftRadius {
             animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
@@ -92,7 +92,7 @@ Item {
             MaterialSymbol {
                 anchors.verticalCenter: parent.verticalCenter
                 iconSize: 22
-                color: Appearance.colors.colOnPrimary
+                color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 animateChange: true
                 text: root.materialSymbol
             }
@@ -102,7 +102,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 shown: root.showDescription
                 sourceComponent: StyledText {
-                    color: Appearance.colors.colOnPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                     text: root.description
                     anchors.right: parent.right
                     anchors.rightMargin: 6

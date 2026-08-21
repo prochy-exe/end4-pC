@@ -54,7 +54,7 @@ Button {
         implicitWidth: root.rowHeight * modelData.aspect_ratio
         implicitHeight: root.rowHeight
         radius: imageRadius
-        color: Appearance.colors.colLayer2
+        color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
     }
 
     contentItem: Item {
@@ -88,14 +88,14 @@ Button {
             implicitWidth: buttonSize
 
             buttonRadius: Appearance.rounding.full
-            colBackground: ColorUtils.transparentize(Appearance.m3colors.m3surface, 0.3)
-            colBackgroundHover: ColorUtils.transparentize(ColorUtils.mix(Appearance.m3colors.m3surface, Appearance.m3colors.m3onSurface, 0.8), 0.2)
-            colRipple: ColorUtils.transparentize(ColorUtils.mix(Appearance.m3colors.m3surface, Appearance.m3colors.m3onSurface, 0.6), 0.1)
+            colBackground: ColorUtils.transparentize(MonitorThemes.colorForItem(root, "surface", Appearance.m3colors.m3surface), 0.3)
+            colBackgroundHover: ColorUtils.transparentize(ColorUtils.mix(Appearance.m3colors.m3surface, MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface), 0.8), 0.2)
+            colRipple: ColorUtils.transparentize(ColorUtils.mix(Appearance.m3colors.m3surface, MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface), 0.6), 0.1)
 
             contentItem: MaterialSymbol {
                 horizontalAlignment: Text.AlignHCenter
                 iconSize: Appearance.font.pixelSize.large
-                color: Appearance.m3colors.m3onSurface
+                color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
                 text: "more_vert"
             }
 
@@ -124,7 +124,7 @@ Button {
                     opacity: root.showActions ? 1 : 0
                     visible: opacity > 0
                     radius: Appearance.rounding.small
-                    color: Appearance.m3colors.m3surfaceContainer
+                    color: MonitorThemes.colorForItem(root, "surface_container", Appearance.m3colors.m3surfaceContainer)
                     implicitHeight: contextMenuColumnLayout.implicitHeight + radius * 2
                     implicitWidth: contextMenuColumnLayout.implicitWidth
 

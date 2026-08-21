@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common.widgets
 import qs.modules.common
 import QtQuick
@@ -25,7 +26,7 @@ RowLayout {
             id: labelWidget
             Layout.fillWidth: true
             text: root.text
-            color: Appearance.colors.colOnSecondaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
             opacity: root.enabled ? 1 : 0.4
         }
     }

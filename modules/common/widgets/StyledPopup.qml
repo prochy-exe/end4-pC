@@ -1,6 +1,7 @@
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
+import qs.services
 import QtQuick
 import QtQuick.Effects
 import Quickshell
@@ -15,26 +16,18 @@ LazyLoader {
     property bool keepOpenWhileHovered: false
     property int hoverCloseDelay: 120
     property bool popupHovered: false
-    property bool raisePulse: false
     readonly property bool targetHovered: hoverTarget && hoverTarget.containsMouse
     readonly property bool wantsVisible: targetHovered || (keepOpenWhileHovered && popupHovered)
-    readonly property bool ownsHover: !keepOpenWhileHovered || targetHovered || PopupState.activeHoverPopup === root
-
+    // Keep loader lifetime independent from PopupState ownership. PopupState is
+    // coordination only; feeding it into active made hover and close state form
+    // a binding cycle when the popup was being destroyed.
     active: keepOpenWhileHovered
         ? (wantsVisible || closeTimer.running)
         : targetHovered
 
-    function raiseToFront() {
-        if (root.raisePulse) return
-        root.raisePulse = true
-        Qt.callLater(() => root.raisePulse = false)
-    }
-
     onTargetHoveredChanged: {
-        if (targetHovered) {
+        if (targetHovered)
             PopupState.activeHoverPopup = root
-            root.raiseToFront()
-        }
     }
 
     onWantsVisibleChanged: {
@@ -50,7 +43,7 @@ LazyLoader {
     onActiveChanged: {
         if (!active) {
             popupHovered = false
-            if (!root.raisePulse && PopupState.activeHoverPopup === root && !targetHovered)
+            if (PopupState.activeHoverPopup === root && !targetHovered)
                 PopupState.activeHoverPopup = null
         }
     }
@@ -128,13 +121,7 @@ LazyLoader {
             bottom: root.barEdge === "bottom" ? root.barThickness : 0
         }
         WlrLayershell.namespace: "quickshell:popup"
-        // Popup windows are separate layer-shell surfaces, so an ordinary QML
-        // z value cannot raise the one currently being hovered above its
-        // siblings. Promote only the active hover popup to the top layer.
-        WlrLayershell.layer: PopupState.activeHoverPopup === root
-            ? WlrLayer.Top
-            : WlrLayer.Overlay
-        WlrLayershell.aboveWindows: PopupState.activeHoverPopup === root
+        WlrLayershell.layer: WlrLayer.Overlay
 
         StyledRectangularShadow {
             target: popupBackground
@@ -156,19 +143,15 @@ LazyLoader {
             implicitWidth: (popupWindow.innerContent?.implicitWidth ?? 0) + margin * 2
             implicitHeight: (popupWindow.innerContent?.implicitHeight ?? 0) + margin * 2
 
-            color: Appearance.colors.colLayer1Base
+            color: MonitorThemes.shellColorForItem(popupWindow, "colLayer1Base", Appearance.colors.colLayer1Base)
             radius: Appearance.rounding.normal + 4
             border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            border.color: MonitorThemes.shellColorForItem(popupWindow, "colLayer0Border", Appearance.colors.colLayer0Border)
 
             HoverHandler {
                 enabled: root.keepOpenWhileHovered
                 onHoveredChanged: {
                     root.popupHovered = hovered
-                    if (hovered) {
-                        PopupState.activeHoverPopup = root
-                        root.raiseToFront()
-                    }
                 }
             }
 

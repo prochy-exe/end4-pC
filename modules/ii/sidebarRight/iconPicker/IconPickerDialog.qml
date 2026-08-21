@@ -50,7 +50,7 @@ WindowDialog {
                 height: 36
                 source: delegateItem.modelData.fileName
                 colorize: Config.options.custom.colorizeIcon
-                color: Appearance.colors.colOnLayer0
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
             }
 
             MouseArea {
@@ -65,7 +65,7 @@ WindowDialog {
                 Rectangle {
                     anchors.fill: parent
                     radius: 10
-                    color: Appearance.colors.colLayer1
+                    color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
                     opacity: mouseArea.containsMouse ? 0.3 : 0
                 }
             }

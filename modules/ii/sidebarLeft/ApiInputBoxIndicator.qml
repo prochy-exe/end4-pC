@@ -23,7 +23,7 @@ Item { // Model indicator
         StyledText {
             id: providerName
             font.pixelSize: Appearance.font.pixelSize.smaller
-            color: Appearance.m3colors.m3onSurface
+            color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
             elide: Text.ElideRight
             text: root.text
             animateChange: true

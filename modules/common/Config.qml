@@ -52,6 +52,14 @@ Singleton {
         return root.resolvePathValue(root.options?.bar ?? {}, keys, fallbackValue)
     }
 
+    function hasDistinctMonitorWallpapers(lock) {
+        const background = root.options?.background
+        const mode = lock ? background?.lockWallpaperMode : background?.wallpaperMode
+        const entries = lock ? background?.lockMonitorWallpapers : background?.monitorWallpapers
+        if (mode !== "perMonitor") return false
+        return new Set((entries ?? []).map(entry => entry?.path).filter(path => path)).size > 1
+    }
+
     function backgroundWidgetsShown(monitorName) {
         const screens = root.options?.background?.screenList ?? []
         return screens.length === 0 || screens.includes(monitorName)
@@ -186,6 +194,8 @@ Singleton {
                 }
                 property JsonObject wallpaperTheming: JsonObject {
                     property bool enableAppsAndShell: true
+                    property bool useWallpaperColorForApps: true
+                    property string accentMonitor: ""
                     property bool enableQtApps: true
                     property bool enableTerminal: true
                     property JsonObject terminalGenerationProps: JsonObject {
@@ -425,6 +435,9 @@ Singleton {
                 property list<string> sharedWallpaperSpanScreens: [] // Empty means all monitors
                 property string lockWallpaperMode: "shared" // "shared" | "perMonitor"
                 property list<var> lockMonitorWallpapers: [] // [{ name, path }]
+                property bool useMonitorSpecificColors: false
+                property bool blendMonitorColors: false
+                property string componentColorMonitor: ""
                 property bool centeredWallpaper: false
                 property string centeredWallpaperShape: "Cookie7Sided"
                 property int centeredWallpaperSize: 400
@@ -595,6 +608,7 @@ Singleton {
             }
 
             property JsonObject bar: JsonObject {
+                property string colorSource: "wallpaper" // "wallpaper" | "appAccent"
                 property JsonObject autoHide: JsonObject {
                     property bool enable: false
                     property int hoverRegionWidth: 2
@@ -799,6 +813,7 @@ Singleton {
                     property bool unlockKeyring: true
                     property bool requirePasswordToPower: false
                 }
+                property string keyboardLayout: "" // Empty keeps the current layout
                 property bool materialShapeChars: true
             }
 
@@ -864,6 +879,7 @@ Singleton {
 
             property JsonObject notifications: JsonObject {
                 property int timeout: 7000
+                property bool expandPopups: false
                 property string position: "top_right"
                 // "focused" follows whichever monitor currently has input
                 // focus; "specific" pins to monitorName regardless.

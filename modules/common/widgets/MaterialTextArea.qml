@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.functions
 import QtQuick
@@ -12,20 +13,20 @@ import QtQuick.Controls
 TextArea {
     id: root
     Material.theme: Material.System
-    Material.accent: Appearance.m3colors.m3primary
-    Material.primary: Appearance.m3colors.m3primary
-    Material.background: Appearance.m3colors.m3surface
-    Material.foreground: Appearance.m3colors.m3onSurface
+    Material.accent: MonitorThemes.colorForItem(root, "primary", Appearance.m3colors.m3primary)
+    Material.primary: MonitorThemes.colorForItem(root, "primary", Appearance.m3colors.m3primary)
+    Material.background: MonitorThemes.colorForItem(root, "surface", Appearance.m3colors.m3surface)
+    Material.foreground: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
     Material.containerStyle: Material.Filled
     renderType: Text.QtRendering
 
-    selectedTextColor: Appearance.m3colors.m3onSecondaryContainer
-    selectionColor: Appearance.colors.colSecondaryContainer
-    placeholderTextColor: Appearance.m3colors.m3outline
+    selectedTextColor: MonitorThemes.colorForItem(root, "on_secondary_container", Appearance.m3colors.m3onSecondaryContainer)
+    selectionColor: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+    placeholderTextColor: MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
 
     background: Rectangle {
         implicitHeight: 56
-        color: Appearance.colors.colLayer1 
+        color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1) 
         topLeftRadius: 4
         topRightRadius: 4
         Rectangle {
@@ -35,8 +36,8 @@ TextArea {
                 bottom: parent.bottom
             }
             height: 1
-            color: root.focus ? Appearance.m3colors.m3primary : 
-                root.hovered ? Appearance.m3colors.m3outline : Appearance.m3colors.m3outlineVariant
+            color: root.focus ? MonitorThemes.colorForItem(root, "primary", Appearance.m3colors.m3primary) : 
+                root.hovered ? MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline) : MonitorThemes.colorForItem(root, "outline_variant", Appearance.m3colors.m3outlineVariant)
 
             Behavior on color {
                 animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)

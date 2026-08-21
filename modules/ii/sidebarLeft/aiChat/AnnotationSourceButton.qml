@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 
@@ -15,9 +16,9 @@ RippleButton {
     leftPadding: (implicitHeight - faviconSize) / 2
     rightPadding: 10
     buttonRadius: Appearance.rounding.full
-    colBackground: Appearance.colors.colSurfaceContainerHighest
-    colBackgroundHover: Appearance.colors.colSurfaceContainerHighestHover
-    colRipple: Appearance.colors.colSurfaceContainerHighestActive
+    colBackground: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighest", Appearance.colors.colSurfaceContainerHighest)
+    colBackgroundHover: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighestHover", Appearance.colors.colSurfaceContainerHighestHover)
+    colRipple: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighestActive", Appearance.colors.colSurfaceContainerHighestActive)
 
     PointingHandInteraction {}
     onClicked: {
@@ -44,7 +45,7 @@ RippleButton {
                 id: text
                 horizontalAlignment: Text.AlignHCenter
                 text: displayText
-                color: Appearance.m3colors.m3onSurface
+                color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
             }
         }
     }

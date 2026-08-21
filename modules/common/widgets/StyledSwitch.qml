@@ -1,4 +1,5 @@
 import qs.modules.common
+import qs.services
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
@@ -9,8 +10,19 @@ Switch {
     implicitHeight: 30 * root.scale
     implicitWidth: 52 * root.scale
 
-    property color activeColor: Appearance?.colors.colPrimaryContainer ?? "#cbc4cb"
-    property color inactiveColor: Appearance?.m3colors.m3surfaceBright ?? "#3a3939"
+    property color activeColor: MonitorThemes.colorForItem(root, "primary_container", Appearance?.colors.colPrimaryContainer ?? "#cbc4cb")
+    property color inactiveColor: MonitorThemes.colorForItem(root, "surface_bright", Appearance?.m3colors.m3surfaceBright ?? "#3a3939")
+    property string monitorName: ""
+    readonly property string resolvedMonitorName: {
+        if (root.monitorName) return root.monitorName
+        let item = root.parent
+        while (item) {
+            if (item.monitorName) return item.monitorName
+            if (item.screen?.name) return item.screen.name
+            item = item.parent
+        }
+        return root.QsWindow?.window?.screen?.name ?? ""
+    }
 
     PointingHandInteraction {}
 
@@ -44,7 +56,7 @@ Switch {
         height: thumbSize
         radius: Appearance.rounding.full
 
-        color: Appearance.colors.colPrimary
+        color: MonitorThemes.colorForItem(root, "primary", Appearance.colors.colPrimary)
 
         layer.enabled: true
         layer.effect: MultiEffect {

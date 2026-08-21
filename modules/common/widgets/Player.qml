@@ -20,9 +20,9 @@ Item {
     property string artFileName: Qt.md5(artUrl)
     property string artFilePath: `${artDownloadLocation}/${artFileName}`
     property color artDominantColor: ColorUtils.mix(
-        (colorQuantizer?.colors[0] ?? Appearance.colors.colPrimary),
-        Appearance.colors.colPrimaryContainer,
-        0.8) || Appearance.m3colors.m3secondaryContainer
+        (colorQuantizer?.colors[0] ?? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)),
+        MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer),
+        0.8) || MonitorThemes.colorForItem(root, "secondary_container", Appearance.m3colors.m3secondaryContainer)
     property bool downloaded: false
     property list<real> visualizerPoints: []
     property real maxVisualizerValue: 1000
@@ -68,7 +68,7 @@ Item {
 
     onArtFilePathChanged: {
         if (!root.artUrl || root.artUrl.length === 0) {
-            root.artDominantColor = Appearance.m3colors.m3secondaryContainer
+            root.artDominantColor = MonitorThemes.colorForItem(root, "secondary_container", Appearance.m3colors.m3secondaryContainer)
             root.downloaded = false
             return
         }

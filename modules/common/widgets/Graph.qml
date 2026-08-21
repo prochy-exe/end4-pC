@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import qs.modules.common
 import qs.modules.common.functions
@@ -12,7 +13,7 @@ Canvas {
 
     required property list<real> values
     property int points: values.length
-    property color color: Appearance.colors.colPrimary
+    property color color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
     property real fillOpacity: 0.5
     property var alignment: Graph.Alignment.Left
 

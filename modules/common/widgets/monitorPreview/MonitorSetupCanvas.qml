@@ -229,17 +229,17 @@ Item {
         z: isDragging ? 100 : isSelected ? 2 : 1
 
         color: {
-            if (monitor.disabled)             return Appearance.colors.colLayer2
-            if (isDragging && hasOverlap)     return Qt.alpha(Appearance.m3colors.m3error, 0.5)
-            if (isDragging)                   return Qt.alpha(Appearance.colors.colPrimaryContainer, 0.7)
-            if (isSelected)                   return Appearance.colors.colPrimaryContainer
-            if (hoverArea.containsMouse)      return Appearance.colors.colSecondaryContainerHover
-            return Appearance.colors.colSecondaryContainer
+            if (monitor.disabled)             return MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
+            if (isDragging && hasOverlap)     return Qt.alpha(MonitorThemes.colorForItem(root, "error", Appearance.m3colors.m3error), 0.5)
+            if (isDragging)                   return Qt.alpha(MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer), 0.7)
+            if (isSelected)                   return MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+            if (hoverArea.containsMouse)      return MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+            return MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
         }
 
-        border.color: (isDragging && hasOverlap) ? Appearance.m3colors.m3error
-            : (isDragging || isSelected) ? Appearance.colors.colPrimary
-            : Appearance.colors.colLayer0Border
+        border.color: (isDragging && hasOverlap) ? MonitorThemes.colorForItem(root, "error", Appearance.m3colors.m3error)
+            : (isDragging || isSelected) ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+            : MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
         border.width: (isDragging || isSelected) ? 2 : 1
 
         Behavior on x { enabled: !isDragging; NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
@@ -277,7 +277,7 @@ Item {
             height: monRect.barFractions.vertical
                 ? monRect.height
                 : Math.max(minThickness, monRect.barFractions.height * monRect.height)
-            color: Appearance.colors.colOnLayer1
+            color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
             opacity: 0.4
         }
 
@@ -314,9 +314,9 @@ Item {
                 width: pillWidth
                 height: pillHeight
                 radius: height / 2
-                color: Appearance.colors.colLayer0
+                color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
                 border.width: 1
-                border.color: Appearance.colors.colOutlineVariant
+                border.color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant)
                 x: monRect.place(modelData.fx, monRect.width, monRect.padX) - pillWidth / 2
                 y: monRect.place(modelData.fy, monRect.height, monRect.padY) - pillHeight / 2
             }
@@ -348,7 +348,7 @@ Item {
             height: monRect.height
             radius: monRect.radius
             color: "transparent"
-            border.color: Appearance.colors.colPrimary
+            border.color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             border.width: 2
             opacity: 0.6
         }
@@ -359,9 +359,9 @@ Item {
             anchors.right: parent.right
             anchors.margins: 6
             radius: Appearance.rounding.full
-            color: monRect.isSelected ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colPrimaryContainer
+            color: monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) : MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
             border.width: 1
-            border.color: monRect.isSelected ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colPrimary
+            border.color: monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             implicitHeight: 24
             implicitWidth: primaryRow.implicitWidth + 12
 
@@ -373,13 +373,13 @@ Item {
                 MaterialSymbol {
                     text: "home_pin"
                     iconSize: 14
-                    color: monRect.isSelected ? Appearance.colors.colPrimaryContainer : Appearance.colors.colPrimary
+                    color: monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
 
                 StyledText {
                     text: Translation.tr("Primary")
                     font.pixelSize: Appearance.font.pixelSize.small
-                    color: monRect.isSelected ? Appearance.colors.colPrimaryContainer : Appearance.colors.colPrimary
+                    color: monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
             }
         }
@@ -392,9 +392,9 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: monRect.monitor.disabled ? "desktop_access_disabled" : "desktop_windows"
                 iconSize: Math.min(20, Math.min(monRect.width * 0.25, monRect.height * 0.25))
-                color: monRect.monitor.disabled ? Appearance.colors.colSubtext
-                    : monRect.isSelected ? Appearance.colors.colOnPrimaryContainer
-                    : Appearance.colors.colPrimary
+                color: monRect.monitor.disabled ? MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
+                    : monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                    : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             }
 
             StyledText {
@@ -402,9 +402,9 @@ Item {
                 text: monRect.monitor?.name ?? ""
                 font.pixelSize: Math.max(9, Math.min(13, monRect.width * 0.1))
                 font.weight: Font.Medium
-                color: monRect.monitor.disabled ? Appearance.colors.colSubtext
-                    : monRect.isSelected ? Appearance.colors.colOnPrimaryContainer
-                    : Appearance.colors.colOnSecondaryContainer
+                color: monRect.monitor.disabled ? MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
+                    : monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                    : MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                 elide: Text.ElideMiddle
                 width: Math.min(implicitWidth, monRect.width - 8)
                 horizontalAlignment: Text.AlignHCenter
@@ -414,7 +414,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: `${monRect.logW}x${monRect.logH}`
                 font.pixelSize: Math.max(8, Math.min(10, monRect.width * 0.08))
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 horizontalAlignment: Text.AlignHCenter
             }
         }
@@ -485,9 +485,9 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Appearance.rounding.normal
-        color: Appearance.colors.colLayer1
+        color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
         border.width: 1
-        border.color: Appearance.colors.colLayer0Border
+        border.color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
 
         Item {
             id: canvas

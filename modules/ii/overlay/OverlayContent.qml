@@ -31,7 +31,7 @@ Item {
     Rectangle {
         id: bg
         anchors.fill: parent
-        color: Appearance.colors.colScrim
+        color: MonitorThemes.shellColorForItem(root, "colScrim", Appearance.colors.colScrim)
         visible: Config.options.overlay.darkenScreen && opacity > 0
         opacity: (GlobalStates.overlayOpen && root.scale !== initScale) ? 1 : 0
         Behavior on opacity {

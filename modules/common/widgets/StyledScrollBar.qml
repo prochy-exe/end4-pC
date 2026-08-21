@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Controls
 import qs.modules.common
@@ -15,7 +16,7 @@ ScrollBar {
         implicitWidth: 4
         implicitHeight: root.visualSize
         radius: width / 2
-        color: Appearance.colors.colOnSurfaceVariant
+        color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
         
         opacity: root.policy === ScrollBar.AlwaysOn || (root.active && root.size < 1.0) ? 0.5 : 0
         Behavior on opacity {

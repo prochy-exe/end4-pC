@@ -128,9 +128,9 @@ ContentPage {
 
                 gradient: Gradient { // I didn't like how it turned out but in case I regret it 
                     orientation: Gradient.Horizontal
-                    GradientStop { position: 0.0; color: Appearance.colors.colLayer1  }
-                    GradientStop { position: 0.6; color: Appearance.colors.colLayer1  }
-                    GradientStop { position: 1.0; color: Appearance.colors.colLayer1  }
+                    GradientStop { position: 0.0; color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)  }
+                    GradientStop { position: 0.6; color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)  }
+                    GradientStop { position: 1.0; color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)  }
                 }
 
                 property date now: new Date()
@@ -157,7 +157,7 @@ ContentPage {
                             font.letterSpacing: 1
                             font.features: { "tnum": 1 }
                             font.weight: Font.Medium
-                            color: Appearance.colors.colPrimary
+                            color: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
                             text: {
                                 const fmt = Config.options.time.format;
                                 if (Config.options.time.secondPrecision) {
@@ -175,7 +175,7 @@ ContentPage {
                             font.pixelSize: 32
                             font.weight: Font.Normal
                             opacity: 0.6
-                            color: Appearance.colors.colPrimary
+                            color: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
                         }
                     }
 
@@ -183,9 +183,9 @@ ContentPage {
                         Layout.rightMargin: 6
                         width: 130
                         height: 130
-                        backgroundColor: Appearance.colors.colPrimaryContainer
-                        handColor:       Appearance.colors.colPrimary
-                        centerDotColor:  Appearance.colors.colPrimary
+                        backgroundColor: MonitorThemes.shellColorForItem(page, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+                        handColor:       MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
+                        centerDotColor:  MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
                     }
                 }
             }
@@ -269,6 +269,15 @@ ContentPage {
                             }
                         }
                     }
+                    ConfigComboBox {
+                        Layout.fillWidth: true
+                        buttonIcon: "keyboard"
+                        text: Translation.tr("Lockscreen keyboard layout")
+                        model: [{ displayName: Translation.tr("Keep current layout"), icon: "sync", value: "" }]
+                            .concat(HyprlandXkb.layoutCodes.map(code => ({ displayName: code, icon: "keyboard", value: code })))
+                        currentValue: Config.options.lock.keyboardLayout
+                        onSelected: newValue => Config.options.lock.keyboardLayout = newValue
+                    }
                     ConfigSwitch {
                         buttonIcon: "numbers"
                         text: Translation.tr("Numlock by default")
@@ -329,7 +338,7 @@ ContentPage {
                         Layout.rightMargin: 8
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
-                        color: Appearance.colors.colSubtext
+                        color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                         font.pixelSize: Appearance.font.pixelSize.smaller
                         text: page.appleFnModeSupported
                             ? Translation.tr("0: disabled, 1: media keys first, 2: function keys first, 3: auto, 4: function keys disabled. Choose a value, then click Apply.")

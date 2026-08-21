@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import QtQuick
 import QtQuick.Controls.Material
@@ -11,16 +12,16 @@ import QtQuick.Controls
 TextField {
     id: root
     Material.theme: Material.System
-    Material.accent: Appearance.m3colors.m3primary
-    Material.primary: Appearance.m3colors.m3primary
-    Material.background: Appearance.m3colors.m3surface
-    Material.foreground: Appearance.m3colors.m3onSurface
+    Material.accent: MonitorThemes.colorForItem(root, "primary", Appearance.m3colors.m3primary)
+    Material.primary: MonitorThemes.colorForItem(root, "primary", Appearance.m3colors.m3primary)
+    Material.background: MonitorThemes.colorForItem(root, "surface", Appearance.m3colors.m3surface)
+    Material.foreground: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
     Material.containerStyle: Material.Outlined
     renderType: Text.QtRendering
 
-    selectedTextColor: Appearance.m3colors.m3onSecondaryContainer
-    selectionColor: Appearance.colors.colSecondaryContainer
-    placeholderTextColor: Appearance.m3colors.m3outline
+    selectedTextColor: MonitorThemes.colorForItem(root, "on_secondary_container", Appearance.m3colors.m3onSecondaryContainer)
+    selectionColor: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+    placeholderTextColor: MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
     clip: true
 
     font {

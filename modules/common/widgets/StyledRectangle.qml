@@ -1,5 +1,6 @@
 import QtQuick
 import qs.modules.common as C
+import qs.services
 
 // This is to enable future fancy styles for rectangles. Some ideas:
 // - normal rounded rect
@@ -10,13 +11,15 @@ import qs.modules.common as C
 Rectangle {
     enum ContentLayer { Background, Pane, Group, Subgroup, Control }
     property var contentLayer: StyledRectangle.ContentLayer.Pane // To appropriately add effects like shadows/3d-ization
+    property string monitorName: ""
 
-    color: switch(contentLayer) {
-        case StyledRectangle.ContentLayer.Background: C.Appearance.colors.colLayer0;
-        case StyledRectangle.ContentLayer.Pane: C.Appearance.colors.colLayer1;
-        case StyledRectangle.ContentLayer.Group: C.Appearance.colors.colLayer2;
-        case StyledRectangle.ContentLayer.Subgroup: C.Appearance.colors.colLayer3;
-        case StyledRectangle.ContentLayer.Control: C.Appearance.colors.colLayer4;
-        default: C.Appearance.colors.colLayer1;
+    color: {
+        let role = "surface_container_low"
+        if (contentLayer === StyledRectangle.ContentLayer.Background) role = "background"
+        else if (contentLayer === StyledRectangle.ContentLayer.Group) role = "surface_container"
+        else if (contentLayer === StyledRectangle.ContentLayer.Subgroup) role = "surface_container_high"
+        else if (contentLayer === StyledRectangle.ContentLayer.Control) role = "surface_container_highest"
+        return MonitorThemes.colorForItem(root, role, C.Appearance.colors.colLayer1)
     }
+    Behavior on color { ColorAnimation { duration: C.Appearance.animation.elementMoveFast.duration } }
 }

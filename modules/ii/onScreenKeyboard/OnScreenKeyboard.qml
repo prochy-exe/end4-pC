@@ -72,7 +72,7 @@ Scope { // Scope
             Rectangle {
                 id: oskBackground
                 anchors.centerIn: parent
-                color: Appearance.colors.colLayer0
+                color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
                 radius: Appearance.rounding.windowRounding
                 property real padding: 10
                 implicitWidth: oskRowLayout.implicitWidth + padding * 2
@@ -96,7 +96,7 @@ Scope { // Scope
                                 text: "keep"
                                 horizontalAlignment: Text.AlignHCenter
                                 iconSize: Appearance.font.pixelSize.larger
-                                color: root.pinned ? Appearance.m3colors.m3onPrimary : Appearance.colors.colOnLayer0
+                                color: root.pinned ? MonitorThemes.colorForItem(root, "on_primary", Appearance.m3colors.m3onPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                             }
                         }
                         OskControlButton {
@@ -115,7 +115,7 @@ Scope { // Scope
                         Layout.bottomMargin: 20
                         Layout.fillHeight: true
                         implicitWidth: 1
-                        color: Appearance.colors.colOutlineVariant
+                        color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant)
                     }
                     OskContent {
                         id: oskContent

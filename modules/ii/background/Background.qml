@@ -73,17 +73,47 @@ Variants {
         }
     }
 
-    function getColorFromName(name) {
+    function getColorFromName(name, monitorName) {
+        const roles = {
+            primary: "primary",
+            secondary: "secondary",
+            tertiary: "tertiary",
+            primaryContainer: "primary_container",
+            secondaryContainer: "secondary_container",
+            tertiaryContainer: "tertiary_container",
+            layer0: "surface_container_low",
+            layer1: "surface_container"
+        };
+        const paletteMode = GlobalStates.screenLocked && Config.options.background.lockWallpaperMode === "perMonitor"
+            ? true : false;
+        if ((Config.options.background.useMonitorSpecificColors || Config.options.background.componentColorMonitor !== "") && roles[name]
+                && Config.hasDistinctMonitorWallpapers(paletteMode)) {
+            const fallback = {
+                primary: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary),
+                secondary: MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary),
+                tertiary: MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary),
+                primaryContainer: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer),
+                secondaryContainer: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer),
+                tertiaryContainer: MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer),
+                layer0: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0),
+                layer1: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
+            }[name];
+            const selectedMonitor = Config.options.background.useMonitorSpecificColors
+                ? monitorName
+                : Config.options.background.componentColorMonitor;
+            const palette = MonitorThemes.palettes[selectedMonitor || monitorName];
+            return palette?.[roles[name]] ?? fallback;
+        }
         switch (name) {
-            case "primary":            return Appearance.colors.colPrimary
-            case "secondary":          return Appearance.colors.colSecondary
-            case "tertiary":           return Appearance.colors.colTertiary
-            case "primaryContainer":   return Appearance.colors.colPrimaryContainer
-            case "secondaryContainer": return Appearance.colors.colSecondaryContainer
-            case "tertiaryContainer":  return Appearance.colors.colTertiaryContainer
-            case "layer0":             return Appearance.colors.colLayer0
-            case "layer1":             return Appearance.colors.colLayer1
-            default:                  return Appearance.colors.colPrimaryContainer
+            case "primary":            return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+            case "secondary":          return MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
+            case "tertiary":           return MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
+            case "primaryContainer":   return MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+            case "secondaryContainer": return MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+            case "tertiaryContainer":  return MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer)
+            case "layer0":             return MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
+            case "layer1":             return MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
+            default:                  return MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
         }
     }
 
@@ -99,7 +129,7 @@ Variants {
         property bool centeredWallpaperEnabled: Config.options.background.centeredWallpaper && (!Config.options.background.centeredWallpaperOnlyWhenLocked || GlobalStates.screenLocked)
         property int centeredWallpaperShape: getShapeFromName(Config.options.background.centeredWallpaperShape)
         property int centeredWallpaperSize: Config.options.background.centeredWallpaperSize
-        property color centeredWallpaperColor: root.getColorFromName(Config.options.background.centeredWallpaperColor)
+        property color centeredWallpaperColor: root.getColorFromName(Config.options.background.centeredWallpaperColor, bgRoot.screen.name)
 
         // "Doom" deliberately excluded: its shader has a `const int[256]`
         // array that this driver's GLSL compiler rejects ("OpenGL does not
@@ -382,12 +412,12 @@ Variants {
             && bgRoot.wallpaperAnimation !== "" && !bgRoot.datamoshTransition
 
         property bool shouldBlur: (GlobalStates.screenLocked && Config.options.lock.blur.enable)
-        property color dominantColor: Appearance.colors.colPrimary
+        property color dominantColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
         property bool dominantColorIsDark: dominantColor.hslLightness < 0.5
         property color colText: {
             if (wallpaperSafetyTriggered)
-                return CF.ColorUtils.mix(Appearance.colors.colOnLayer0, Appearance.colors.colPrimary, 0.75);
-            return (GlobalStates.screenLocked && shouldBlur) ? Appearance.colors.colOnLayer0 : CF.ColorUtils.colorWithLightness(Appearance.colors.colPrimary, (dominantColorIsDark ? 0.8 : 0.12));
+                return CF.ColorUtils.mix(MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0), MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.75);
+            return (GlobalStates.screenLocked && shouldBlur) ? MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0) : CF.ColorUtils.colorWithLightness(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), (dominantColorIsDark ? 0.8 : 0.12));
         }
         Behavior on colText {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -411,7 +441,7 @@ Variants {
         color: {
             if (!bgRoot.wallpaperSafetyTriggered || bgRoot.wallpaperIsVideo)
                 return "transparent";
-            return CF.ColorUtils.mix(Appearance.colors.colLayer0, Appearance.colors.colPrimary, 0.75);
+            return CF.ColorUtils.mix(MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0), MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.75);
         }
         Behavior on color {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -631,7 +661,7 @@ Variants {
                     Rectangle {
                         opacity: GlobalStates.screenLocked ? 1 : 0
                         anchors.fill: parent
-                        color: CF.ColorUtils.transparentize(Appearance.colors.colLayer0, 0.7)
+                        color: CF.ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0), 0.7)
                     }
                 }
             }
@@ -752,7 +782,7 @@ Variants {
                     id: dropOverlay
                     anchors.fill: parent
                     visible: wallpaperDropArea.containsDrag
-                    color: CF.ColorUtils.transparentize(Appearance.colors.colPrimary, 0.6)
+                    color: CF.ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.6)
 
                     property bool isSingleImage: wallpaperDropArea.currentUrls.length === 1
                         && /\.(png|jpe?g|webp|bmp|gif)$/i.test(
@@ -766,7 +796,7 @@ Variants {
                             Layout.alignment: Qt.AlignHCenter
                             text: dropOverlay.isSingleImage ? "wallpaper" : "stacks"
                             iconSize: 64
-                            color: Appearance.colors.colOnPrimary
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                         }
                         StyledText {
                             Layout.alignment: Qt.AlignHCenter
@@ -774,7 +804,7 @@ Variants {
                                 ? Translation.tr("Drop to set as wallpaper")
                                 : Translation.tr("Drop to add to shelf")
                             font.pixelSize: Appearance.font.pixelSize.large
-                            color: Appearance.colors.colOnPrimary
+                            color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                         }
                     }
                 }
@@ -842,9 +872,13 @@ Variants {
                     }
                 }
                 FadeLoader {
-                    shown: Config.getBackgroundWidgetSetting(bgRoot.screen.name, "clock", Config.options.background.widgets.clock.enable)
-                        && (GlobalStates.screenLocked
-                            || Config.backgroundWidgetsShown(bgRoot.screen.name))
+                    // The lock clock belongs to every session-lock surface.
+                    // Per-monitor desktop widget overrides must not make it
+                    // disappear from the other locked outputs.
+                    shown: (GlobalStates.screenLocked
+                        ? Config.options.background.widgets.clock.enable
+                        : Config.getBackgroundWidgetSetting(bgRoot.screen.name, "clock", Config.options.background.widgets.clock.enable))
+                        && (GlobalStates.screenLocked || Config.backgroundWidgetsShown(bgRoot.screen.name))
                     sourceComponent: ClockWidget {
                         screenWidth: bgRoot.screen.width
                         screenHeight: bgRoot.screen.height

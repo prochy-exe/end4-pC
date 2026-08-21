@@ -95,7 +95,7 @@ Item {
                 indicatorShapeColor: {
                     let c = root.blendedColors.colOnPrimaryContainer
                     if (c && c != "#000000" && c != "#ffffff" && c != "transparent") return c
-                    return root.blendedColors.colPrimary || Appearance.colors.colPrimary
+                    return root.blendedColors.colPrimary || MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
             }
         }

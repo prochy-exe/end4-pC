@@ -127,7 +127,7 @@ RowLayout {
             visible: root.searchPrefixType === SearchBar.SearchPrefixType.Bitwarden
                 && searchInput.text === Config.options.search.prefix.bitwarden
             text: Translation.tr("Type to search Bitwarden vault")
-            color: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
         }
     }
 
@@ -192,7 +192,7 @@ RowLayout {
             text: Translation.tr("Recognize music")
         }
 
-        colText: toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSurfaceVariant
+        colText: toggled ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
         background: MaterialShape {
             RotationAnimation on rotation {
                 running: songRecButton.toggled
@@ -211,9 +211,9 @@ RowLayout {
             }
             color: {
                 if (songRecButton.toggled) {
-                    return songRecButton.hovered ? Appearance.colors.colPrimaryHover : Appearance.colors.colPrimary
+                    return songRecButton.hovered ? MonitorThemes.shellColorForItem(root, "colPrimaryHover", Appearance.colors.colPrimaryHover) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 } else {
-                    return songRecButton.hovered ? Appearance.colors.colSurfaceContainerHigh : ColorUtils.transparentize(Appearance.colors.colSurfaceContainerHigh)
+                    return songRecButton.hovered ? MonitorThemes.shellColorForItem(root, "colSurfaceContainerHigh", Appearance.colors.colSurfaceContainerHigh) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colSurfaceContainerHigh", Appearance.colors.colSurfaceContainerHigh))
                 }
             }
             Behavior on color {

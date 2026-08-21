@@ -15,9 +15,9 @@ RippleButton {
     leftPadding: 6
     rightPadding: 10
     buttonRadius: Appearance.rounding.verysmall
-    colBackground: Appearance.colors.colSurfaceContainerHighest
-    colBackgroundHover: Appearance.colors.colSurfaceContainerHighestHover
-    colRipple: Appearance.colors.colSurfaceContainerHighestActive
+    colBackground: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighest", Appearance.colors.colSurfaceContainerHighest)
+    colBackgroundHover: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighestHover", Appearance.colors.colSurfaceContainerHighestHover)
+    colRipple: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighestActive", Appearance.colors.colSurfaceContainerHighestActive)
 
     PointingHandInteraction {}
     onClicked: {
@@ -40,13 +40,13 @@ RippleButton {
             MaterialSymbol {
                 text: "search"
                 iconSize: 20
-                color: Appearance.m3colors.m3onSurface
+                color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
             }
             StyledText {
                 id: text
                 horizontalAlignment: Text.AlignHCenter
                 text: root.query
-                color: Appearance.m3colors.m3onSurface
+                color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
             }
         }
     }

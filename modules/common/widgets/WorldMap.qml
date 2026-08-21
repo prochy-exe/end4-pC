@@ -9,8 +9,8 @@ Item {
     clip: true
 
     property real dotSize: 2.2
-    property color dotColor: Appearance.colors.colLayer0Border 
-    property color markerColor: Appearance.colors.colPrimary
+    property color dotColor: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border) 
+    property color markerColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
     property color glowColorCenter: "transparent"
     property color glowColorEdge: "transparent"
 

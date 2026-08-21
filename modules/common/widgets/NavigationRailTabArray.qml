@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
@@ -7,7 +8,7 @@ Item {
     id: root
     property int currentIndex: 0
     property bool expanded: false
-    property color colToggled: Appearance.colors.colSecondaryContainer
+    property color colToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
     default property alias data: tabBarColumn.data  
     implicitHeight: tabBarColumn.implicitHeight
     implicitWidth: tabBarColumn.implicitWidth

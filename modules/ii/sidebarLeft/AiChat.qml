@@ -249,12 +249,12 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
             MaterialSymbol {
                 text: statusItem.icon
                 iconSize: Appearance.font.pixelSize.huge
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             }
             StyledText {
                 font.pixelSize: Appearance.font.pixelSize.small
                 text: statusItem.statusText
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 animateChange: true
             }
         }
@@ -270,7 +270,7 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
         implicitWidth: 4
         implicitHeight: 4
         radius: implicitWidth / 2
-        color: Appearance.colors.colOutlineVariant
+        color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant)
     }
 
     ColumnLayout {
@@ -314,7 +314,7 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
                 implicitWidth: statusRowLayout.implicitWidth + 10 * 2
                 implicitHeight: Math.max(statusRowLayout.implicitHeight, 38)
                 radius: Appearance.rounding.normal - root.padding
-                color: messageListView.atYBeginning ? Appearance.colors.colLayer2 : Appearance.colors.colLayer2Base
+                color: messageListView.atYBeginning ? MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2) : MonitorThemes.shellColorForItem(root, "colLayer2Base", Appearance.colors.colLayer2Base)
                 Behavior on color {
                     animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
                 }
@@ -428,11 +428,11 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
                 }
                 delegate: ApiCommandButton {
                     id: commandButton
-                    colBackground: suggestions.selectedIndex === index ? Appearance.colors.colSecondaryContainerHover : Appearance.colors.colSecondaryContainer
+                    colBackground: suggestions.selectedIndex === index ? Appearance.colors.colSecondaryContainerHover : MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
                     bounce: false
                     contentItem: StyledText {
                         font.pixelSize: Appearance.font.pixelSize.small
-                        color: Appearance.m3colors.m3onSurface
+                        color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
                         horizontalAlignment: Text.AlignHCenter
                         text: modelData.displayName ?? modelData.name
                     }
@@ -474,7 +474,7 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
             property real spacing: 5
             Layout.fillWidth: true
             radius: Appearance.rounding.normal - root.padding
-            color: Appearance.colors.colLayer2
+            color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
             implicitHeight: Math.max(inputFieldRowLayout.implicitHeight + inputFieldRowLayout.anchors.topMargin + commandButtonsRow.implicitHeight + commandButtonsRow.anchors.bottomMargin + spacing, 45) + (attachedFileIndicator.implicitHeight + spacing + attachedFileIndicator.anchors.topMargin)
             clip: true
 
@@ -516,7 +516,7 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
                         anchors.fill: parent
                         wrapMode: TextArea.Wrap
                         padding: 10
-                        color: activeFocus ? Appearance.m3colors.m3onSurface : Appearance.m3colors.m3onSurfaceVariant
+                        color: activeFocus ? MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface) : MonitorThemes.colorForItem(root, "on_surface_variant", Appearance.m3colors.m3onSurfaceVariant)
                         placeholderText: Translation.tr('Message the model... "%1" for commands').arg(root.commandPrefix)
 
                         background: null
@@ -718,7 +718,7 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
                         anchors.centerIn: parent
                         horizontalAlignment: Text.AlignHCenter
                         iconSize: 22
-                        color: sendButton.enabled ? Appearance.m3colors.m3onPrimary : Appearance.colors.colOnLayer2Disabled
+                        color: sendButton.enabled ? MonitorThemes.colorForItem(root, "on_primary", Appearance.m3colors.m3onPrimary) : Appearance.colors.colOnLayer2Disabled
                         text: "arrow_upward"
                     }
                 }

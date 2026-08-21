@@ -55,8 +55,8 @@ Item {
             bottomRightRadius: isCurrent ? 0 : Appearance.rounding.unsharpenmore
 
             color: isCurrent
-                ? Appearance.colors.colLayer1
-                : Appearance.colors.colPrimaryContainer
+                ? MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
+                : MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
             opacity: isCurrent ? 1 : (0.3 + ((totalCount - 1 - visualPosition) / Math.max(totalCount - 1, 1)) * 0.3)
 
@@ -78,7 +78,7 @@ Item {
                 width: 30
                 height: 4
                 radius: height / 2
-                color: Appearance.colors.colSurfaceContainerHighest
+                color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHighest", Appearance.colors.colSurfaceContainerHighest)
                 opacity: 0.6
             }
 
@@ -92,16 +92,16 @@ Item {
                     text: parent.parent.modelData.icon
                     iconSize: Appearance.font.pixelSize.larger
                     color: parent.parent.isCurrent
-                        ? Appearance.colors.colOnLayer1
-                        : Appearance.colors.colOnPrimaryContainer
+                        ? MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+                        : MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                     Behavior on color { ColorAnimation { duration: 200 } }
                 }
 
                 StyledText {
                     text: parent.parent.modelData.name
                     color: parent.parent.isCurrent
-                        ? Appearance.colors.colOnLayer1
-                        : Appearance.colors.colOnPrimaryContainer
+                        ? MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+                        : MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                     Behavior on color { ColorAnimation { duration: 200 } }
                 }
             }

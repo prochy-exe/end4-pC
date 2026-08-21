@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -23,7 +24,7 @@ Rectangle {
         }
     }
 
-    color: root.show && root.showScrim ? Appearance.colors.colScrim : ColorUtils.transparentize(Appearance.colors.colScrim)
+    color: root.show && root.showScrim ? MonitorThemes.shellColorForItem(root, "colScrim", Appearance.colors.colScrim) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colScrim", Appearance.colors.colScrim))
     Behavior on color {
         animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
     }
@@ -47,9 +48,9 @@ Rectangle {
         id: dialogBackground
         anchors.horizontalCenter: parent.horizontalCenter
         radius: Appearance.rounding.large
-        color: Appearance.m3colors.m3surfaceContainerHigh // Use opaque version of layer3
+        color: MonitorThemes.colorForItem(root, "surface_container_high", Appearance.m3colors.m3surfaceContainerHigh) // Use opaque version of layer3
         border.width: 1
-        border.color: Appearance.colors.colLayer0Border
+        border.color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
         
         property real targetY: root.height / 2 - root.backgroundHeight / 2
         y: root.show ? targetY : (targetY - root.backgroundAnimationMovementDistance)

@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
@@ -132,7 +133,7 @@ Button {
         }
 
         border.width: root.tabbedTo ? 2 : 0
-        border.color: Appearance.colors.colSecondary
+        border.color: MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
     }
 
     contentItem: StyledText {

@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import qs.modules.common.widgets // Para las sombras y estilos
+import qs.services
 
 Item {
     id: root
@@ -13,6 +14,7 @@ Item {
     
     // Control de visibilidad
     property bool visible: false
+    property string monitorName: ""
 
     LazyLoader {
         id: loader
@@ -20,6 +22,7 @@ Item {
 
         component: PanelWindow {
             id: popupWindow
+            readonly property string resolvedMonitorName: root.monitorName || screen?.name || ""
             
             // Configuración de Wayland
             WlrLayershell.layer: WlrLayer.Overlay
@@ -49,9 +52,9 @@ Item {
                 implicitHeight: layout.implicitHeight + 16
                 
                 radius: Appearance.rounding.normal
-                color: Appearance.m3colors.m3surfaceContainer
+                color: MonitorThemes.colorForItem(popupWindow, "surface_container", Appearance.m3colors.m3surfaceContainer)
                 border.width: 1
-                border.color: Appearance.colors.colLayer0Border
+                border.color: MonitorThemes.colorForItem(popupWindow, "outline_variant", Appearance.colors.colLayer0Border)
 
                 ColumnLayout {
                     id: layout
@@ -70,14 +73,14 @@ Item {
                             Rectangle {
                                 anchors.fill: parent
                                 radius: Appearance.rounding.small
-                                color: itemArea.containsMouse ? Appearance.colors.colLayer2Hover : "transparent"
+                                color: itemArea.containsMouse ? MonitorThemes.colorForItem(popupWindow, "surface_container_high", Appearance.colors.colLayer2Hover) : "transparent"
                             }
 
                             Text {
                                 anchors.centerIn: parent
                                 text: modelData.text || ""
                                 font.family: Appearance.font.family.main
-                                color: Appearance.m3colors.m3onSurface
+                                color: MonitorThemes.colorForItem(popupWindow, "on_surface", Appearance.m3colors.m3onSurface)
                             }
 
                             onClicked: {

@@ -13,6 +13,33 @@ ContentPage {
     id: page
     forceWidth: true
 
+    function regenerateColors() {
+        colorRegenerationTimer.restart()
+    }
+
+    Timer {
+        id: colorRegenerationTimer
+        interval: 150
+        onTriggered: Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --noswitch`])
+    }
+
+    Connections {
+        target: Config.options.appearance.wallpaperTheming
+        function onEnableAppsAndShellChanged() { page.regenerateColors() }
+        function onUseWallpaperColorForAppsChanged() { page.regenerateColors() }
+        function onAccentMonitorChanged() { page.regenerateColors() }
+        function onEnableQtAppsChanged() { page.regenerateColors() }
+        function onEnableTerminalChanged() { page.regenerateColors() }
+    }
+
+    Connections {
+        target: Config.options.appearance.wallpaperTheming.terminalGenerationProps
+        function onForceDarkModeChanged() { page.regenerateColors() }
+        function onHarmonyChanged() { page.regenerateColors() }
+        function onHarmonizeThresholdChanged() { page.regenerateColors() }
+        function onTermFgBoostChanged() { page.regenerateColors() }
+    }
+
     function goTo(term) {
         const t = term.toLowerCase().trim()
 
@@ -177,7 +204,7 @@ ContentPage {
                 topRightRadius: Appearance.rounding.verylarge
                 bottomLeftRadius: Appearance.rounding.normal
                 bottomRightRadius: Appearance.rounding.normal
-                color: Appearance.colors.colLayer1
+                color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
 
                 ColumnLayout {
                     id: wrapperCol
@@ -219,7 +246,7 @@ ContentPage {
                         StyledText {
                             Layout.leftMargin: 12
                             text: Translation.tr("Span across these monitors")
-                            color: Appearance.colors.colOnLayer1
+                            color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                             font.pixelSize: Appearance.font.pixelSize.small
                         }
 
@@ -1270,8 +1297,8 @@ ContentPage {
                     visible: Config.options.background.centeredWallpaper
                     ConfigSelectionShapeArray {
                         currentValue: Config.options.background.centeredWallpaperShape
-                        shapeColor: Appearance.colors.colPrimary
-                        backgroundColor: Appearance.colors.colPrimaryContainer
+                        shapeColor: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
+                        backgroundColor: MonitorThemes.shellColorForItem(page, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                         options: [
                             "Circle", "Square", "Slanted", "Arch", "Arrow", "SemiCircle", "Oval", "Pill",
                             "Triangle", "Diamond", "ClamShell", "Pentagon", "Gem", "Sunny", "VerySunny",
@@ -1285,6 +1312,8 @@ ContentPage {
                     }
                     ColorSelectionArray {
                         visible: Config.options.background.centeredWallpaper
+                        enabled: !Config.options.background.useMonitorSpecificColors
+                        opacity: enabled ? 1 : 0.45
                         icon: "palette"
                         text: Translation.tr("Background Color")
                         currentValue: Config.options.background.centeredWallpaperColor
@@ -1888,8 +1917,8 @@ ContentPage {
                 }
                 ConfigSelectionShapeArray {
                     currentValue: Config.options.background.widgets.customImage.shape
-                    shapeColor: Appearance.colors.colPrimary
-                    backgroundColor: Appearance.colors.colPrimaryContainer
+                    shapeColor: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
+                    backgroundColor: MonitorThemes.shellColorForItem(page, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                     options: [
                         "Circle", "Square", "Slanted", "Arch", "Arrow", "SemiCircle", "Oval", "Pill",
                         "Triangle", "Diamond", "ClamShell", "Pentagon", "Gem", "Sunny", "VerySunny",
@@ -2183,6 +2212,23 @@ ContentPage {
                     onCheckedChanged: { Config.options.appearance.wallpaperTheming.enableAppsAndShell = checked }
                 }
                 ConfigSwitch {
+                    buttonIcon: "devices"
+                    text: Translation.tr("Use wallpaper color for apps")
+                    infoText: Translation.tr("Apps cannot be assigned colors by window position. When enabled, palettes from all monitor wallpapers are blended into one app palette.")
+                    enabled: Config.hasDistinctMonitorWallpapers(false)
+                    checked: Config.options.appearance.wallpaperTheming.useWallpaperColorForApps
+                    onCheckedChanged: Config.options.appearance.wallpaperTheming.useWallpaperColorForApps = checked
+                }
+                ConfigComboBox {
+                    Layout.fillWidth: true
+                    enabled: !Config.options.appearance.wallpaperTheming.useWallpaperColorForApps
+                    buttonIcon: "monitor"
+                    text: Translation.tr("App accent monitor")
+                    model: Quickshell.screens.map(screen => ({ displayName: screen.name, icon: "monitor", value: screen.name }))
+                    currentValue: Config.options.appearance.wallpaperTheming.accentMonitor
+                    onSelected: newValue => Config.options.appearance.wallpaperTheming.accentMonitor = newValue
+                }
+                ConfigSwitch {
                     buttonIcon: "tv_options_input_settings"
                     text: Translation.tr("Qt apps")
                     checked: Config.options.appearance.wallpaperTheming.enableQtApps
@@ -2397,9 +2443,9 @@ ContentPage {
                         Quickshell.clipboardText = 'require("hyprland/shellOverrides/animations")'
                         revertSourceTimer.restart()
                     }
-                    colBackground: ColorUtils.transparentize(Appearance.colors.colPrimaryContainer)
-                    colBackgroundHover: Appearance.colors.colPrimaryContainerHover
-                    colRipple: Appearance.colors.colPrimaryContainerActive
+                    colBackground: ColorUtils.transparentize(MonitorThemes.shellColorForItem(page, "colPrimaryContainer", Appearance.colors.colPrimaryContainer))
+                    colBackgroundHover: MonitorThemes.shellColorForItem(page, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover)
+                    colRipple: MonitorThemes.shellColorForItem(page, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
                     Timer {
                         id: revertSourceTimer
                         interval: 1500

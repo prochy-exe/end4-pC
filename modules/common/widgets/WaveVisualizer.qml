@@ -11,7 +11,7 @@ Canvas { // Visualizer
     property real maxVisualizerValue: 1000
     property int smoothing: 2
     property bool live: true
-    property color color: Appearance.m3colors.m3primary
+    property color color: MonitorThemes.colorForItem(root, "primary", Appearance.m3colors.m3primary)
     // Defaults match the original hardcoded values (Player.qml's card
     // background) - callers rendering this small (e.g. the ticker's
     // progress bar) want less blur/more opacity, or the wave gets crushed

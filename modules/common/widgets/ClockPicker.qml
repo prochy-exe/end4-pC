@@ -22,7 +22,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: width / 2
-        color: Appearance.colors.colLayer1
+        color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
     }
 
     Repeater {
@@ -42,7 +42,7 @@ Item {
                 height: 28
                 radius: 14
                 color: (root.running && tickDelegate.isSelected)
-                    ? Appearance.colors.colPrimary
+                    ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                     : "transparent"
                 Behavior on color {
                     animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
@@ -56,8 +56,8 @@ Item {
                     font.pixelSize: 11
                     font.weight: 700
                     color: (root.running && tickDelegate.isSelected)
-                        ? Appearance.colors.colOnPrimary
-                        : Appearance.colors.colSubtext
+                        ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                        : MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                     Behavior on color {
                         animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
                     }
@@ -73,8 +73,8 @@ Item {
                 radius: width / 2
                 visible: !(root.running && tickDelegate.isSelected)
                 color: tickDelegate.isSelected
-                    ? Appearance.colors.colPrimary
-                    : ColorUtils.transparentize(Appearance.colors.colSubtext, 0.5)
+                    ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                    : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext), 0.5)
             }
         }
     }
@@ -96,9 +96,9 @@ Item {
             ctx.moveTo(cx, cy);
             ctx.lineTo(tipX, tipY);
             ctx.strokeStyle = Qt.rgba(
-                Appearance.colors.colPrimary.r,
-                Appearance.colors.colPrimary.g,
-                Appearance.colors.colPrimary.b,
+                MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary).r,
+                MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary).g,
+                MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary).b,
                 0.9
             );
             ctx.lineWidth = 2;
@@ -120,7 +120,7 @@ Item {
         width: 8
         height: 8
         radius: 4
-        color: Appearance.colors.colPrimary
+        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
         anchors.centerIn: parent
         z: 2
         visible: !root.running
@@ -131,7 +131,7 @@ Item {
         width: 28
         height: 28
         radius: 14
-        color: Appearance.colors.colPrimary
+        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
         z: 2
         visible: !root.running
         x: root.centerX + (root.radius - 30) * Math.cos(root.angle) - width / 2
@@ -142,7 +142,7 @@ Item {
             text: root.value.toString()
             font.pixelSize: 9
             font.weight: 700
-            color: Appearance.colors.colOnPrimary
+            color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
         }
     }
 
@@ -161,14 +161,14 @@ Item {
             font.pixelSize: 36
             font.weight: 700
             font.features: { "tnum": 1 }
-            color: Appearance.m3colors.m3onSurface
+            color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
         }
 
         StyledText {
             Layout.alignment: Qt.AlignHCenter
             text: TimerService.pomodoroLongBreak ? Translation.tr("Long break") : TimerService.pomodoroBreak ? Translation.tr("Break") : Translation.tr("Focus")
             font.pixelSize: Appearance.font.pixelSize.normal
-            color: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
         }
     }
 

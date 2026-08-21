@@ -1,4 +1,5 @@
 import qs.modules.common
+import qs.services
 import qs.modules.common.widgets
 import QtQuick
 
@@ -14,13 +15,13 @@ GroupButton {
     baseHeight: contentItem.implicitHeight + verticalPadding * 2
     buttonRadius: down ? Appearance.rounding.verysmall : Appearance.rounding.small
 
-    colBackground: Appearance.colors.colLayer2
-    colBackgroundHover: Appearance.colors.colLayer2Hover
-    colBackgroundActive: Appearance.colors.colLayer2Active
+        colBackground: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
+        colBackgroundHover: MonitorThemes.shellColorForItem(root, "colLayer2Hover", Appearance.colors.colLayer2Hover)
+        colBackgroundActive: MonitorThemes.shellColorForItem(root, "colLayer2Active", Appearance.colors.colLayer2Active)
 
     contentItem: StyledText {
         horizontalAlignment: Text.AlignHCenter
         text: buttonText
-        color: Appearance.m3colors.m3onSurface
+        color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
     }
 }

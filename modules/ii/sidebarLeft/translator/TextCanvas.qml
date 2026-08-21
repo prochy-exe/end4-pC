@@ -11,7 +11,7 @@ Rectangle {
     property bool isInput: true // true for input, false for output
     property string placeholderText
     property string text: ""
-    property color containerColor: Appearance.colors.colPrimaryContainer
+    property color containerColor: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
     property var inputTextArea: isInput ? inputLoader.item : undefined
     readonly property string displayedText: isInput ? inputLoader.item.text : 
         root.text.length > 0 ? outputLoader.item.text : ""
@@ -43,7 +43,7 @@ Rectangle {
                 wrapMode: TextEdit.Wrap
                 textFormat: TextEdit.PlainText
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 padding: 15
                 background: null
                 onHoveredChanged: {
@@ -66,7 +66,7 @@ Rectangle {
                 padding: 15
                 wrapMode: Text.Wrap
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: root.text.length > 0 ? Appearance.colors.colOnLayer1 : Appearance.colors.colSubtext
+                color: root.text.length > 0 ? MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) : MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 text: root.text.length > 0 ? root.text : root.placeholderText
             }
         }
@@ -84,7 +84,7 @@ Rectangle {
                 Layout.leftMargin: 10
                 sourceComponent: StyledText {
                     text: Translation.tr("%1 characters").arg(inputLoader.item?.text.length ?? 0)
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                     font.pixelSize: Appearance.font.pixelSize.smaller
                 }
             }

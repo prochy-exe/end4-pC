@@ -59,17 +59,17 @@ Item {
     }
 
     function getMaterialPillColor(name) {
-        if (!root.isMaterial) return Appearance.colors.colPrimaryContainer;
+        if (!root.isMaterial) return MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer);
         switch(name) {
             case "media":
             case "sysTray":
-                return Appearance.colors.colSecondaryContainer;
+                return MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer);
             case "resources":
-                return Appearance.colors.colTertiaryContainer;
+                return MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer);
             case "systemIcons":
-                return Appearance.colors.colPrimary; 
+                return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary); 
             default:
-                return Appearance.colors.colPrimaryContainer;
+                return MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer);
         }
     }
 
@@ -91,10 +91,10 @@ Item {
             margins: root.currentCornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0
         }
         color: (Config.getBarSetting(root.monitorName, ["showBackground"], Config.options.bar.showBackground) && root.currentCornerStyle !== 2 && !root.isMaterial && !root.centerOnly)
-            ? Appearance.colors.colLayer0 : "transparent"
+            ? MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0) : "transparent"
         radius: root.currentCornerStyle === 1 ? Appearance.rounding.windowRounding : 0
         border.width: (!root.centerOnly && root.currentCornerStyle === 1) ? 1 : 0
-        border.color: Appearance.colors.colLayer0Border
+        border.color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
     }
 
     // centerOnly
@@ -105,10 +105,10 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         height: middleCol.implicitHeight + 7
         width: parent.width - (root.currentCornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut * 2 : 0)
-        color: Appearance.colors.colLayer0
+        color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
         radius: root.currentCornerStyle === 1 ? Appearance.rounding.windowRounding : 0
         border.width: root.currentCornerStyle === 1 ? 1 : 0
-        border.color: Appearance.colors.colLayer0Border
+        border.color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
 
         bottomRightRadius: root.currentCornerStyle === 0 && !Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom) ? Appearance.rounding.screenRounding : radius
         topRightRadius:    root.currentCornerStyle === 0 && !Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom) ? Appearance.rounding.screenRounding : radius
@@ -136,7 +136,7 @@ Item {
                 implicitWidth: topMaterialCol.implicitWidth
                 implicitHeight: topMaterialCol.implicitHeight + 10
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colLayer0
+                color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
 
                 ColumnLayout {
                     id: topMaterialCol
@@ -212,7 +212,7 @@ Item {
                 implicitWidth: centerMaterialCol.implicitWidth 
                 implicitHeight: centerMaterialCol.implicitHeight + 10
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colLayer0
+                color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
 
                 ColumnLayout {
                     id: centerMaterialCol
@@ -289,7 +289,7 @@ Item {
                 implicitWidth: bottomMaterialCol.implicitWidth
                 implicitHeight: bottomMaterialCol.implicitHeight + 10 
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colLayer0
+                color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
 
                 ColumnLayout {
                     id: bottomMaterialCol

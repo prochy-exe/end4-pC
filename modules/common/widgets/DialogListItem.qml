@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.widgets
@@ -18,8 +19,8 @@ RippleButton {
         animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
     }
 
-    colBackground: ColorUtils.transparentize(Appearance.colors.colLayer3)
-    colBackgroundHover: active ? colBackground : Appearance.colors.colLayer3Hover
-    colRipple: Appearance.colors.colLayer3Active
+    colBackground: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer3", Appearance.colors.colLayer3))
+    colBackgroundHover: active ? colBackground : MonitorThemes.shellColorForItem(root, "colLayer3Hover", Appearance.colors.colLayer3Hover)
+    colRipple: MonitorThemes.shellColorForItem(root, "colLayer3Active", Appearance.colors.colLayer3Active)
     buttonRadius: 0
 }

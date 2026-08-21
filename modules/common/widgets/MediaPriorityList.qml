@@ -53,7 +53,7 @@ ContentSubsection {
         visible: priorityRoot.rows.length === 0
         text: Translation.tr("No controllable media players detected right now.")
         font.pixelSize: Appearance.font.pixelSize.smaller
-        color: Appearance.colors.colSubtext
+        color: MonitorThemes.shellColorForItem(parent, "colSubtext", Appearance.colors.colSubtext)
     }
 
     Item {
@@ -76,7 +76,7 @@ ContentSubsection {
                     width: rowColumn.width
                     height: 36
                     radius: Appearance.rounding.small
-                    color: Appearance.colors.colLayer2
+                    color: MonitorThemes.shellColorForItem(parent, "colLayer2", Appearance.colors.colLayer2)
                     opacity: rowDelegate.modelData.live ? (dragHandler.active ? 0.6 : 1) : 0.5
                     z: dragHandler.active ? 10 : 0
 
@@ -89,24 +89,24 @@ ContentSubsection {
                         MaterialSymbol {
                             text: "drag_indicator"
                             iconSize: Appearance.font.pixelSize.large
-                            color: Appearance.colors.colSubtext
+                            color: MonitorThemes.shellColorForItem(parent, "colSubtext", Appearance.colors.colSubtext)
                         }
                         StyledText {
                             Layout.preferredWidth: 20
                             text: `${rowDelegate.index + 1}.`
-                            color: Appearance.colors.colSubtext
+                            color: MonitorThemes.shellColorForItem(parent, "colSubtext", Appearance.colors.colSubtext)
                         }
                         StyledText {
                             Layout.fillWidth: true
                             text: rowDelegate.modelData.label
-                            color: Appearance.colors.colOnLayer2
+                            color: MonitorThemes.shellColorForItem(parent, "colOnLayer2", Appearance.colors.colOnLayer2)
                             elide: Text.ElideRight
                         }
                         StyledText {
                             visible: !rowDelegate.modelData.live
                             text: Translation.tr("not running")
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colSubtext
+                            color: MonitorThemes.shellColorForItem(parent, "colSubtext", Appearance.colors.colSubtext)
                         }
                         RippleButton {
                             visible: !rowDelegate.modelData.live
@@ -119,7 +119,7 @@ ContentSubsection {
                                 anchors.centerIn: parent
                                 text: "close"
                                 iconSize: Appearance.font.pixelSize.normal
-                                color: Appearance.colors.colOnLayer2
+                                color: MonitorThemes.shellColorForItem(parent, "colOnLayer2", Appearance.colors.colOnLayer2)
                             }
                         }
                     }
@@ -187,7 +187,7 @@ ContentSubsection {
             width: rowColumn.width
             height: 3
             radius: 2
-            color: Appearance.colors.colPrimary
+            color: MonitorThemes.shellColorForItem(parent, "colPrimary", Appearance.colors.colPrimary)
 
             Behavior on y { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
             Behavior on opacity { NumberAnimation { duration: 150 } }

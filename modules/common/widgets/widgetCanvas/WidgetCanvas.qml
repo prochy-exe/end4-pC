@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import qs.modules.common
 
@@ -31,7 +32,7 @@ MouseArea {
             x: index * root.gridSize
             width: 1
             height: root.height
-            color: Appearance.colors.colLayer0Border
+            color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
         }
     }
 
@@ -42,7 +43,7 @@ MouseArea {
             y: index * root.gridSize
             width: root.width
             height: 1
-            color: Appearance.colors.colLayer0Border
+            color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
         }
     }
 
@@ -52,7 +53,7 @@ MouseArea {
         x: root.width / 2 - width / 2
         width: root.centerXActive ? 2 : 1
         height: root.height
-        color: root.centerXActive ? Appearance.colors.colPrimary : Appearance.colors.colLayer0Border
+        color: root.centerXActive ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
         opacity: root.centerXActive ? 1 : 0.6
 
         Behavior on color {
@@ -72,7 +73,7 @@ MouseArea {
         y: root.height / 2 - height / 2
         width: root.width
         height: root.centerYActive ? 2 : 1
-        color: root.centerYActive ? Appearance.colors.colPrimary : Appearance.colors.colLayer0Border
+        color: root.centerYActive ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
         opacity: root.centerYActive ? 1 : 0.6
 
         Behavior on color {
@@ -92,7 +93,7 @@ MouseArea {
             id: flashLine
             property bool vertical: true
             property real linePos: 0
-            color: Appearance.colors.colPrimary
+            color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             x: vertical ? linePos : 0
             y: vertical ? 0 : linePos
             width: vertical ? 2 : root.width

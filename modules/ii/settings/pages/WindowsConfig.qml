@@ -160,7 +160,7 @@ ContentPage {
             Rectangle {
                 Layout.fillWidth: true
                 radius: Appearance.rounding.normal
-                color: Appearance.colors.colLayer1
+                color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                 implicitHeight: rulesColumn.implicitHeight + 16
 
                 ColumnLayout {
@@ -186,7 +186,7 @@ ContentPage {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 1
                                 Layout.bottomMargin: 6
-                                color: Appearance.colors.colOutlineVariant
+                                color: MonitorThemes.shellColorForItem(page, "colOutlineVariant", Appearance.colors.colOutlineVariant)
                                 opacity: 0.4
                             }
 
@@ -200,14 +200,14 @@ ContentPage {
                                     StyledText {
                                         Layout.fillWidth: true
                                         text: page.summarizeMatch(ruleDelegate.modelData.match)
-                                        color: Appearance.colors.colOnLayer1
+                                        color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                                         wrapMode: Text.Wrap
                                     }
                                     StyledText {
                                         Layout.fillWidth: true
                                         text: page.summarizeEffects(ruleDelegate.modelData.effects)
                                         font.pixelSize: Appearance.font.pixelSize.smaller
-                                        color: Appearance.colors.colSubtext
+                                        color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                                         wrapMode: Text.Wrap
                                     }
                                 }
@@ -232,7 +232,7 @@ ContentPage {
                                         anchors.centerIn: parent
                                         text: "edit"
                                         iconSize: Appearance.font.pixelSize.large
-                                        color: Appearance.colors.colOnLayer1
+                                        color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                                     }
                                 }
 
@@ -247,7 +247,7 @@ ContentPage {
                                         anchors.centerIn: parent
                                         text: "delete"
                                         iconSize: Appearance.font.pixelSize.large
-                                        color: Appearance.colors.colOnLayer1
+                                        color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                                     }
                                 }
                             }
@@ -279,14 +279,14 @@ ContentPage {
                 Layout.fillWidth: true
                 text: Translation.tr("Already defined in hyprland/rules.lua - shown for reference, read-only since that file gets overwritten on updates. Add your own above to customize on top of these.")
                 font.pixelSize: Appearance.font.pixelSize.smaller
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                 wrapMode: Text.Wrap
             }
 
             Rectangle {
                 Layout.fillWidth: true
                 radius: Appearance.rounding.normal
-                color: Appearance.colors.colLayer1
+                color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                 implicitHeight: builtinColumn.implicitHeight + 16
 
                 ColumnLayout {
@@ -313,7 +313,7 @@ ContentPage {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 1
                                 Layout.bottomMargin: 6
-                                color: Appearance.colors.colOutlineVariant
+                                color: MonitorThemes.shellColorForItem(page, "colOutlineVariant", Appearance.colors.colOutlineVariant)
                                 opacity: 0.4
                                 visible: builtinDelegate.index > 0
                             }
@@ -321,14 +321,14 @@ ContentPage {
                             StyledText {
                                 Layout.fillWidth: true
                                 text: page.summarizeMatch(builtinDelegate.modelData.match)
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                                 wrapMode: Text.Wrap
                             }
                             StyledText {
                                 Layout.fillWidth: true
                                 text: page.summarizeEffects(builtinDelegate.modelData.effects)
                                 font.pixelSize: Appearance.font.pixelSize.smaller
-                                color: Appearance.colors.colSubtext
+                                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                                 wrapMode: Text.Wrap
                             }
                         }
@@ -350,9 +350,9 @@ ContentPage {
         implicitWidth: 160
         implicitHeight: 34
         radius: Appearance.rounding.small
-        color: Appearance.colors.colLayer2
+        color: MonitorThemes.shellColorForItem(page, "colLayer2", Appearance.colors.colLayer2)
         border.width: input.activeFocus ? 2 : 0
-        border.color: Appearance.colors.colPrimary
+        border.color: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
         clip: true
 
         TextInput {
@@ -361,7 +361,7 @@ ContentPage {
             anchors.leftMargin: 10
             anchors.rightMargin: 10
             verticalAlignment: Text.AlignVCenter
-            color: Appearance.colors.colOnLayer2
+            color: MonitorThemes.shellColorForItem(page, "colOnLayer2", Appearance.colors.colOnLayer2)
             font.pixelSize: Appearance.font.pixelSize.normal
             selectByMouse: true
             clip: true
@@ -371,7 +371,7 @@ ContentPage {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: input.text.length === 0 && !input.activeFocus
                 text: fieldRoot.placeholderText
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
             }
         }
     }
@@ -382,7 +382,7 @@ ContentPage {
         signal toggled()
         Layout.alignment: Qt.AlignVCenter
         buttonRadius: Appearance.rounding.full
-        colBackground: active ? Appearance.colors.colPrimaryContainer : "transparent"
+        colBackground: active ? MonitorThemes.shellColorForItem(page, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : "transparent"
         implicitWidth: 26
         implicitHeight: 26
         onClicked: helpButton.toggled()
@@ -390,7 +390,7 @@ ContentPage {
             anchors.centerIn: parent
             text: "help"
             iconSize: Appearance.font.pixelSize.large
-            color: helpButton.active ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colOnLayer1
+            color: helpButton.active ? MonitorThemes.shellColorForItem(page, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) : MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
         }
         StyledToolTip {
             text: Translation.tr("What do these options mean?")
@@ -446,7 +446,7 @@ ContentPage {
                     }
                     StyledText {
                         text: !!fieldRow.entry.value ? Translation.tr("On") : Translation.tr("Off")
-                        color: Appearance.colors.colSubtext
+                        color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                     }
                 }
             }
@@ -506,7 +506,7 @@ ContentPage {
                         Layout.preferredWidth: 48
                         horizontalAlignment: Text.AlignRight
                         text: numRow.f.type === "int" ? String(Math.round(numSlider.value)) : numSlider.value.toFixed(2)
-                        color: Appearance.colors.colSubtext
+                        color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                     }
                 }
             }
@@ -534,7 +534,7 @@ ContentPage {
                             readonly property bool active: (fieldRow.entry.value ?? []).includes(modelData)
                             buttonRadius: Appearance.rounding.small
                             implicitHeight: 28
-                            colBackground: active ? Appearance.colors.colPrimaryContainer : Appearance.colors.colLayer2
+                            colBackground: active ? MonitorThemes.shellColorForItem(page, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : MonitorThemes.shellColorForItem(page, "colLayer2", Appearance.colors.colLayer2)
                             onClicked: {
                                 const current = fieldRow.entry.value ?? []
                                 const next = active ? current.filter(v => v !== modelData) : [...current, modelData]
@@ -545,7 +545,7 @@ ContentPage {
                                 leftPadding: 6
                                 rightPadding: 6
                                 text: chip.modelData
-                                color: chip.active ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colOnLayer2
+                                color: chip.active ? MonitorThemes.shellColorForItem(page, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) : MonitorThemes.shellColorForItem(page, "colOnLayer2", Appearance.colors.colOnLayer2)
                             }
                         }
                     }
@@ -589,7 +589,7 @@ ContentPage {
                             StyledText {
                                 Layout.preferredWidth: 80
                                 text: opacityRow.modelData
-                                color: Appearance.colors.colSubtext
+                                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                             }
                             StyledSlider {
                                 Layout.fillWidth: true
@@ -626,7 +626,7 @@ ContentPage {
                                     }
                                     StyledText {
                                         text: Translation.tr("Absolute")
-                                        color: Appearance.colors.colSubtext
+                                        color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                                         font.pixelSize: Appearance.font.pixelSize.smaller
                                     }
                                 }
@@ -680,7 +680,7 @@ ContentPage {
                             }
                             StyledText {
                                 text: Translation.tr("Silent")
-                                color: Appearance.colors.colSubtext
+                                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                                 font.pixelSize: Appearance.font.pixelSize.smaller
                             }
                         }
@@ -712,7 +712,7 @@ ContentPage {
                         }
                         StyledToolTip { text: Translation.tr("Internal (e.g. tiling layout) state") }
                     }
-                    StyledText { text: "/"; color: Appearance.colors.colSubtext }
+                    StyledText { text: "/"; color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext) }
                     StyledComboBox {
                         Layout.fillWidth: true
                         model: parent.f.options ?? []
@@ -739,7 +739,7 @@ ContentPage {
                 anchors.centerIn: parent
                 text: "close"
                 iconSize: Appearance.font.pixelSize.large
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
             }
         }
     }
@@ -753,7 +753,7 @@ ContentPage {
 
         Layout.fillWidth: true
         radius: Appearance.rounding.normal
-        color: Appearance.colors.colLayer2
+        color: MonitorThemes.shellColorForItem(page, "colLayer2", Appearance.colors.colLayer2)
         implicitHeight: helpColumn.implicitHeight + 20
 
         ColumnLayout {
@@ -771,7 +771,7 @@ ContentPage {
                 visible: helpPanel.note.length > 0
                 text: helpPanel.note
                 font.pixelSize: Appearance.font.pixelSize.smaller
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                 wrapMode: Text.Wrap
             }
 
@@ -788,14 +788,14 @@ ContentPage {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 1
                         Layout.bottomMargin: 5
-                        color: Appearance.colors.colOutlineVariant
+                        color: MonitorThemes.shellColorForItem(page, "colOutlineVariant", Appearance.colors.colOutlineVariant)
                         opacity: 0.4
                         visible: helpRow.index > 0
                     }
                     StyledText {
                         Layout.fillWidth: true
                         text: helpRow.modelData.key
-                        color: Appearance.colors.colOnLayer2
+                        color: MonitorThemes.shellColorForItem(page, "colOnLayer2", Appearance.colors.colOnLayer2)
                         font.weight: Font.Medium
                         font.family: Appearance.font.family.monospace ?? font.family
                         wrapMode: Text.Wrap
@@ -805,14 +805,14 @@ ContentPage {
                         visible: text.length > 0
                         text: helpRow.modelData.description ?? ""
                         font.pixelSize: Appearance.font.pixelSize.smaller
-                        color: Appearance.colors.colOnLayer2
+                        color: MonitorThemes.shellColorForItem(page, "colOnLayer2", Appearance.colors.colOnLayer2)
                         wrapMode: Text.Wrap
                     }
                     StyledText {
                         Layout.fillWidth: true
                         text: Translation.tr("Allowed: ") + page.allowedValuesFor(helpRow.modelData)
                         font.pixelSize: Appearance.font.pixelSize.smaller
-                        color: Appearance.colors.colSubtext
+                        color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                         wrapMode: Text.Wrap
                     }
                 }
@@ -828,13 +828,13 @@ ContentPage {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 1
                     Layout.bottomMargin: 5
-                    color: Appearance.colors.colOutlineVariant
+                    color: MonitorThemes.shellColorForItem(page, "colOutlineVariant", Appearance.colors.colOutlineVariant)
                     opacity: 0.4
                 }
                 StyledText {
                     Layout.fillWidth: true
                     text: helpPanel.extraOptionsTitle
-                    color: Appearance.colors.colOnLayer2
+                    color: MonitorThemes.shellColorForItem(page, "colOnLayer2", Appearance.colors.colOnLayer2)
                     font.weight: Font.Medium
                     wrapMode: Text.Wrap
                 }
@@ -848,14 +848,14 @@ ContentPage {
                             Layout.preferredWidth: 140
                             text: modelData.option
                             font.family: Appearance.font.family.monospace ?? font.family
-                            color: Appearance.colors.colOnLayer2
+                            color: MonitorThemes.shellColorForItem(page, "colOnLayer2", Appearance.colors.colOnLayer2)
                             wrapMode: Text.Wrap
                         }
                         StyledText {
                             Layout.fillWidth: true
                             text: modelData.description
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colSubtext
+                            color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                             wrapMode: Text.Wrap
                         }
                     }
@@ -893,7 +893,7 @@ ContentPage {
             spacing: 10
             StyledText {
                 text: Translation.tr("Match criteria")
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                 font.weight: Font.Medium
             }
             HelpIconButton {
@@ -951,7 +951,7 @@ ContentPage {
                     readonly property bool active: form.matchList.some(m => m.key === modelData.key && m.value === modelData.value)
                     buttonRadius: Appearance.rounding.small
                     implicitHeight: 28
-                    colBackground: active ? Appearance.colors.colPrimaryContainer : Appearance.colors.colLayer2
+                    colBackground: active ? MonitorThemes.shellColorForItem(page, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : MonitorThemes.shellColorForItem(page, "colLayer2", Appearance.colors.colLayer2)
                     onClicked: {
                         if (candidateChip.active) {
                             form.matchList = form.matchList.filter(m => !(m.key === candidateChip.modelData.key && m.value === candidateChip.modelData.value))
@@ -966,7 +966,7 @@ ContentPage {
                         leftPadding: 8
                         rightPadding: 8
                         text: `${candidateChip.modelData.key}: ${candidateChip.modelData.value}`
-                        color: candidateChip.active ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colOnLayer2
+                        color: candidateChip.active ? MonitorThemes.shellColorForItem(page, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) : MonitorThemes.shellColorForItem(page, "colOnLayer2", Appearance.colors.colOnLayer2)
                     }
                     StyledToolTip {
                         text: candidateChip.active ? Translation.tr("Click to remove from match criteria") : Translation.tr("Click to add to match criteria")
@@ -1012,7 +1012,7 @@ ContentPage {
             spacing: 10
             StyledText {
                 text: Translation.tr("Effects")
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                 font.weight: Font.Medium
             }
             HelpIconButton {
@@ -1069,7 +1069,7 @@ ContentPage {
             Layout.fillWidth: true
             visible: form.formError.length > 0
             text: form.formError
-            color: Appearance.colors.colError
+            color: MonitorThemes.shellColorForItem(page, "colError", Appearance.colors.colError)
             wrapMode: Text.Wrap
         }
 

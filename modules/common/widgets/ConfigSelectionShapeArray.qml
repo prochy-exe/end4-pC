@@ -12,8 +12,8 @@ Flow {
 
     property list<string> options: []
     property var currentValue: null
-    property color shapeColor: Appearance.colors.colPrimaryContainer
-    property color backgroundColor: Appearance.colors.colLayer1
+    property color shapeColor: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+    property color backgroundColor: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
 
     signal selected(var newValue)
 
@@ -76,9 +76,9 @@ Flow {
             rightRadius: (toggled || rightmost) ? (height / 2) : Appearance.rounding.unsharpenmore
             horizontalPadding: 12
             verticalPadding: 8
-            colBackground: Appearance.colors.colSecondaryContainer
-            colBackgroundHover: Appearance.colors.colSecondaryContainerHover
-            colBackgroundActive: Appearance.colors.colSecondaryContainerActive
+            colBackground: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+            colBackgroundHover: MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+            colBackgroundActive: MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
 
             onYChanged: {
                 if (index === 0) {
@@ -95,7 +95,7 @@ Flow {
                 implicitSize: Appearance.font.pixelSize.larger
                 shape: root.getShape(shapeButton.modelData)
                 color: shapeButton.toggled
-                    ? Appearance.colors.colOnPrimary
+                    ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                     : root.shapeColor
                 Behavior on color {
                     ColorAnimation { duration: 180 }

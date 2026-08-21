@@ -16,6 +16,19 @@ LockScreen {
     property var savedWorkspaces: ({})
     property string lastProcessedLockWall: ""
     property bool lastProcessedDarkmode: Appearance.m3colors.darkmode
+    property int layoutBeforeLock: -1
+
+    function applyLockKeyboardLayout() {
+        const requested = Config.options.lock.keyboardLayout
+        if (!requested || requested.length === 0) return
+        const index = HyprlandXkb.layoutCodes.indexOf(requested)
+        if (index >= 0) HyprlandXkb.switchLayout(index)
+    }
+
+    function restoreKeyboardLayout() {
+        if (root.layoutBeforeLock >= 0) HyprlandXkb.switchLayout(root.layoutBeforeLock)
+        root.layoutBeforeLock = -1
+    }
 
     Timer {
         id: restoreTimer
@@ -57,6 +70,8 @@ LockScreen {
         target: GlobalStates
         function onScreenLockedChanged() {
             if (GlobalStates.screenLocked) {
+                root.layoutBeforeLock = HyprlandXkb.layoutCodes.indexOf(HyprlandXkb.currentLayoutCode)
+                root.applyLockKeyboardLayout()
                 var wallChanged = Config.options.background.lockWall !== root.lastProcessedLockWall
                 var modeChanged = Appearance.m3colors.darkmode !== root.lastProcessedDarkmode
 
@@ -82,8 +97,10 @@ LockScreen {
                 root.savedWorkspaces = next
                 Quickshell.execDetached(["bash", "-c", batch])
             } else {
+                root.restoreKeyboardLayout()
                 if (Config.options.background.lockWall !== "") {
                     MaterialThemeLoader.useLiveTheme()
+                    MonitorThemes.refresh()
                 }
                 restoreTimer.start()
             }

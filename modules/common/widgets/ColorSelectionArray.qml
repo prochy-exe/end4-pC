@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
@@ -22,14 +23,14 @@ RowLayout {
         visible: root.showLabel
         text: root.icon
         iconSize: Appearance.font.pixelSize.normal + 5
-        color: Appearance.colors.colOnLayer1
+        color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
     }
 
     StyledText {
         visible: root.showLabel
         text: root.text
         font.pixelSize: Appearance.font.pixelSize.normal
-        color: Appearance.colors.colOnLayer1
+        color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
     }
 
     Item {
@@ -60,7 +61,7 @@ RowLayout {
                     radius: slot.isSelected ? Appearance.rounding.normal : width / 2
                     color: "transparent"
                     border.width: slot.isSelected ? 2 : 0
-                    border.color: Appearance.colors.colOnLayer0
+                    border.color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
 
                     Behavior on radius {
                         animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
@@ -79,7 +80,7 @@ RowLayout {
                     width: slot.isSelected ? parent.width - 8 : parent.width - 8
                     height: slot.isSelected ? parent.height - 8 : parent.height - 8
                     radius: slot.isSelected ? Appearance.rounding.normal - 4 : width / 2 
-                    color: Appearance.colors["col" + slot.modelData.charAt(0).toUpperCase() + slot.modelData.slice(1)]
+                    color: MonitorThemes.shellColorForItem(root, "col" + slot.modelData.charAt(0).toUpperCase() + slot.modelData.slice(1), Appearance.colors["col" + slot.modelData.charAt(0).toUpperCase() + slot.modelData.slice(1)])
 
                     Behavior on radius {
                         animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)

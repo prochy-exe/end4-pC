@@ -95,7 +95,7 @@ Scope {
                         visible: barContent.centerOnly && showBarBackground && currentCornerStyle === 0
                         y: barContent.centerPillY - implicitSize
                         implicitSize: Appearance.rounding.screenRounding
-                        color: Appearance.colors.colLayer0
+                        color: MonitorThemes.shellColorForItem(parent, "colLayer0", Appearance.colors.colLayer0)
                         corner: RoundCorner.CornerEnum.BottomLeft
 
                         states: State {
@@ -123,7 +123,7 @@ Scope {
                         visible: barContent.centerOnly && showBarBackground && currentCornerStyle === 0
                         y: barContent.centerPillY + barContent.centerPillHeight
                         implicitSize: Appearance.rounding.screenRounding
-                        color: Appearance.colors.colLayer0
+                        color: MonitorThemes.shellColorForItem(parent, "colLayer0", Appearance.colors.colLayer0)
                         corner: RoundCorner.CornerEnum.TopLeft
 
                         states: State {
@@ -218,7 +218,7 @@ Scope {
                                 id: topCorner
                                 anchors { left: parent.left; right: parent.right; top: parent.top }
                                 implicitSize: Appearance.rounding.screenRounding
-                                color: showBarBackground ? Appearance.colors.colLayer0 : "transparent"
+                                color: showBarBackground ? MonitorThemes.shellColorForItem(parent, "colLayer0", Appearance.colors.colLayer0) : "transparent"
                                 corner: RoundCorner.CornerEnum.TopLeft
                                 states: State {
                                     name: "bottom"
@@ -234,7 +234,7 @@ Scope {
                                     right: currentBottom ? parent.right : undefined
                                 }
                                 implicitSize: Appearance.rounding.screenRounding
-                                color: showBarBackground ? Appearance.colors.colLayer0 : "transparent"
+                                color: showBarBackground ? MonitorThemes.shellColorForItem(parent, "colLayer0", Appearance.colors.colLayer0) : "transparent"
                                 corner: RoundCorner.CornerEnum.BottomLeft
                                 states: State {
                                     name: "bottom"

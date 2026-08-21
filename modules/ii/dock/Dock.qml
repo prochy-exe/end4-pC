@@ -108,9 +108,9 @@ Scope {
                             anchors.topMargin:    Appearance.sizes.elevationMargin
                             anchors.bottomMargin: Appearance.sizes.hyprlandGapsOut
                             color: Config.options.dock.showBackground
-                                   ? Appearance.colors.colLayer0 : "transparent"
+                                   ? MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0) : "transparent"
                             border.width: Config.options.dock.showBackground ? 1 : 0
-                            border.color: Appearance.colors.colLayer0Border
+                            border.color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
                             radius: Appearance.rounding.normal + 6
                         }
 
@@ -144,8 +144,8 @@ Scope {
                                         horizontalAlignment: Text.AlignHCenter
                                         iconSize: Appearance.font.pixelSize.larger
                                         color: root.pinned
-                                               ? Appearance.m3colors.m3onPrimary
-                                               : Appearance.colors.colOnLayer0
+                                               ? MonitorThemes.colorForItem(root, "on_primary", Appearance.m3colors.m3onPrimary)
+                                               : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                                     }
                                 }
                             }
@@ -248,7 +248,7 @@ Scope {
                                     horizontalAlignment: Text.AlignHCenter
                                     font.pixelSize: parent.width / 2
                                     text: "apps"
-                                    color: Appearance.colors.colOnLayer0
+                                    color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                                 }
                             }
                         }

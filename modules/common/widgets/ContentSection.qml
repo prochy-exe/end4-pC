@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -9,7 +10,7 @@ ColumnLayout {
     property var shape: MaterialShape.Shape.Clover4Leaf
     property string title
     property string icon: ""
-    property var bgColor: Appearance.colors.colSecondaryContainer
+    property var bgColor: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
     default property alias data: sectionContent.data
 
     Layout.fillWidth: true
@@ -27,7 +28,7 @@ ColumnLayout {
             text: root.title
             font.pixelSize: Appearance.font.pixelSize.larger
             font.weight: Font.Medium
-            color: Appearance.colors.colOnSecondaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
         }
     }
     ColumnLayout {

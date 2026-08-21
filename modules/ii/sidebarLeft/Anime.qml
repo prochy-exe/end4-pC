@@ -265,7 +265,7 @@ Item {
                 }
                 delegate: ApiCommandButton {
                     id: tagButton
-                    colBackground: tagSuggestions.selectedIndex === index ? Appearance.colors.colSecondaryContainerHover : Appearance.colors.colSecondaryContainer
+                    colBackground: tagSuggestions.selectedIndex === index ? Appearance.colors.colSecondaryContainerHover : MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
                     bounce: false
                     contentItem: RowLayout {
                         anchors.centerIn: parent
@@ -273,7 +273,7 @@ Item {
                         StyledText {
                             Layout.fillWidth: false
                             font.pixelSize: Appearance.font.pixelSize.small
-                            color: Appearance.colors.colOnSecondaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                             horizontalAlignment: Text.AlignRight
                             text: modelData.displayName ?? modelData.name
                         }
@@ -281,7 +281,7 @@ Item {
                             Layout.fillWidth: false
                             visible: modelData.count !== undefined
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: Appearance.colors.colOnSecondaryContainer
+                            color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                             horizontalAlignment: Text.AlignLeft
                             text: modelData.count ?? ""
                         }
@@ -324,7 +324,7 @@ Item {
             property real columnSpacing: 5
             Layout.fillWidth: true
             radius: Appearance.rounding.normal - root.padding
-            color: Appearance.colors.colLayer2
+            color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
             implicitWidth: tagInputField.implicitWidth
             implicitHeight: Math.max(inputFieldRowLayout.implicitHeight + inputFieldRowLayout.anchors.topMargin 
                 + commandButtonsRow.implicitHeight + commandButtonsRow.anchors.bottomMargin + columnSpacing, 45)
@@ -347,7 +347,7 @@ Item {
                     wrapMode: TextArea.Wrap
                     Layout.fillWidth: true
                     padding: 10
-                    color: activeFocus ? Appearance.m3colors.m3onSurface : Appearance.m3colors.m3onSurfaceVariant
+                    color: activeFocus ? MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface) : MonitorThemes.colorForItem(root, "on_surface_variant", Appearance.m3colors.m3onSurfaceVariant)
                     renderType: Text.NativeRendering
                     placeholderText: Translation.tr('Enter tags, or "%1" for commands').arg(root.commandPrefix)
 
@@ -461,7 +461,7 @@ Item {
                         anchors.centerIn: parent
                         horizontalAlignment: Text.AlignHCenter
                         iconSize: 22
-                        color: sendButton.enabled ? Appearance.m3colors.m3onPrimary : Appearance.colors.colOnLayer2Disabled
+                        color: sendButton.enabled ? MonitorThemes.colorForItem(root, "on_primary", Appearance.m3colors.m3onPrimary) : Appearance.colors.colOnLayer2Disabled
                         text: "arrow_upward"
                     }
                 }
@@ -498,7 +498,7 @@ Item {
 
                 StyledText {
                     font.pixelSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                     text: "•"
                 }
 
@@ -523,7 +523,7 @@ Item {
                             Layout.leftMargin: 10
                             Layout.alignment: Qt.AlignVCenter
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: nsfwSwitch.enabled ? Appearance.colors.colOnLayer1 : Appearance.m3colors.m3outline
+                            color: nsfwSwitch.enabled ? MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) : MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
                             text: Translation.tr("Allow NSFW")
                         }
                         StyledSwitch {
@@ -551,7 +551,7 @@ Item {
                         delegate: ApiCommandButton {
                             property string commandRepresentation: `${root.commandPrefix}${modelData.name}`
                             buttonText: commandRepresentation
-                            colBackground: Appearance.colors.colLayer2
+                            colBackground: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
 
                             downAction: () => {
                                 if (modelData.sendDirectly) {

@@ -131,7 +131,7 @@ Scope {
                         active: Config.options.sidebar.cornerOpen.visualize
                         anchors.fill: parent
                         sourceComponent: Rectangle {
-                            color: Appearance.colors.colPrimary
+                            color: MonitorThemes.shellColorForItem(parent, "colPrimary", Appearance.colors.colPrimary)
                         }
                     }
                 }

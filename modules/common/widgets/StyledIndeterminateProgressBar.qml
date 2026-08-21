@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import QtQuick
 import QtQuick.Controls.Material
@@ -5,5 +6,5 @@ import QtQuick.Controls
 
 ProgressBar {
     indeterminate: true
-    Material.accent: Appearance.colors.colPrimary
+    Material.accent: MonitorThemes.shellColorForItem(parent, "colPrimary", Appearance.colors.colPrimary)
 }

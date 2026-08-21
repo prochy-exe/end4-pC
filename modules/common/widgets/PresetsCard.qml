@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,7 +21,7 @@ Rectangle {
     implicitWidth: 293 
     implicitHeight: contentColumn.implicitHeight + 14
     radius: Appearance.rounding.normal
-    color: Appearance.colors.colLayer1
+    color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
     border.width: 1
     border.color: "transparent"
 
@@ -46,8 +47,8 @@ Rectangle {
                 iconSize: Appearance.font.pixelSize.normal
                 implicitSize: 36
                 font: Appearance.font.family.main
-                color: Appearance.colors.colPrimaryContainer
-                colSymbol: Appearance.colors.colOnPrimaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+                colSymbol: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                 Layout.alignment: Qt.AlignVCenter
             }
             ColumnLayout{
@@ -57,7 +58,7 @@ Rectangle {
                     text: root.title
                     font.pixelSize: Appearance.font.pixelSize.large
                     font.weight: Font.DemiBold
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                     elide: Text.ElideRight
                     wrapMode: Text.NoWrap
                 }
@@ -68,7 +69,7 @@ Rectangle {
                     visible: root.description.length > 0
                     text: root.description
                     font.pixelSize: Appearance.font.pixelSize.small
-                    color: Appearance.colors.colSubtext
+                    color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                     elide: Text.ElideRight
                 }
             }
@@ -87,7 +88,7 @@ Rectangle {
             Layout.bottomMargin: 4
             implicitHeight: 130
             radius: 0
-            color: Appearance.colors.colLayer2
+            color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
             clip: true
 
             StyledImage {
@@ -114,7 +115,7 @@ Rectangle {
                 visible: root.imageSource === ""
                 text: "wallpaper"
                 iconSize: Appearance.font.pixelSize.huge
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             }
         }
 
@@ -139,11 +140,11 @@ Rectangle {
                 horizontalPadding: 14
                 verticalPadding: 8
                 colBackground: "transparent"
-                colBackgroundHover: ColorUtils.transparentize(Appearance.colors.colPrimaryContainerHover, 0.8)
-                colBackgroundActive: Appearance.colors.colPrimaryContainerActive
+                colBackgroundHover: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover), 0.8)
+                colBackgroundActive: MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
                 contentItem: StyledText {
                     text: "Remove"
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
@@ -161,12 +162,12 @@ Rectangle {
                 implicitHeight: 36
                 horizontalPadding: 14
                 verticalPadding: 8
-                colBackground: Appearance.colors.colPrimaryContainer
-                colBackgroundHover: Appearance.colors.colPrimaryContainerHover
-                colBackgroundActive: Appearance.colors.colPrimaryContainerActive
+                colBackground: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+                colBackgroundHover: MonitorThemes.shellColorForItem(root, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover)
+                colBackgroundActive: MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
                 contentItem: StyledText {
                     text: "Apply"
-                    color: Appearance.colors.colOnPrimaryContainer
+                    color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }

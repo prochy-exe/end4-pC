@@ -226,7 +226,7 @@ OverlayBackground {
                                 anchors.centerIn: parent
                                 text: copyButton.justCopied ? "check" : "content_copy"
                                 iconSize: copyButton.iconSizeLocal
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                             }
                         }
                     }
@@ -240,7 +240,7 @@ OverlayBackground {
             Layout.margins: 16
             horizontalAlignment: Text.AlignRight
             text: saveDebounce.running ? Translation.tr("Saving...") : Translation.tr("Saved    ")
-            color: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
         }
     }
 

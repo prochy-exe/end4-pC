@@ -1,3 +1,4 @@
+import qs.services
 pragma ComponentBehavior: Bound
 import qs.modules.common
 import qs.modules.common.widgets
@@ -15,9 +16,9 @@ RowLayout {
     Layout.fillWidth: true
     spacing: 6
 
-    readonly property color highlight: root.blendedColors?.colPrimary ?? Appearance.colors.colPrimary
-    readonly property color track: root.blendedColors?.colSecondaryContainer ?? Appearance.colors.colSecondaryContainer
-    readonly property color iconColor: root.blendedColors?.colOnLayer0 ?? Appearance.colors.colOnLayer0
+    readonly property color highlight: root.blendedColors?.colPrimary ?? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+    readonly property color track: root.blendedColors?.colSecondaryContainer ?? MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+    readonly property color iconColor: root.blendedColors?.colOnLayer0 ?? MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
     readonly property real volume: root.player?.volume ?? 1
 
     visible: root.player?.volumeSupported ?? false

@@ -16,7 +16,7 @@ MouseArea { // Notification group area
     property var notifications: notificationGroup?.notifications ?? []
     property int notificationCount: notifications.length
     property bool multipleNotifications: notificationCount > 1
-    property bool expanded: false
+    property bool expanded: popup && Config.options.notifications.expandPopups
     property bool popup: false
     property real padding: 10
     implicitHeight: background.implicitHeight
@@ -127,7 +127,7 @@ MouseArea { // Notification group area
         id: background
         anchors.left: parent.left
         width: parent.width
-        color: popup ? Appearance.colors.colBackgroundSurfaceContainer : Appearance.colors.colLayer2
+        color: popup ? Appearance.colors.colBackgroundSurfaceContainer : MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
         radius: Appearance.rounding.normal
         anchors.leftMargin: root.xOffset
 
@@ -146,6 +146,7 @@ MouseArea { // Notification group area
             Math.min(80, row.implicitHeight + padding * 2)
 
         Behavior on implicitHeight {
+            enabled: !root.popup
             id: implicitHeightAnim
             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
         }
@@ -175,6 +176,7 @@ MouseArea { // Notification group area
                     5 : 0) : 0
                 // spacing: 00
                 Behavior on spacing {
+                    enabled: !root.popup
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                 }
 
@@ -203,8 +205,8 @@ MouseArea { // Notification group area
                                 topRow.fontSize :
                                 Appearance.font.pixelSize.small
                             color: topRow.showAppName ?
-                                Appearance.colors.colSubtext :
-                                Appearance.colors.colOnLayer2
+                                MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext) :
+                                MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                         }
                         StyledText {
                             id: timeText
@@ -213,7 +215,7 @@ MouseArea { // Notification group area
                             horizontalAlignment: Text.AlignLeft
                             text: NotificationUtils.getFriendlyNotifTimeString(notificationGroup?.time)
                             font.pixelSize: topRow.fontSize
-                            color: Appearance.colors.colSubtext
+                            color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                         }
                     }
                     NotificationGroupExpandButton {
@@ -240,6 +242,7 @@ MouseArea { // Notification group area
                     // clip: true
                     interactive: false
                     Behavior on spacing {
+                        enabled: !root.popup
                         animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                     }
                     model: ScriptModel {

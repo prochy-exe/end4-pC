@@ -112,7 +112,7 @@ DockButton {
                     ColorOverlay {
                         anchors.fill: desaturatedIcon
                         source: desaturatedIcon
-                        color: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.9)
+                        color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.9)
                     }
                 }
             }
@@ -132,7 +132,7 @@ DockButton {
                         implicitWidth: (appToplevel.toplevels.length <= 3) ? 
                             root.countDotWidth : root.countDotHeight // Circles when too many
                         implicitHeight: root.countDotHeight
-                        color: appIsActive ? Appearance.colors.colPrimary : ColorUtils.transparentize(Appearance.colors.colOnLayer0, 0.4)
+                        color: appIsActive ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0), 0.4)
                     }
                 }
             }

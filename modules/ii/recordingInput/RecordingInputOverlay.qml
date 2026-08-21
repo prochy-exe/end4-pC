@@ -1,3 +1,4 @@
+import qs.services
 pragma ComponentBehavior: Bound
 
 import qs
@@ -103,9 +104,9 @@ Scope {
                         implicitWidth: keyRow.implicitWidth + 32
                         implicitHeight: 48
                         radius: Appearance.rounding.full
-                        color: Appearance.m3colors.m3surfaceContainerHighest
+                        color: MonitorThemes.colorForItem(root, "surface_container_highest", Appearance.m3colors.m3surfaceContainerHighest)
                         border.width: 1
-                        border.color: Appearance.colors.colPrimary
+                        border.color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                         opacity: root.lastKeyInput.length > 0 || root.previewActive ? 1 : 0
                         scale: root.lastKeyInput.length > 0 || root.previewActive ? 1 : 0.92
 
@@ -135,18 +136,18 @@ Scope {
                                 Layout.preferredWidth: 30
                                 Layout.preferredHeight: 30
                                 radius: height / 2
-                                color: Appearance.colors.colPrimaryContainer
+                                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
                                 MaterialSymbol {
                                     anchors.centerIn: parent
                                     text: "keyboard"
                                     iconSize: 18
-                                    color: Appearance.colors.colOnPrimaryContainer
+                                    color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                 }
                             }
                             StyledText {
                                 text: root.lastKeyInput.length > 0 ? root.lastKeyDisplay : "Ctrl + Shift + C"
-                                color: Appearance.m3colors.m3onSurface
+                                color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
                                 font.pixelSize: Appearance.font.pixelSize.normal
                                 font.weight: Font.DemiBold
                             }
@@ -159,9 +160,9 @@ Scope {
                         implicitWidth: mouseRow.implicitWidth + 26
                         implicitHeight: 48
                         radius: Appearance.rounding.full
-                        color: Appearance.colors.colPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                         border.width: 1
-                        border.color: Appearance.colors.colPrimary
+                        border.color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                         opacity: root.mouseInputEnabled && (root.lastMouseInput.length > 0 || root.previewActive) ? 1 : 0
                         scale: root.mouseInputEnabled && (root.lastMouseInput.length > 0 || root.previewActive) ? 1 : 0.92
 
@@ -190,11 +191,11 @@ Scope {
                             MaterialSymbol {
                                 text: "mouse"
                                 iconSize: 21
-                                color: Appearance.colors.colOnPrimaryContainer
+                                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             }
                             StyledText {
                                 text: root.lastMouseInput.length > 0 ? root.lastMouseDisplay : "Mouse 1"
-                                color: Appearance.colors.colOnPrimaryContainer
+                                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                 font.pixelSize: Appearance.font.pixelSize.small
                                 font.weight: Font.DemiBold
                             }

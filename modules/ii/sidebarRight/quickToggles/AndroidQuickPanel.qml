@@ -114,7 +114,7 @@ AbstractQuickPanel {
                 z: 99
                 width: 3
                 radius: 2
-                color: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
                 Behavior on x { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
                 Behavior on y { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
@@ -124,14 +124,14 @@ AbstractQuickPanel {
                     anchors.top: parent.top
                     anchors.topMargin: -4
                     width: 8; height: 8; radius: 4
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
                 Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: -4
                     width: 8; height: 8; radius: 4
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
             }
         }
@@ -146,7 +146,7 @@ AbstractQuickPanel {
             }
             sourceComponent: Rectangle {
                 implicitHeight: 1
-                color: Appearance.colors.colOutlineVariant
+                color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant)
             }
         }
 

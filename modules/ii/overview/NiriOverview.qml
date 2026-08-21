@@ -235,10 +235,10 @@ Item {
 
         Rectangle {
             anchors.fill: parent
-            color: ColorUtils.transparentize(Appearance.colors.colSecondary, 0.6)
+            color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary), 0.6)
             radius: Appearance.rounding.normal
             border.width: 2
-            border.color: Appearance.colors.colSecondary
+            border.color: MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
         }
     }
 
@@ -325,7 +325,7 @@ Item {
                         width: root.monitorW * 0.15
                         height: root.wsHeight
                         radius: Appearance.rounding.normal
-                        color: Appearance.colors.colSurfaceContainerLow
+                        color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                         z: 1
 
                         StyledText {
@@ -336,7 +336,7 @@ Item {
                                 weight: Font.DemiBold
                                 family: Appearance.font.family.expressive
                             }
-                            color: ColorUtils.transparentize(Appearance.colors.colOnLayer1, 0.8)
+                            color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1), 0.8)
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                         }
@@ -361,7 +361,7 @@ Item {
                         radius: Appearance.rounding.normal
                         color: "transparent"
                         border.width: 2
-                        border.color: Appearance.colors.colSecondary
+                        border.color: MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
                         z: 10
                         Behavior on x { NumberAnimation { duration: Appearance.animation.elementMoveFast.duration } }
                         Behavior on y { NumberAnimation { duration: Appearance.animation.elementMoveFast.duration } }
@@ -374,9 +374,9 @@ Item {
                         visible: rowItem.isDragTarget && root.isDragging
                         anchors.fill: parent
                         radius: Appearance.rounding.normal
-                        color: ColorUtils.transparentize(Appearance.colors.colSecondary, 0.88)
+                        color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary), 0.88)
                         border.width: 2
-                        border.color: Appearance.colors.colSecondary
+                        border.color: MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
                         z: 0
                     }
 

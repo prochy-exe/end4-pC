@@ -12,9 +12,9 @@ ComboBox {
 
     property string buttonIcon: ""
     property real buttonRadius: height / 2
-    property color colBackground: Appearance.colors.colSecondaryContainer
-    property color colBackgroundHover: Appearance.colors.colSecondaryContainerHover
-    property color colBackgroundActive: Appearance.colors.colSecondaryContainerActive
+    property color colBackground: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+    property color colBackgroundHover: MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+    property color colBackgroundActive: MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
 
     implicitHeight: 40
     Layout.fillWidth: true
@@ -40,7 +40,7 @@ ComboBox {
         y: root.height / 2 - height / 2
         text: "keyboard_arrow_down"
         iconSize: Appearance.font.pixelSize.larger
-        color: Appearance.colors.colOnSecondaryContainer
+        color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
 
         rotation: root.popup.visible ? 180 : 0
         Behavior on rotation {
@@ -71,14 +71,14 @@ ComboBox {
                         return root.buttonIcon;
                     }
                     iconSize: Appearance.font.pixelSize.larger
-                    color: Appearance.colors.colOnSecondaryContainer
+                    color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                 }
             }
 
             StyledText {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
-                color: Appearance.colors.colOnSecondaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                 text: root.displayText
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
@@ -95,16 +95,16 @@ ComboBox {
         required property int index
         property color color: {
             if (root.currentIndex === itemDelegate.index) {
-                if (itemDelegate.down) return Appearance.colors.colSecondaryContainerActive;
-                if (itemDelegate.hovered) return Appearance.colors.colSecondaryContainerHover;
-                return Appearance.colors.colSecondaryContainer;
+                if (itemDelegate.down) return MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive);
+                if (itemDelegate.hovered) return MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover);
+                return MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer);
             } else {
-                if (itemDelegate.down) return Appearance.colors.colLayer3Active;
-                if (itemDelegate.hovered) return Appearance.colors.colLayer3Hover;
-                return ColorUtils.transparentize(Appearance.colors.colLayer3);
+                if (itemDelegate.down) return MonitorThemes.shellColorForItem(root, "colLayer3Active", Appearance.colors.colLayer3Active);
+                if (itemDelegate.hovered) return MonitorThemes.shellColorForItem(root, "colLayer3Hover", Appearance.colors.colLayer3Hover);
+                return ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer3", Appearance.colors.colLayer3));
             }
         }
-        property color colText: (root.currentIndex === itemDelegate.index) ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer3
+        property color colText: (root.currentIndex === itemDelegate.index) ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colOnLayer3", Appearance.colors.colOnLayer3)
 
         background: Rectangle {
             anchors.fill: parent
@@ -193,7 +193,7 @@ ComboBox {
                 id: popupBackground
                 anchors.fill: parent
                 radius: Appearance.rounding.normal
-                color: Appearance.m3colors.m3surfaceContainerHigh
+                color: MonitorThemes.colorForItem(root, "surface_container_high", Appearance.m3colors.m3surfaceContainerHigh)
             }
         }
 

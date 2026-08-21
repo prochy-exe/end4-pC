@@ -39,7 +39,7 @@ ContentPage {
         Layout.rightMargin: 16
 
         radius: 24
-        color: Appearance.colors.colLayer1
+        color: MonitorThemes.shellColorForItem(parent, "colLayer1", Appearance.colors.colLayer1)
 
         RowLayout {
             anchors.top: parent.top
@@ -53,7 +53,7 @@ ContentPage {
                 implicitWidth: 110
                 implicitHeight: 110
                 radius: 20
-                color: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.9)
+                color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(parent, "colPrimary", Appearance.colors.colPrimary), 0.9)
 
                 IconImage {
                     anchors.centerIn: parent
@@ -73,7 +73,7 @@ ContentPage {
                     text: SystemInfo.distroName
                     font.pixelSize: Appearance.font.pixelSize.hugeass
                     font.weight: Font.ExtraBold
-                    color: Appearance.colors.colOnSurface
+                    color: MonitorThemes.shellColorForItem(parent, "colOnSurface", Appearance.colors.colOnSurface)
                     elide: Text.ElideRight
                 }
 
@@ -82,7 +82,7 @@ ContentPage {
                     text: "Kernel " + (SystemInfo.kernelVersion || "Loading...")
                     font.pixelSize: Appearance.font.pixelSize.normal
                     font.weight: Font.Medium
-                    color: Appearance.colors.colSubtext
+                    color: MonitorThemes.shellColorForItem(parent, "colSubtext", Appearance.colors.colSubtext)
                     elide: Text.ElideRight
                 }
 
@@ -92,12 +92,12 @@ ContentPage {
 
                     Repeater {
                         model: [
-                            Appearance.m3colors.m3primary,
-                            Appearance.m3colors.m3secondary,
-                            Appearance.m3colors.m3tertiary,
-                            Appearance.m3colors.m3error,
-                            Appearance.m3colors.m3primaryContainer,
-                            Appearance.m3colors.m3secondaryContainer,
+                            MonitorThemes.colorForItem(parent, "primary", Appearance.m3colors.m3primary),
+                            MonitorThemes.colorForItem(parent, "secondary", Appearance.m3colors.m3secondary),
+                            MonitorThemes.colorForItem(parent, "tertiary", Appearance.m3colors.m3tertiary),
+                            MonitorThemes.colorForItem(parent, "error", Appearance.m3colors.m3error),
+                            MonitorThemes.colorForItem(parent, "primary_container", Appearance.m3colors.m3primaryContainer),
+                            MonitorThemes.colorForItem(parent, "secondary_container", Appearance.m3colors.m3secondaryContainer),
                         ]
                         delegate: Rectangle {
                             required property var modelData
@@ -108,7 +108,7 @@ ContentPage {
                             color: modelData
                             z: index
                             border.width: 2
-                            border.color: Appearance.colors.colLayer1
+                            border.color: MonitorThemes.shellColorForItem(parent, "colLayer1", Appearance.colors.colLayer1)
                         }
                     }
                 }
@@ -117,8 +117,8 @@ ContentPage {
                 Layout.alignment: Qt.AlignRight | Qt.AlignBottom
                 buttonText: Translation.tr("Update Dots")
                 buttonRadius: Appearance.rounding.full
-                colBackground: Appearance.colors.colPrimaryContainer
-                colBackgroundHover: Appearance.colors.colPrimaryContainerHover
+                colBackground: MonitorThemes.shellColorForItem(parent, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+                colBackgroundHover: MonitorThemes.shellColorForItem(parent, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover)
                 Layout.preferredHeight: 44
                 downAction: () => runUpdateDots()
                 contentItem: StyledText {

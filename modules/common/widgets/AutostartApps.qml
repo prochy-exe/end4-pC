@@ -78,9 +78,9 @@ ColumnLayout {
             Layout.preferredHeight: 36
             visible: Config.options.hyprland.autostartApps.enable
             buttonRadius: implicitWidth / 2
-            colBackground: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.85)
-            colBackgroundHover: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.6)
-            colRipple: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.5)
+            colBackground: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.85)
+            colBackgroundHover: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.6)
+            colRipple: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.5)
             onClicked: {
                 Quickshell.execDetached(["python3", `${Directories.scriptPath}/hyprland/autostart.py`])
             }
@@ -89,7 +89,7 @@ ColumnLayout {
                 horizontalAlignment: Text.AlignHCenter
                 text: "motion_play"
                 iconSize: Appearance.font.pixelSize.normal
-                color: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             }
         }
     }
@@ -110,7 +110,7 @@ ColumnLayout {
                 width: 118
                 horizontalAlignment: Text.AlignHCenter
                 text: Translation.tr("Workspace")
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 font.pixelSize: Appearance.font.pixelSize.small
                 font.weight: Font.Medium
             }
@@ -119,7 +119,7 @@ ColumnLayout {
                 width: 118
                 horizontalAlignment: Text.AlignHCenter
                 text: Translation.tr("Delay")
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 font.pixelSize: Appearance.font.pixelSize.small
                 font.weight: Font.Medium
             }
@@ -133,7 +133,7 @@ ColumnLayout {
             anchors.rightMargin: 6
             anchors.verticalCenter: parent.verticalCenter
             text: Translation.tr("App or Command")
-            color: Appearance.colors.colSubtext
+            color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             font.pixelSize: Appearance.font.pixelSize.small
             font.weight: Font.Medium
         }
@@ -161,16 +161,16 @@ ColumnLayout {
                     width: 36
                     height: 36
                     buttonRadius: width / 2
-                    colBackground: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.85)
-                    colBackgroundHover: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.6)
-                    colRipple: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.5)
+                    colBackground: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.85)
+                    colBackgroundHover: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.6)
+                    colRipple: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.5)
                     onClicked: root.openAppPicker(entryRow.index)
                     contentItem: MaterialSymbol {
                         anchors.centerIn: parent
                         horizontalAlignment: Text.AlignHCenter
                         text: "search"
                         iconSize: Appearance.font.pixelSize.normal
-                        color: Appearance.colors.colPrimary
+                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                     }
                 }
 
@@ -209,16 +209,16 @@ ColumnLayout {
                     width: 36
                     height: 36
                     buttonRadius: width / 2
-                    colBackground: ColorUtils.transparentize(Appearance.colors.colError, 0.85)
-                    colBackgroundHover: ColorUtils.transparentize(Appearance.colors.colError, 0.6)
-                    colRipple: ColorUtils.transparentize(Appearance.colors.colError, 0.5)
+                    colBackground: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError), 0.85)
+                    colBackgroundHover: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError), 0.6)
+                    colRipple: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError), 0.5)
                     onClicked: root.removeEntry(entryRow.index)
                     contentItem: MaterialSymbol {
                         anchors.centerIn: parent
                         horizontalAlignment: Text.AlignHCenter
                         text: "delete"
                         iconSize: Appearance.font.pixelSize.normal
-                        color: Appearance.colors.colError
+                        color: MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
                     }
                 }
             }

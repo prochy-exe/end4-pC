@@ -1,3 +1,4 @@
+import qs.services
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
@@ -199,9 +200,9 @@ AbstractOverlayWidget {
             fill: parent
             margins: root.resizeMargin
         }
-        color: ColorUtils.transparentize(Appearance.colors.colLayer1Base, (root.fancyBorders && GlobalStates.overlayOpen) ? 0 : 1)
+        color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer1Base", Appearance.colors.colLayer1Base), (root.fancyBorders && GlobalStates.overlayOpen) ? 0 : 1)
         radius: root.radius
-        border.color: ColorUtils.transparentize(Appearance.colors.colOutlineVariant, GlobalStates.overlayOpen ? 0 : 1)
+        border.color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant), GlobalStates.overlayOpen ? 0 : 1)
         border.width: 1
 
         layer.enabled: GlobalStates.overlayOpen
@@ -226,8 +227,8 @@ AbstractOverlayWidget {
                 Layout.fillWidth: true
                 implicitWidth: titleBarRow.implicitWidth + root.padding * 2
                 implicitHeight: titleBarRow.implicitHeight + root.padding * 2
-                color: root.fancyBorders ? "transparent" : Appearance.colors.colLayer1Base
-                // border.color: Appearance.colors.colOutlineVariant
+                color: root.fancyBorders ? "transparent" : MonitorThemes.shellColorForItem(root, "colLayer1Base", Appearance.colors.colLayer1Base)
+                // border.color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant)
                 // border.width: 1
                 
                 RowLayout {
@@ -314,9 +315,9 @@ AbstractOverlayWidget {
         implicitWidth: implicitHeight
         padding: 0
 
-        colBackgroundToggled: Appearance.colors.colSecondaryContainer
-        colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
-        colRippleToggled: Appearance.colors.colSecondaryContainerActive
+        colBackgroundToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+        colBackgroundToggledHover: MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+        colRippleToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
 
         contentItem: Item {
             anchors.centerIn: parent
@@ -329,7 +330,7 @@ AbstractOverlayWidget {
                 iconSize: 20
                 text: titlebarButton.materialSymbol
                 fill: titlebarButton.toggled
-                color: titlebarButton.toggled ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnSurface
+                color: titlebarButton.toggled ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colOnSurface", Appearance.colors.colOnSurface)
             }
         }
     }

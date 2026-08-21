@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import qs.modules.common
 
@@ -5,7 +6,7 @@ Rectangle {
     id: root
 
     radius: Appearance.rounding.normal
-    color: Appearance.colors.colLayer1
+    color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
 
     signal openAudioOutputDialog()
     signal openAudioInputDialog()

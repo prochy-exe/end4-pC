@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
@@ -22,7 +23,7 @@ RippleButton {
         text: buttonText
         horizontalAlignment: Text.AlignHCenter
         font.pixelSize: Appearance.font.pixelSize.larger
-        color: Appearance.colors.colOnLayer1
+        color: MonitorThemes.shellColorForItem(parent, "colOnLayer1", Appearance.colors.colOnLayer1)
     }
 
     StyledToolTip {

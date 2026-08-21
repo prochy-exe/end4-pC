@@ -36,7 +36,7 @@ Item {
 
             Rectangle {
                 radius: Appearance.rounding.full
-                color: Appearance.colors.colLayer2
+                color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
                 anchors {
                     right: parent.right
                     bottom: parent.bottom
@@ -46,7 +46,7 @@ Item {
 
                 StyledText {
                     anchors.centerIn: parent
-                    color: Appearance.colors.colOnLayer2
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                     text: TimerService.pomodoroCycle + 1
                 }
             }
@@ -61,14 +61,14 @@ Item {
                     anchors.centerIn: parent
                     horizontalAlignment: Text.AlignHCenter
                     text: TimerService.pomodoroRunning ? Translation.tr("Pause") : (TimerService.pomodoroSecondsLeft === TimerService.focusTime) ? Translation.tr("Start") : Translation.tr("Resume")
-                    color: TimerService.pomodoroRunning ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnPrimary
+                    color: TimerService.pomodoroRunning ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 }
                 implicitHeight: 35
                 implicitWidth: 90
                 font.pixelSize: Appearance.font.pixelSize.larger
                 onClicked: TimerService.togglePomodoro()
-                colBackground: TimerService.pomodoroRunning ? Appearance.colors.colSecondaryContainer : Appearance.colors.colPrimary
-                colBackgroundHover: TimerService.pomodoroRunning ? Appearance.colors.colSecondaryContainer : Appearance.colors.colPrimary
+                colBackground: TimerService.pomodoroRunning ? MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                colBackgroundHover: TimerService.pomodoroRunning ? MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             }
 
             RippleButton {
@@ -77,14 +77,14 @@ Item {
                 onClicked: TimerService.resetPomodoro()
                 enabled: (TimerService.pomodoroSecondsLeft < TimerService.pomodoroLapDuration) || TimerService.pomodoroCycle > 0 || TimerService.pomodoroBreak
                 font.pixelSize: Appearance.font.pixelSize.larger
-                colBackground: Appearance.colors.colErrorContainer
-                colBackgroundHover: Appearance.colors.colErrorContainerHover
-                colRipple: Appearance.colors.colErrorContainerActive
+                colBackground: MonitorThemes.shellColorForItem(root, "colErrorContainer", Appearance.colors.colErrorContainer)
+                colBackgroundHover: MonitorThemes.shellColorForItem(root, "colErrorContainerHover", Appearance.colors.colErrorContainerHover)
+                colRipple: MonitorThemes.shellColorForItem(root, "colErrorContainerActive", Appearance.colors.colErrorContainerActive)
                 contentItem: StyledText {
                     anchors.centerIn: parent
                     horizontalAlignment: Text.AlignHCenter
                     text: Translation.tr("Reset")
-                    color: Appearance.colors.colOnErrorContainer
+                    color: MonitorThemes.shellColorForItem(root, "colOnErrorContainer", Appearance.colors.colOnErrorContainer)
                 }
             }
         }

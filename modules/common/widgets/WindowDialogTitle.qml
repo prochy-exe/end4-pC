@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import Quickshell
 import qs.modules.common
@@ -6,7 +7,7 @@ import qs.modules.common.widgets
 
 StyledText {
     text: "Dialog Title"
-    color: Appearance.colors.colOnSurface
+    color: MonitorThemes.shellColorForItem(parent, "colOnSurface", Appearance.colors.colOnSurface)
     wrapMode: Text.Wrap
     font {
         family: Appearance.font.family.title

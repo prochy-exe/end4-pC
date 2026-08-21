@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
@@ -45,7 +46,7 @@ Item {
                 pixelSize: Appearance.font.pixelSize.larger
                 variableAxes: Appearance.font.variableAxes.title
             }
-            color: Appearance.m3colors.m3outline
+            color: MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
             horizontalAlignment: Text.AlignHCenter
         }
         StyledText {
@@ -53,7 +54,7 @@ Item {
             visible: description !== ""
             Layout.fillWidth: true
             font.pixelSize: Appearance.font.pixelSize.small
-            color: Appearance.m3colors.m3outline
+            color: MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
             horizontalAlignment: Text.AlignLeft
             wrapMode: Text.Wrap
         }

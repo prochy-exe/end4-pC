@@ -18,7 +18,7 @@ Rectangle {
     property real padding: 6
     implicitWidth: mainLayout.implicitWidth + padding * 2
     implicitHeight: mainLayout.implicitHeight + padding * 2
-    color: Appearance.colors.colLayer2
+    color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
 
     function focusBreadcrumb() {
         root.showBreadcrumb = false;
@@ -50,7 +50,7 @@ Rectangle {
                 id: directoryEntry
                 visible: !root.showBreadcrumb
                 anchors.fill: parent
-                color: Appearance.colors.colLayer1
+                color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
                 radius: Appearance.rounding.full
                 implicitWidth: addressInput.implicitWidth
                 implicitHeight: addressInput.implicitHeight
@@ -109,7 +109,7 @@ Rectangle {
             contentItem: MaterialSymbol {
                 text: "edit"
                 iconSize: Appearance.font.pixelSize.larger
-                color: dirEditButton.toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer2
+                color: dirEditButton.toggled ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
             }
 
             StyledToolTip {

@@ -9,9 +9,9 @@ import QtQuick.Layouts
 RippleButton {
     id: root
     property string displayText: ""
-    property color buttonColor: Appearance.colors.colLayer2
+    property color buttonColor: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
     colBackground: buttonColor
-    colBackgroundHover: Appearance.colors.colPrimaryContainer
+    colBackgroundHover: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
     buttonRadius: Appearance.rounding.full
 
     implicitWidth: contentItem.implicitWidth + horizontalPadding * 2 + 10
@@ -30,14 +30,14 @@ RippleButton {
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: 5
                 text: root.displayText
-                color: Appearance.colors.colOnLayer2
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 font.pixelSize: Appearance.font.pixelSize.small
             }
             MaterialSymbol {
                 Layout.alignment: Qt.AlignVCenter
                 iconSize: Appearance.font.pixelSize.hugeass
                 text: "arrow_drop_down"
-                color: Appearance.colors.colOnLayer2
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
             }
         }
     }

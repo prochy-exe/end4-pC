@@ -99,9 +99,9 @@ UtilButton {
                 implicitWidth: pickerContent.implicitWidth + 16
                 implicitHeight: pickerContent.implicitHeight + 16
                 radius: Appearance.rounding.normal + 4
-                color: Appearance.colors.colLayer1Base
+                color: MonitorThemes.shellColorForItem(root, "colLayer1Base", Appearance.colors.colLayer1Base)
                 border.width: 1
-                border.color: Appearance.colors.colLayer0Border
+                border.color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
 
                 Item {
                     id: pickerContent
@@ -124,19 +124,19 @@ UtilButton {
                                 width: pickerColumn.width
                                 height: 32
                                 radius: Appearance.rounding.small
-                                color: modelData === HyprlandXkb.currentLayoutCode ? Appearance.colors.colPrimaryContainer : "transparent"
+                                color: modelData === HyprlandXkb.currentLayoutCode ? MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : "transparent"
 
                                 StyledText {
                                     anchors.centerIn: parent
                                     text: modelData
-                                    color: modelData === HyprlandXkb.currentLayoutCode ? Appearance.colors.colOnPrimaryContainer : Appearance.colors.colOnLayer0
+                                    color: modelData === HyprlandXkb.currentLayoutCode ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                                 }
 
                                 MouseArea {
                                     anchors.fill: parent
                                     hoverEnabled: true
-                                    onEntered: parent.color = modelData === HyprlandXkb.currentLayoutCode ? Appearance.colors.colPrimary : Appearance.colors.colLayer2Hover
-                                    onExited: parent.color = modelData === HyprlandXkb.currentLayoutCode ? Appearance.colors.colPrimaryContainer : "transparent"
+                                    onEntered: parent.color = modelData === HyprlandXkb.currentLayoutCode ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colLayer2Hover", Appearance.colors.colLayer2Hover)
+                                    onExited: parent.color = modelData === HyprlandXkb.currentLayoutCode ? MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : "transparent"
                                     onPressed: root.selectLayout(index)
                                 }
                             }

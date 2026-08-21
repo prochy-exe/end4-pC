@@ -24,7 +24,23 @@ Item {
     // per-monitor bar setting.
     property string monitorName: root.screen?.name ?? ""
     function themeColor(role, fallback) {
-        return MonitorThemes.color(root.monitorName, role, fallback)
+        return MonitorThemes.colorForItem(root, role, fallback)
+    }
+    function shellColor(name, fallback) {
+        const roles = {
+            colLayer0: "surface_container_low",
+            colLayer0Border: "outline_variant",
+            colPrimary: "primary",
+            colPrimaryContainer: "primary_container",
+            colSecondaryContainer: "secondary_container",
+            colTertiaryContainer: "tertiary_container",
+            colOnPrimary: "on_primary",
+            colOnLayer0: "on_background",
+            colOnLayer1: "on_surface_variant"
+        };
+        const role = roles[name];
+        if (!role) return fallback;
+        return MonitorThemes.colorForItem(root, role, fallback);
     }
     readonly property bool isMaterial: Config.getBarSetting(monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     readonly property real centerPillX: centerPill.x
@@ -74,17 +90,17 @@ Item {
     }
 
     function getMaterialPillColor(name) {
-        if (root.isMaterial !== true) return MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer);
+        if (root.isMaterial !== true) return root.shellColor("colPrimaryContainer", MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer));
         switch(name) {
             case "media":
             case "sysTray":
-                return MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer);
+                return root.shellColor("colSecondaryContainer", MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer));
             case "resources":
-                return MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer);
+                return root.shellColor("colTertiaryContainer", MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer));
             case "systemIcons":
-                return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary);
+                return root.shellColor("colPrimary", MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary));
             default:
-                return MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer);
+                return root.shellColor("colPrimaryContainer", MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer));
         }
     }
     property real useShortenedForm: (Appearance.sizes.barHellaShortenScreenWidthThreshold >= screen?.width) ? 2 : (Appearance.sizes.barShortenScreenWidthThreshold >= screen?.width) ? 1 : 0
@@ -95,10 +111,10 @@ Item {
         anchors.fill: parent
         anchors.margins: root.currentCornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0
         color: (!centerOnly && Config.getBarSetting(root.monitorName, ["showBackground"], Config.options.bar.showBackground) && root.currentCornerStyle !== 2 && !root.isMaterial)
-            ? root.themeColor("surface_container_low", MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)) : "transparent"
+            ? root.themeColor("surface_container_low", root.shellColor("colLayer0", MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0))) : "transparent"
         radius: root.currentCornerStyle === 1 ? Appearance.rounding.windowRounding : 0
         border.width: (!centerOnly && root.currentCornerStyle === 1) ? 1 : 0
-        border.color: root.themeColor("outline_variant", MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border))
+        border.color: root.themeColor("outline_variant", root.shellColor("colLayer0Border", MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)))
     }
 
     // center-only
@@ -114,10 +130,10 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         width: middleRow.implicitWidth + 10
         height: parent.height - (root.currentCornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut * 2 : 0)
-        color: root.themeColor("surface_container_low", MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0))
+        color: root.themeColor("surface_container_low", root.shellColor("colLayer0", MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)))
         radius: root.currentCornerStyle === 1 ? Appearance.rounding.windowRounding : 0
         border.width: root.currentCornerStyle === 1 ? 1 : 0
-        border.color: root.themeColor("outline_variant", MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border))
+        border.color: root.themeColor("outline_variant", root.shellColor("colLayer0Border", MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)))
 
         bottomLeftRadius:  root.currentCornerStyle === 0 && !Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom) ? Appearance.rounding.screenRounding : radius
         bottomRightRadius: root.currentCornerStyle === 0 && !Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom) ? Appearance.rounding.screenRounding : radius
@@ -146,7 +162,7 @@ Item {
                 implicitWidth: leftMaterialRow.implicitWidth + 10
                 implicitHeight: leftMaterialRow.implicitHeight
                 radius: Appearance.rounding.full
-                color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
+                color: root.shellColor("colLayer0", MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0))
 
                 RowLayout {
                     id: leftMaterialRow
@@ -244,7 +260,7 @@ Item {
                 implicitWidth: centerMaterialRow.implicitWidth + 10
                 implicitHeight: centerMaterialRow.implicitHeight
                 radius: Appearance.rounding.full
-                color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
+                color: root.shellColor("colLayer0", MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0))
 
                 RowLayout {
                     id: centerMaterialRow
@@ -342,7 +358,7 @@ Item {
                 implicitWidth: rightMaterialRow.implicitWidth + 10
                 implicitHeight: rightMaterialRow.implicitHeight
                 radius: Appearance.rounding.full
-                color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
+                color: root.shellColor("colLayer0", MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0))
 
                 RowLayout {
                     id: rightMaterialRow

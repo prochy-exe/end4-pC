@@ -22,11 +22,11 @@ Item {
     property string artFilePath: `${artDownloadLocation}/${artFileName}`
     property color artDominantColor: Config.options.sidebar.media.artColors
         ? ColorUtils.mix(
-            (colorQuantizer?.colors[0] ?? Appearance.colors.colPrimary),
-            Appearance.colors.colPrimaryContainer,
+            (colorQuantizer?.colors[0] ?? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)),
+            MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer),
             0.8
           )
-        : Appearance.colors.colPrimaryContainer
+        : MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
     property bool downloaded: false
     property list<real> visualizerPoints: []
     property real maxVisualizerValue: 1000
@@ -46,7 +46,7 @@ Item {
         if (!root.artUrl || root.artUrl.length == 0) {
             root.downloaded = false
             coverArtDownloader.running = false
-            root.artDominantColor = Appearance.m3colors.m3secondaryContainer
+            root.artDominantColor = MonitorThemes.colorForItem(root, "secondary_container", Appearance.m3colors.m3secondaryContainer)
             return
         }
         coverArtDownloader.targetFile = root.artUrl
@@ -108,7 +108,7 @@ Item {
                 Layout.preferredWidth: Math.min(parent.width * 1, parent.height * 0.45)
                 Layout.preferredHeight: Layout.preferredWidth
                 radius: Appearance.rounding.normal
-                color: Appearance.colors.colPrimaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
                 layer.enabled: true
                 layer.effect: OpacityMask {
@@ -134,7 +134,7 @@ Item {
                     anchors.centerIn: parent 
                     fill: 1
                     text: "music_note"
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                     iconSize: Appearance.font.pixelSize.hugeass + 100
                 }
             }
@@ -216,7 +216,7 @@ Item {
                 indicatorShapeColor: {
                     let c = blendedColors.colOnPrimaryContainer
                     if (c && c != "#000000" && c != "#ffffff" && c != "transparent") return c
-                    return blendedColors.colPrimary || Appearance.colors.colPrimary
+                    return blendedColors.colPrimary || MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                 }
             }
 

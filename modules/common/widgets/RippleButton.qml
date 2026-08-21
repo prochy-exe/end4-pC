@@ -4,6 +4,7 @@ import qs.modules.common.functions
 import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Controls
+import qs.services
 
 /**
  * A button with ripple effect similar to in Material Design.
@@ -24,14 +25,14 @@ Button {
     property var middleClickAction // When middle clicking
     property bool border: false
     property real borderWidth: 1
-    property color colBorder: Appearance?.colors.colOutlineVariant ?? "#79747E"
+    property color colBorder: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance?.colors.colOutlineVariant ?? "#79747E")
 
-    property color colBackground: ColorUtils.transparentize(Appearance?.colors.colLayer1Hover, 1) || "transparent"
-    property color colBackgroundHover: Appearance?.colors.colLayer1Hover ?? "#E5DFED"
-    property color colBackgroundToggled: Appearance?.colors.colPrimary ?? "#65558F"
-    property color colBackgroundToggledHover: Appearance?.colors.colPrimaryHover ?? "#77699C"
-    property color colRipple: Appearance?.colors.colLayer1Active ?? "#D6CEE2"
-    property color colRippleToggled: Appearance?.colors.colPrimaryActive ?? "#D6CEE2"
+    property color colBackground: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer1", Appearance?.colors.colLayer1), 1) || "transparent"
+    property color colBackgroundHover: MonitorThemes.shellColorForItem(root, "colLayer1Hover", Appearance?.colors.colLayer1Hover ?? "#E5DFED")
+    property color colBackgroundToggled: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance?.colors.colPrimary ?? "#65558F")
+    property color colBackgroundToggledHover: MonitorThemes.shellColorForItem(root, "colPrimaryHover", Appearance?.colors.colPrimaryHover ?? "#77699C")
+    property color colRipple: MonitorThemes.shellColorForItem(root, "colLayer1Active", Appearance?.colors.colLayer1Active ?? "#D6CEE2")
+    property color colRippleToggled: MonitorThemes.shellColorForItem(root, "colPrimaryActive", Appearance?.colors.colPrimaryActive ?? "#D6CEE2")
 
     opacity: root.enabled ? 1 : 0.4
     property color buttonColor: ColorUtils.transparentize(root.toggled ? 

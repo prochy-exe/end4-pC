@@ -194,7 +194,7 @@ Item {
             id: inputCanvas
             Layout.fillWidth: true
             isInput: true
-            containerColor: ColorUtils.transparentize(Appearance.colors.colSecondaryContainer, 0.8)
+            containerColor: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer), 0.8)
             placeholderText: Translation.tr("Enter text to translate...")
             onInputTextChanged: {
                 translateTimer.restart();
@@ -208,7 +208,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     iconSize: Appearance.font.pixelSize.larger
                     text: "content_paste"
-                    color: deleteButton.enabled ? Appearance.colors.colOnLayer1 : Appearance.colors.colSubtext
+                    color: deleteButton.enabled ? MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) : MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 }
                 onClicked: {
                     root.inputField.text = Quickshell.clipboardText
@@ -224,7 +224,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     iconSize: Appearance.font.pixelSize.larger
                     text: "close"
-                    color: deleteButton.enabled ? Appearance.colors.colOnLayer1 : Appearance.colors.colSubtext
+                    color: deleteButton.enabled ? MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) : MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 }
                 onClicked: {
                     root.inputField.text = ""
@@ -241,22 +241,22 @@ Item {
             LanguageSelectorButton {
                 id: sourceLanguageButton
                 displayText: root.sourceLanguage
-                buttonColor: Appearance.colors.colSecondaryContainer
+                buttonColor: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
                 onClicked: root.showLanguageSelectorDialog(false)
             }
 
             GroupButton {
                 id: swapButton
                 Layout.preferredWidth: height
-                colBackground: Appearance.colors.colTertiaryContainer
-                colBackgroundHover: Appearance.colors.colTertiaryContainerHover
+                colBackground: MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer)
+                colBackgroundHover: MonitorThemes.shellColorForItem(root, "colTertiaryContainerHover", Appearance.colors.colTertiaryContainerHover)
                 buttonRadius: Appearance.rounding.full
                 contentItem: MaterialSymbol {
                     anchors.centerIn: parent
                     horizontalAlignment: Text.AlignHCenter
                     iconSize: Appearance.font.pixelSize.larger
                     text: "autorenew"
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 }
                 onClicked: root.swapLanguages()
             }
@@ -264,7 +264,7 @@ Item {
             LanguageSelectorButton {
                 id: targetLanguageButton
                 displayText: root.targetLanguage
-                buttonColor: Appearance.colors.colPrimaryContainer
+                buttonColor: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                 onClicked: root.showLanguageSelectorDialog(true)
             }
 
@@ -275,7 +275,7 @@ Item {
             id: outputCanvas
             Layout.fillWidth: true
             isInput: false
-            containerColor: ColorUtils.transparentize(Appearance.colors.colPrimaryContainer, 0.8)
+            containerColor: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer), 0.8)
             placeholderText: Translation.tr("Translation goes here...")
             property bool hasTranslation: (root.translatedText.trim().length > 0)
             text: hasTranslation ? root.translatedText : ""
@@ -289,7 +289,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     iconSize: Appearance.font.pixelSize.larger
                     text: "content_copy"
-                    color: copyButton.enabled ? Appearance.colors.colOnLayer1 : Appearance.colors.colSubtext
+                    color: copyButton.enabled ? MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) : MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 }
                 onClicked: {
                     Quickshell.clipboardText = outputCanvas.displayedText
@@ -305,7 +305,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     iconSize: Appearance.font.pixelSize.larger
                     text: "travel_explore"
-                    color: searchButton.enabled ? Appearance.colors.colOnLayer1 : Appearance.colors.colSubtext
+                    color: searchButton.enabled ? MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) : MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                 }
                 onClicked: {
                     let url = Config.options.search.engineBaseUrl + outputCanvas.displayedText;

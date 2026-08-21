@@ -16,7 +16,7 @@ Item { // Tag suggestion description
 
     Rectangle {
         id: tagDescriptionBackground
-        color: Appearance.colors.colLayer2
+        color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
         anchors.fill: parent
         radius: Appearance.rounding.verysmall
         implicitHeight: descriptionRow.implicitHeight + 5 * 2
@@ -34,7 +34,7 @@ Item { // Tag suggestion description
                 id: tagDescriptionText
                 Layout.fillWidth: true
                 font.pixelSize: Appearance.font.pixelSize.smaller
-                color: Appearance.colors.colOnLayer2
+                color: MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2)
                 wrapMode: Text.Wrap
             }
             KeyboardKey {

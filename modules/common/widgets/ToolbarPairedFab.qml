@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import qs.modules.common
+import qs.services
 
 Item {
     id: root
@@ -23,9 +24,9 @@ Item {
         id: fabWidget
         onClicked: e => root.clicked(e)
         baseSize: 48
-        colBackground: Appearance.colors.colTertiaryContainer
-        colBackgroundHover: Appearance.colors.colTertiaryContainerHover
-        colRipple: Appearance.colors.colTertiaryContainerActive
-        colOnBackground: Appearance.colors.colOnTertiaryContainer
+            colBackground: MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer)
+            colBackgroundHover: MonitorThemes.shellColorForItem(root, "colTertiaryContainerHover", Appearance.colors.colTertiaryContainerHover)
+            colRipple: MonitorThemes.shellColorForItem(root, "colTertiaryContainerActive", Appearance.colors.colTertiaryContainerActive)
+        colOnBackground: MonitorThemes.shellColorForItem(root, "colOnTertiaryContainer", Appearance.colors.colOnTertiaryContainer)
     }
 }

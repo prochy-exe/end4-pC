@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
@@ -18,15 +19,15 @@ RippleButton {
 
     background.anchors.fill: button
     buttonRadius: Appearance.rounding.full
-    colBackground: Appearance.colors.colLayer2
-    colBackgroundHover: Appearance.colors.colLayer2Hover
-    colRipple: Appearance.colors.colLayer2Active
+    colBackground: MonitorThemes.shellColorForItem(parent, "colLayer2", Appearance.colors.colLayer2)
+    colBackgroundHover: MonitorThemes.shellColorForItem(parent, "colLayer2Hover", Appearance.colors.colLayer2Hover)
+    colRipple: MonitorThemes.shellColorForItem(parent, "colLayer2Active", Appearance.colors.colLayer2Active)
 
     contentItem: StyledText {
         text: buttonText
         horizontalAlignment: Text.AlignHCenter
         font.pixelSize: Appearance.font.pixelSize.larger
-        color: Appearance.colors.colOnLayer1
+        color: MonitorThemes.shellColorForItem(parent, "colOnLayer1", Appearance.colors.colOnLayer1)
     }
 
     StyledToolTip {

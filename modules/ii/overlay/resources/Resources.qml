@@ -100,7 +100,7 @@ StyledOverlayWidget {
                     // variableAxes: Appearance.font.variableAxes.numbers
                     pixelSize: Appearance.font.pixelSize.smallie
                 }
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
             }
             Item {
                 Layout.fillHeight: true
@@ -111,7 +111,7 @@ StyledOverlayWidget {
             Layout.fillWidth: true
             Layout.fillHeight: true
             radius: Appearance.rounding.small
-            color: Appearance.colors.colSecondaryContainer
+            color: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
             layer.enabled: true
             layer.effect: OpacityMask {
                 maskSource: Rectangle {

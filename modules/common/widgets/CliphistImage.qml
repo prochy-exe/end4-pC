@@ -42,7 +42,7 @@ Rectangle {
         return Math.min(root.maxWidth / imageWidth, root.maxHeight / imageHeight, 1);
     }
 
-    color: Appearance.colors.colLayer1
+    color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
     radius: Appearance.rounding.small
     implicitHeight: imageHeight * scale
     implicitWidth: imageWidth * scale
@@ -103,7 +103,7 @@ Rectangle {
 
             Rectangle {
                 anchors.fill: parent
-                color: ColorUtils.transparentize(Appearance.colors.colLayer0, 0.5)
+                color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0), 0.5)
 
                 Column {
                     anchors {
@@ -121,7 +121,7 @@ Rectangle {
                         visible: width <= image.width
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: root.blurText
-                        color: Appearance.colors.colOnSurface
+                        color: MonitorThemes.shellColorForItem(root, "colOnSurface", Appearance.colors.colOnSurface)
                         font.pixelSize: Appearance.font.pixelSize.smallie
                     }
                 }

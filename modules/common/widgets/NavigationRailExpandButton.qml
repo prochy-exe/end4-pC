@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 import qs.modules.common
@@ -24,7 +25,7 @@ RippleButton {
         anchors.centerIn: parent
         horizontalAlignment: Text.AlignHCenter
         iconSize: 24
-        color: Appearance.colors.colOnLayer1
+        color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
         text: root.parent.expanded ? "menu_open" : "menu"
     }
 }

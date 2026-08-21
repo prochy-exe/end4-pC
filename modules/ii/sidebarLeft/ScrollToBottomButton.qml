@@ -27,9 +27,9 @@ RippleButton {
     implicitWidth: contentItem.implicitWidth + 8 * 2
     implicitHeight: contentItem.implicitHeight + 4 * 2
 
-    colBackground: Appearance.colors.colSecondary
-    colBackgroundHover: Appearance.colors.colSecondaryHover
-    colRipple: Appearance.colors.colSecondaryActive
+    colBackground: MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
+    colBackgroundHover: MonitorThemes.shellColorForItem(root, "colSecondaryHover", Appearance.colors.colSecondaryHover)
+    colRipple: MonitorThemes.shellColorForItem(root, "colSecondaryActive", Appearance.colors.colSecondaryActive)
     buttonRadius: Appearance.rounding.verysmall
 
     downAction: () => {
@@ -43,14 +43,14 @@ RippleButton {
             anchors.verticalCenter: parent.verticalCenter
             text: "arrow_downward"
             font.pixelSize: Appearance.font.pixelSize.larger
-            color: Appearance.colors.colOnSecondary
+            color: MonitorThemes.shellColorForItem(root, "colOnSecondary", Appearance.colors.colOnSecondary)
             verticalAlignment: Text.AlignVCenter
         }
         StyledText {
             anchors.verticalCenter: parent.verticalCenter
             text: Translation.tr("Scroll to Bottom")
             font.pixelSize: Appearance.font.pixelSize.smallie
-            color: Appearance.colors.colOnSecondary
+            color: MonitorThemes.shellColorForItem(root, "colOnSecondary", Appearance.colors.colOnSecondary)
             verticalAlignment: Text.AlignVCenter
         }
     }

@@ -18,7 +18,7 @@ AbstractQuickPanel {
         id: buttonGroup
         spacing: 5
         padding: 5
-        color: Appearance.colors.colLayer1
+        color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
 
         NetworkToggle {
             altAction: () => {

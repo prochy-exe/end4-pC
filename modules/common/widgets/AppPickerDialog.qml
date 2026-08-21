@@ -70,7 +70,7 @@ WindowDialog {
                     Layout.fillWidth: true
                     text: appButton.modelData.name
                     elide: Text.ElideRight
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 }
             }
         }

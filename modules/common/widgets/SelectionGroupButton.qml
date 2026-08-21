@@ -16,7 +16,7 @@ GroupButton {
     property bool rightmost: false
 
     property bool isDragging: false
-    property color colText: root.toggled ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSecondaryContainer
+    property color colText: root.toggled ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
 
     leftRadius: (toggled || leftmost) ? (height / 2) : Appearance.rounding.unsharpenmore
     rightRadius: (toggled || rightmost) ? (height / 2) : Appearance.rounding.unsharpenmore
@@ -24,9 +24,9 @@ GroupButton {
     horizontalPadding: 12
     verticalPadding: 8 
 
-    colBackground: Appearance.colors.colSecondaryContainer
-    colBackgroundHover: Appearance.colors.colSecondaryContainerHover
-    colBackgroundActive: Appearance.colors.colSecondaryContainerActive
+    colBackground: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+    colBackgroundHover: MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+    colBackgroundActive: MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
 
     contentItem: RowLayout {
         spacing: 4 * (root.buttonText?.length > 0)

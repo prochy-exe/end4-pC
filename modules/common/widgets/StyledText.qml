@@ -1,4 +1,5 @@
 import qs.modules.common
+import qs.services
 import QtQuick
 
 Text {
@@ -6,6 +7,17 @@ Text {
     property bool animateChange: false
     property real animationDistanceX: 0
     property real animationDistanceY: 6
+    property string monitorName: ""
+    readonly property string resolvedMonitorName: {
+        if (root.monitorName) return root.monitorName
+        let item = root.parent
+        while (item) {
+            if (item.monitorName) return item.monitorName
+            if (item.screen?.name) return item.screen.name
+            item = item.parent
+        }
+        return root.QsWindow?.window?.screen?.name ?? ""
+    }
 
     renderType: Text.NativeRendering
     verticalAlignment: Text.AlignVCenter
@@ -18,8 +30,8 @@ Text {
         pixelSize: Appearance?.font.pixelSize.small ?? 15
         variableAxes: shouldUseNumberFont ? ({}) : Appearance.font.variableAxes.main
     }
-    color: Appearance?.m3colors.m3onBackground ?? "black"
-    linkColor: Appearance?.m3colors.m3primary
+    color: MonitorThemes.colorForItem(root, "on_background", Appearance?.m3colors.m3onBackground ?? "black")
+    linkColor: MonitorThemes.colorForItem(root, "primary", Appearance?.m3colors.m3primary ?? "white")
 
     component Anim: NumberAnimation {
         target: root

@@ -28,13 +28,15 @@ def main():
     try:
         config = json.loads(config_path.read_text())
         background = config["background"]
-        if background.get("wallpaperMode") != "perMonitor":
+        lock_mode = os.environ.get("II_LOCK_COLORS") == "1"
+        wallpaper_mode = background.get("lockWallpaperMode") if lock_mode else background.get("wallpaperMode")
+        if wallpaper_mode != "perMonitor":
             return 0
 
-        entries = [entry for entry in background.get("monitorWallpapers", []) if entry.get("name") and entry.get("path")]
-        if len({entry["path"] for entry in entries}) < 2:
+        wallpaper_entries = background.get("lockMonitorWallpapers", []) if lock_mode else background.get("monitorWallpapers", [])
+        entries = [entry for entry in wallpaper_entries if entry.get("name") and entry.get("path")]
+        if not entries:
             return 0
-
         mode = "dark" if subprocess.run(["gsettings", "get", "org.gnome.desktop.interface", "color-scheme"], text=True, capture_output=True).stdout.strip("\n'") == "prefer-dark" else "light"
         scheme = config.get("appearance", {}).get("palette", {}).get("type", "scheme-tonal-spot")
         if scheme == "auto":
@@ -49,10 +51,22 @@ def main():
 
         output_dir.mkdir(parents=True, exist_ok=True)
         monitor_colors = {name: {role: value["default"]["color"] for role, value in palette["colors"].items()} for name, palette in palettes.items()}
+        monitor_colors["__blended__"] = {
+            role: value["default"]["color"] for role, value in blended["colors"].items()
+        }
         (output_dir / "monitor-colors.json").write_text(json.dumps(monitor_colors, indent=2) + "\n")
         blended_path = output_dir / "blended-matugen.json"
         blended_path.write_text(json.dumps(blended) + "\n")
-        subprocess.run(["matugen", "json", str(blended_path)], check=True)
+        theming = config.get("appearance", {}).get("wallpaperTheming", {})
+        selected_name = theming.get("accentMonitor", "")
+        use_wallpaper_color = theming.get("useWallpaperColorForApps", True)
+        selected_palette = palettes.get(selected_name)
+        if not use_wallpaper_color and selected_palette:
+            selected_path = output_dir / "selected-matugen.json"
+            selected_path.write_text(json.dumps(selected_palette) + "\n")
+            subprocess.run(["matugen", "json", str(selected_path)], check=True)
+        else:
+            subprocess.run(["matugen", "json", str(blended_path)], check=True)
     except (OSError, KeyError, ValueError, subprocess.CalledProcessError) as error:
         print(f"[monitor-themes] {error}", file=sys.stderr)
         return 1

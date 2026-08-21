@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import qs.modules.common
 import qs.modules.common.widgets
@@ -171,7 +172,7 @@ Item {
         radius: width / 2
         color: "transparent"
         border.width: 2
-        border.color: Appearance.colors.colPrimary
+        border.color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
     }
 
     Rectangle {
@@ -179,7 +180,7 @@ Item {
         radius: width / 2
         color: root.accentColor
         border.width: 2
-        border.color: Appearance.colors.colLayer0
+        border.color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
         scale: root.isDragging ? 1.15 : 1
         Behavior on scale { NumberAnimation { duration: 100 } }
     }

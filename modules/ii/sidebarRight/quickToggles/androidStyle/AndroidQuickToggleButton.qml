@@ -55,14 +55,14 @@ GroupButton {
     horizontalPadding: padding
     verticalPadding: padding
 
-    colBackground: Appearance.colors.colLayer2
-    colBackgroundToggled: (altAction && expandedSize) ? Appearance.colors.colLayer2 : Appearance.colors.colPrimary
-    colBackgroundToggledHover: (altAction && expandedSize) ? Appearance.colors.colLayer2Hover : Appearance.colors.colPrimaryHover
-    colBackgroundToggledActive: (altAction && expandedSize) ? Appearance.colors.colLayer2Active : Appearance.colors.colPrimaryActive
+    colBackground: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
+    colBackgroundToggled: (altAction && expandedSize) ? MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+    colBackgroundToggledHover: (altAction && expandedSize) ? MonitorThemes.shellColorForItem(root, "colLayer2Hover", Appearance.colors.colLayer2Hover) : Appearance.colors.colPrimaryHover
+    colBackgroundToggledActive: (altAction && expandedSize) ? MonitorThemes.shellColorForItem(root, "colLayer2Active", Appearance.colors.colLayer2Active) : Appearance.colors.colPrimaryActive
     buttonRadius: toggled ? Appearance.rounding.large : height / 2
     buttonRadiusPressed: Appearance.rounding.normal
-    property color colText: (toggled && !(altAction && expandedSize) && enabled) ? Appearance.colors.colOnPrimary : ColorUtils.transparentize(Appearance.colors.colOnLayer2, enabled ? 0 : 0.7)
-    property color colIcon: expandedSize ? ((root.toggled) ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer3) : colText
+    property color colText: (toggled && !(altAction && expandedSize) && enabled) ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnLayer2", Appearance.colors.colOnLayer2), enabled ? 0 : 0.7)
+    property color colIcon: expandedSize ? ((root.toggled) ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer3", Appearance.colors.colOnLayer3)) : colText
 
     onClicked: {
         if (root.expandedSize && root.altAction) root.altAction();
@@ -97,7 +97,7 @@ GroupButton {
                 implicitWidth: height
                 radius: root.radius - root.verticalPadding
                 color: {
-                    const baseColor = root.toggled ? Appearance.colors.colPrimary : Appearance.colors.colLayer3
+                    const baseColor = root.toggled ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colLayer3", Appearance.colors.colLayer3)
                     const transparentizeAmount = (root.altAction && root.expandedSize) ? 0 : 1
                     return ColorUtils.transparentize(baseColor, transparentizeAmount)
                 }
@@ -271,7 +271,7 @@ GroupButton {
         width: 20
         height: 20
         radius: 10
-        color: deleteHover.containsMouse ? Appearance.colors.colError : ColorUtils.transparentize(Appearance.colors.colError, 0.15)
+        color: deleteHover.containsMouse ? MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError), 0.15)
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.topMargin: -6
@@ -285,7 +285,7 @@ GroupButton {
             anchors.centerIn: parent
             text: "close"
             iconSize: 13
-            color: Appearance.colors.colOnError 
+            color: MonitorThemes.shellColorForItem(root, "colOnError", Appearance.colors.colOnError) 
             Behavior on color {
                 animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
             }
@@ -314,7 +314,7 @@ GroupButton {
         width: 20
         height: 20
         radius: 4
-        color: resizeHover.containsMouse ? Appearance.colors.colPrimary : ColorUtils.transparentize(Appearance.colors.colPrimary, 0.15)
+        color: resizeHover.containsMouse ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.15)
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.bottomMargin: -6
@@ -328,7 +328,7 @@ GroupButton {
             anchors.centerIn: parent
             text: "open_in_full"
             iconSize: 13
-            color: Appearance.colors.colOnPrimary
+            color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
             Behavior on color {
                 animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
             }

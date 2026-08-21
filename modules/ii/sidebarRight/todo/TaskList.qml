@@ -50,7 +50,7 @@ Item {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 implicitHeight: todoContentRowLayout.implicitHeight
-                color: Appearance.colors.colLayer2
+                color: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
                 radius: Appearance.rounding.small
 
                 ColumnLayout {
@@ -87,7 +87,7 @@ Item {
                                 horizontalAlignment: Text.AlignHCenter
                                 text: todoItem.modelData.done ? "remove_done" : "check"
                                 iconSize: Appearance.font.pixelSize.larger
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                             }
                         }
                         TodoItemActionButton {
@@ -100,7 +100,7 @@ Item {
                                 horizontalAlignment: Text.AlignHCenter
                                 text: "delete_forever"
                                 iconSize: Appearance.font.pixelSize.larger
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                             }
                         }
                     }
@@ -126,13 +126,13 @@ Item {
             MaterialSymbol {
                 Layout.alignment: Qt.AlignHCenter
                 iconSize: 55
-                color: Appearance.m3colors.m3outline
+                color: MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
                 text: emptyPlaceholderIcon
             }
             StyledText {
                 Layout.alignment: Qt.AlignHCenter
                 font.pixelSize: Appearance.font.pixelSize.normal
-                color: Appearance.m3colors.m3outline
+                color: MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
                 horizontalAlignment: Text.AlignHCenter
                 text: emptyPlaceholderText
             }

@@ -53,7 +53,7 @@ Rectangle {
             radius: 10
             color: root.colBackground
             border.width: 1
-            border.color: Appearance.m3colors.m3outlineVariant
+            border.color: MonitorThemes.colorForItem(root, "outline_variant", Appearance.m3colors.m3outlineVariant)
             implicitWidth: regionInfoRow.implicitWidth + horizontalPadding * 2
             implicitHeight: regionInfoRow.implicitHeight + verticalPadding * 2
 

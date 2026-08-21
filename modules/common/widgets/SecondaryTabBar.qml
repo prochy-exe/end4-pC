@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -28,7 +29,7 @@ TabBar {
             topRightRadius: height
             bottomLeftRadius: 0
             bottomRightRadius: 0
-            color: Appearance.colors.colPrimary
+            color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             // Animation
             property real baseWidth: root.width / root.count
             AnimatedTabIndexPair {
@@ -49,7 +50,7 @@ TabBar {
                 left: parent.left
                 right: parent.right
             }
-            color: Appearance.colors.colOutlineVariant
+            color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutlineVariant)
         }
     }
 }

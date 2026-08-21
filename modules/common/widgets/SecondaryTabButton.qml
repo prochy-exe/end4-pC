@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.widgets
@@ -13,9 +14,9 @@ TabButton {
     property int rippleDuration: 1200
     property int tabContentWidth: buttonBackground.width - buttonBackground.radius*2
 
-    property color colBackground: ColorUtils.transparentize(Appearance.colors.colSurfaceContainer)
-    property color colBackgroundHover: ColorUtils.transparentize(Appearance.colors.colOnSurface, root.checked ? 1 : 0.95)
-    property color colRipple: ColorUtils.transparentize(Appearance.colors.colOnSurface, 0.95)
+    property color colBackground: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colSurfaceContainer", Appearance.colors.colSurfaceContainer))
+    property color colBackgroundHover: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnSurface", Appearance.colors.colOnSurface), root.checked ? 1 : 0.95)
+    property color colRipple: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnSurface", Appearance.colors.colOnSurface), 0.95)
 
     PointingHandInteraction {}
 
@@ -159,7 +160,7 @@ TabButton {
                     text: buttonIcon
                     iconSize: Appearance.font.pixelSize.huge
                     fill: root.checked ? 1 : 0
-                    color: root.checked ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer1
+                    color: root.checked ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                     Behavior on color {
                         animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
                     }
@@ -169,7 +170,7 @@ TabButton {
                 id: buttonTextWidget
                 verticalAlignment: Text.AlignVCenter
                 font.pixelSize: Appearance.font.pixelSize.small
-                color: root.checked ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer1
+                color: root.checked ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                 text: buttonText
                 Behavior on color {
                     animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)

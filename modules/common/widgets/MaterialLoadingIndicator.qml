@@ -1,3 +1,4 @@
+import qs.services
 pragma ComponentBehavior: Bound
 import QtQuick
 import qs.modules.common
@@ -10,8 +11,8 @@ Rectangle {
     property bool loading: true
     property double pullProgress: 0
 
-    property color colBg: Appearance.colors.colPrimaryContainer
-    property color colShape: Appearance.colors.colOnPrimaryContainer
+    property color colBg: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+    property color colShape: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
 
     // Size, color
     property double implicitSize: 48

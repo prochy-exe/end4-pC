@@ -23,6 +23,7 @@ import qs.modules.ii.sidebarRight.iconPicker
 
 Item {
     id: root
+    property string monitorName: ""
     property int sidebarWidth: Appearance.sizes.sidebarWidth
     property int sidebarPadding: 10
     property string settingsQmlPath: Quickshell.shellPath("settings.qml")
@@ -110,9 +111,9 @@ Item {
         anchors.fill: parent
         implicitHeight: parent.height - Appearance.sizes.hyprlandGapsOut * 2
         implicitWidth: sidebarWidth - Appearance.sizes.hyprlandGapsOut * 2
-        color: Appearance.colors.colLayer0
+        color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
         border.width: 1
-        border.color: Appearance.colors.colLayer0Border
+        border.color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
         radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 5
 
         ColumnLayout {
@@ -136,7 +137,7 @@ Item {
                             id: sysRect
                             anchors.fill: parent
                             radius: Config.options.hyprland.decoration.rounding - 2
-                            color: Appearance.colors.colLayer1
+                            color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
 
                             Rectangle {
                                 id: wallpaperRect
@@ -198,12 +199,12 @@ Item {
                                 Rectangle {
                                     id: avatarRect
                                     width: 48; height: 48; radius: width / 2
-                                    color: Appearance.colors.colPrimaryContainer
+                                    color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
                                     Image {
                                         id: avatarImage
                                         anchors.fill: parent
-                                        source: Config.options.profile.avatarPicture !== ""
+                                        source: Config.options.profile.avatarPicture !== "" 
                                             ? "file://" + Config.options.profile.avatarPicture 
                                             : ""
                                         sourceSize.width: avatarImage.width * 2
@@ -226,7 +227,7 @@ Item {
                                         anchors.centerIn: parent
                                         text: "account_circle"
                                         iconSize: 32
-                                        color: Appearance.colors.colOnPrimaryContainer
+                                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                         visible: avatarImage.status !== Image.Ready
                                     }
                                 }
@@ -237,13 +238,13 @@ Item {
                                         : Config.options.profile.displayName
                                     font.pixelSize: Appearance.font.pixelSize.small
                                     font.weight: Font.DemiBold
-                                    color: Appearance.colors.colOnLayer1
+                                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                                 }
 
                                 StyledText {
                                     text: Translation.tr("Up • %1").arg(DateTime.uptime)
                                     font.pixelSize: Appearance.font.pixelSize.smaller
-                                    color: Appearance.colors.colOnLayer1
+                                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                                     opacity: 0.6
                                 }
                             }
@@ -470,7 +471,7 @@ Item {
                 bottom: parent.bottom
                 left: parent.left
             }
-            color: Appearance.colors.colLayer1
+            color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
             radius: Appearance.rounding.normal
             implicitWidth: uptimeRow.implicitWidth + 24
             implicitHeight: uptimeRow.implicitHeight + 8
@@ -489,7 +490,7 @@ Item {
                         anchors.fill: parent
                         source: Config.options.custom.distroIcon || SystemInfo.distroIcon
                         colorize: Config.options.custom.colorizeIcon
-                        color: Appearance.colors.colOnLayer0
+                        color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                     }
 
                     MouseArea {
@@ -501,7 +502,7 @@ Item {
                 StyledText {
                     anchors.verticalCenter: parent.verticalCenter
                     font.pixelSize: Appearance.font.pixelSize.normal
-                    color: Appearance.colors.colOnLayer0
+                    color: MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
                     text: Translation.tr("Up • %1").arg(DateTime.uptime)
                     textFormat: Text.MarkdownText
                 }
@@ -515,7 +516,7 @@ Item {
                 bottom: parent.bottom
                 right: parent.right
             }
-            color: Appearance.colors.colLayer1
+            color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
             padding: 4
 
             QuickToggleButton {

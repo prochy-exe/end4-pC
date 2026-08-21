@@ -18,7 +18,7 @@ PanelWindow {
 
     // Window props
     visible: false
-    // color: Appearance.colors.colLayer0
+    // color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
     color: "black"
     WlrLayershell.namespace: "quickshell:regionSelector"
     WlrLayershell.layer: WlrLayer.Overlay

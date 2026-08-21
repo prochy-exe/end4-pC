@@ -122,7 +122,7 @@ Item {
         Rectangle { // Scrim
             anchors.fill: parent
             radius: Appearance.rounding.small
-            color: Appearance.colors.colScrim
+            color: MonitorThemes.shellColorForItem(root, "colScrim", Appearance.colors.colScrim)
             MouseArea {
                 hoverEnabled: true
                 anchors.fill: parent
@@ -139,7 +139,7 @@ Item {
             anchors.margins: root.dialogMargins
             implicitHeight: dialogColumnLayout.implicitHeight
 
-            color: Appearance.m3colors.m3surfaceContainerHigh
+            color: MonitorThemes.colorForItem(root, "surface_container_high", Appearance.m3colors.m3surfaceContainerHigh)
             radius: Appearance.rounding.normal
 
             function addTask() {
@@ -161,7 +161,7 @@ Item {
                     Layout.leftMargin: 16
                     Layout.rightMargin: 16
                     Layout.alignment: Qt.AlignLeft
-                    color: Appearance.m3colors.m3onSurface
+                    color: MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface)
                     font.pixelSize: Appearance.font.pixelSize.larger
                     text: Translation.tr("Add task")
                 }
@@ -172,12 +172,12 @@ Item {
                     Layout.leftMargin: 16
                     Layout.rightMargin: 16
                     padding: 10
-                    color: activeFocus ? Appearance.m3colors.m3onSurface : Appearance.m3colors.m3onSurfaceVariant
+                    color: activeFocus ? MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface) : MonitorThemes.colorForItem(root, "on_surface_variant", Appearance.m3colors.m3onSurfaceVariant)
                     renderType: Text.NativeRendering
-                    selectedTextColor: Appearance.m3colors.m3onSecondaryContainer
-                    selectionColor: Appearance.colors.colSecondaryContainer
+                    selectedTextColor: MonitorThemes.colorForItem(root, "on_secondary_container", Appearance.m3colors.m3onSecondaryContainer)
+                    selectionColor: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
                     placeholderText: Translation.tr("Task description")
-                    placeholderTextColor: Appearance.m3colors.m3outline
+                    placeholderTextColor: MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
                     focus: root.showAddDialog
                     onAccepted: dialog.addTask()
 
@@ -185,13 +185,13 @@ Item {
                         anchors.fill: parent
                         radius: Appearance.rounding.verysmall
                         border.width: 2
-                        border.color: todoInput.activeFocus ? Appearance.colors.colPrimary : Appearance.m3colors.m3outline
+                        border.color: todoInput.activeFocus ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : MonitorThemes.colorForItem(root, "outline", Appearance.m3colors.m3outline)
                         color: "transparent"
                     }
 
                     cursorDelegate: Rectangle {
                         width: 1
-                        color: todoInput.activeFocus ? Appearance.colors.colPrimary : "transparent"
+                        color: todoInput.activeFocus ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary) : "transparent"
                         radius: 1
                     }
                 }

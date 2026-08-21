@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import QtQuick
 import QtQuick.Controls
@@ -7,10 +8,10 @@ import QtQuick.Controls
  */
 TextArea {
     renderType: Text.NativeRendering
-    selectedTextColor: Appearance.m3colors.m3onSecondaryContainer
-    selectionColor: Appearance.colors.colSecondaryContainer
-    placeholderTextColor: Appearance.m3colors.m3outline
-    color: Appearance.colors.colOnLayer0
+    selectedTextColor: MonitorThemes.colorForItem(parent, "on_secondary_container", Appearance.m3colors.m3onSecondaryContainer)
+    selectionColor: MonitorThemes.shellColorForItem(parent, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+    placeholderTextColor: MonitorThemes.colorForItem(parent, "outline", Appearance.m3colors.m3outline)
+    color: MonitorThemes.shellColorForItem(parent, "colOnLayer0", Appearance.colors.colOnLayer0)
     font {
         family: Appearance.font.family.main
         pixelSize: Appearance?.font.pixelSize.small ?? 15

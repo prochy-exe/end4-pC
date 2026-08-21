@@ -240,7 +240,7 @@ Scope {
                     Rectangle {
                         id: placeholderBackground
                         anchors.centerIn: parent
-                        color: Appearance.colors.colLayer0
+                        color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
                         radius: root.popupRounding
                         property real padding: 20
                         implicitWidth: placeholderLayout.implicitWidth + padding * 2
@@ -255,7 +255,7 @@ Scope {
                                 font.pixelSize: Appearance.font.pixelSize.large
                             }
                             StyledText {
-                                color: Appearance.colors.colSubtext
+                                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                                 text: Translation.tr("Make sure your player has MPRIS support\nor try turning off duplicate player filtering")
                                 font.pixelSize: Appearance.font.pixelSize.small
                             }

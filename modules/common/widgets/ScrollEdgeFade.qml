@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import qs.modules.common
 import qs.modules.common.functions
@@ -7,7 +8,7 @@ Item {
     z: 99
     required property Item target
     property real fadeSize: Appearance.m3colors.darkmode ? 40 : 20
-    property color color: ColorUtils.transparentize(Appearance.colors.colShadow, Appearance.m3colors.darkmode ? 0 : 0.7)
+    property color color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colShadow", Appearance.colors.colShadow), Appearance.m3colors.darkmode ? 0 : 0.7)
     property bool vertical: true
 
     anchors.fill: target

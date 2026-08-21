@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
@@ -33,7 +34,7 @@ Item {
             margins: Appearance.sizes.elevationMargin
         }
         radius: Appearance.rounding.normal
-        color: Appearance.colors.colBackgroundSurfaceContainer
+        color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colBackgroundSurfaceContainer)
         implicitWidth: valueRow.implicitWidth
         implicitHeight: valueRow.implicitHeight
 
@@ -49,12 +50,12 @@ Item {
                 Layout.alignment: Qt.AlignVCenter
                 width: 40
                 radius: height / 2
-                color: Appearance.colors.colSecondaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
 
                 MaterialSymbol {
                     id: iconSymbol
                     anchors.centerIn: parent
-                    color: Appearance.colors.colOnSecondaryContainer
+                    color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
                     renderType: Text.QtRendering
                     text: root.icon
                     iconSize: 25
@@ -85,12 +86,12 @@ Item {
                 Layout.alignment: Qt.AlignVCenter
                 width: 46
                 radius: height / 2
-                color: Appearance.colors.colTertiaryContainer
+                color: MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer)
 
                 StyledText { 
                     id: valueText
                     anchors.centerIn: parent
-                    color: Appearance.colors.colOnTertiaryContainer
+                    color: MonitorThemes.shellColorForItem(root, "colOnTertiaryContainer", Appearance.colors.colOnTertiaryContainer)
                     font.pixelSize: Appearance.font.pixelSize.normal
                     font.features: { "tnum": 1 }
                     font.letterSpacing: 0.2
