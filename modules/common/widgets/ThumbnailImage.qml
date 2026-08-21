@@ -15,12 +15,13 @@ StyledImage {
 
     property bool generateThumbnail: true
     required property string sourcePath
+    property string cacheKey: MonitorThemes.wallpaperSignature
     property string thumbnailSizeName: Images.thumbnailSizeNameForDimensions(sourceSize.width, sourceSize.height)
     property string thumbnailPath: {
         if (sourcePath.length == 0) return;
         const resolvedUrlWithoutFileProtocol = FileUtils.trimFileProtocol(`${Qt.resolvedUrl(sourcePath)}`);
         const encodedUrlWithoutFileProtocol = resolvedUrlWithoutFileProtocol.split("/").map(part => encodeURIComponent(part)).join("/");
-        const md5Hash = Qt.md5(`file://${encodedUrlWithoutFileProtocol}`);
+        const md5Hash = Qt.md5(`file://${encodedUrlWithoutFileProtocol}|${root.cacheKey}`);
         return `${Directories.genericCache}/thumbnails/${thumbnailSizeName}/${md5Hash}.png`;
     }
     property bool showingFallback: false

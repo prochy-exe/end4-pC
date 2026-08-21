@@ -11,6 +11,8 @@ import QtQuick.Layouts
 
 Item {
     id: root
+    property string monitorName: ""
+    Component.onCompleted: console.warn(`[WallpaperSubmenu DEBUG] monitor=${root.monitorName} wallpapers=${JSON.stringify(Config.options.background.monitorWallpapers ?? [])}`)
     implicitHeight: col.implicitHeight
 
     readonly property var shapeOptions: [
@@ -27,7 +29,7 @@ Item {
             Layout.fillWidth: true
             implicitHeight: schemeGrid.implicitHeight + 20
             radius: Appearance.rounding.verylarge
-            color: Appearance.colors.colLayer0
+            color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
 
             GridLayout {
                 id: schemeGrid
@@ -79,9 +81,9 @@ Item {
                         bottomLeftRadius: isBottomLeft ? Appearance.rounding.verylarge : ownRadius
                         bottomRightRadius: isBottomRight ? Appearance.rounding.verylarge : ownRadius
 
-                        color: isSelected ? Appearance.colors.colPrimary
-                            : hovered ? Appearance.colors.colSecondaryContainerHover
-                            : Appearance.colors.colSecondaryContainer
+                        color: isSelected ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                            : hovered ? MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+                            : MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
 
                         Behavior on ownRadius {
                             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
@@ -94,7 +96,7 @@ Item {
                             anchors.centerIn: parent
                             text: schemeTile.modelData.icon
                             iconSize: Appearance.font.pixelSize.larger
-                            color: schemeTile.isSelected ? Appearance.colors.colOnPrimary : Appearance.colors.colOnSecondaryContainer
+                            color: schemeTile.isSelected ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.colorForItem(root, "on_secondary_container", Appearance.colors.colOnSecondaryContainer)
                         }
 
                         MouseArea {
@@ -121,7 +123,7 @@ Item {
             Layout.fillWidth: true
             implicitHeight: centeredCol.implicitHeight + 16
             radius: Appearance.rounding.verylarge
-            color: Appearance.colors.colLayer0
+            color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
 
             ColumnLayout {
                 id: centeredCol
@@ -131,6 +133,7 @@ Item {
                 ConfigSwitch {
                     Layout.fillWidth: true
                     buttonIcon: "check"
+                    monitorName: root.monitorName
                     text: Translation.tr("Centered wallpaper")
                     checked: Config.options.background.centeredWallpaper
                     onCheckedChanged: Config.options.background.centeredWallpaper = checked
@@ -139,6 +142,7 @@ Item {
                 ConfigSwitch {
                     Layout.fillWidth: true
                     buttonIcon: "lock"
+                    monitorName: root.monitorName
                     text: Translation.tr("Only when locked")
                     checked: Config.options.background.centeredWallpaperOnlyWhenLocked
                     enabled: Config.options.background.centeredWallpaper
@@ -150,8 +154,8 @@ Item {
                     Layout.topMargin: 2
                     visible: Config.options.background.centeredWallpaper
                     currentValue: Config.options.background.centeredWallpaperShape
-                    shapeColor: Appearance.colors.colPrimary
-                    backgroundColor: Appearance.colors.colPrimaryContainer
+                    shapeColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                    backgroundColor: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
                     options: root.shapeOptions
                     onSelected: newValue => Config.options.background.centeredWallpaperShape = newValue
                 }
@@ -188,7 +192,7 @@ Item {
             Layout.fillWidth: true
             implicitHeight: transCol.implicitHeight + 16
             radius: Appearance.rounding.verylarge
-            color: Appearance.colors.colLayer0
+            color: MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0)
 
             ColumnLayout {
                 id: transCol
@@ -209,10 +213,10 @@ Item {
                         toggled: Config.options.background.wallpaperAnimation === transRow.modelData.value
                         colBackground: "transparent"
                         buttonRadius: Appearance.rounding.verylarge
-                        colBackgroundHover: Appearance.colors.colLayer2
-                        colBackgroundToggled: Appearance.colors.colSecondaryContainer
-                        colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
-                        colRippleToggled: Appearance.colors.colSecondaryContainerActive
+                        colBackgroundHover: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
+                        colBackgroundToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+                        colBackgroundToggledHover: MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
+                        colRippleToggled: MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
                         onClicked: Config.options.background.wallpaperAnimation = transRow.modelData.value
                         contentItem: RowLayout {
                             anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
@@ -220,20 +224,20 @@ Item {
                             MaterialSymbol {
                                 text: transRow.modelData.icon
                                 iconSize: Appearance.font.pixelSize.larger
-                                color: transRow.toggled ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer1
+                                color: transRow.toggled ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                                 fill: transRow.toggled ? 1 : 0
                             }
                             StyledText {
                                 Layout.fillWidth: true
                                 text: transRow.modelData.displayName
                                 font.pixelSize: Appearance.font.pixelSize.normal
-                                color: transRow.toggled ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer1
+                                color: transRow.toggled ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer) : MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                             }
                             MaterialSymbol {
                                 visible: transRow.toggled
                                 text: "check"
                                 iconSize: Appearance.font.pixelSize.normal
-                                color: Appearance.colors.colOnSecondaryContainer
+                                color: MonitorThemes.colorForItem(root, "on_secondary_container", Appearance.colors.colOnSecondaryContainer)
                             }
                         }
                     }

@@ -17,7 +17,15 @@ Scope {
     id: root
 
     function themeColor(role, fallback) {
-        return MonitorThemes.color(GlobalStates.desktopMenuScreen?.name ?? "", role, fallback)
+        const targetScreen = GlobalStates.desktopMenuScreen ?? Quickshell.screens[0]
+        const shellRoles = {
+            surface_container_low: "colLayer1",
+            surface_container: "colLayer2",
+            surface_container_high: "colLayer2Hover",
+            primary_container: "colPrimaryContainer",
+            on_surface_variant: "colOnLayer1"
+        }
+        return MonitorThemes.shellColorForItem(targetScreen, shellRoles[role] ?? role, fallback)
     }
 
     function openCentered(shouldOpen) {
@@ -44,8 +52,12 @@ Scope {
         if (Config.options.background.wallpaperMode === "perMonitor") {
             const override = (Config.options.background.monitorWallpapers ?? [])
                 .find(entry => entry.name === screen?.name)?.path;
-            if (override) return override;
+            if (override) {
+                console.warn(`[DesktopMenu DEBUG] wallpaper override screen=${screen?.name ?? "null"} path=${override}`)
+                return override;
+            }
         }
+        console.warn(`[DesktopMenu DEBUG] shared wallpaper screen=${screen?.name ?? "null"} path=${Config.options.background.wallpaperPath}`)
         return Config.options.background.wallpaperPath;
     }
 
@@ -94,6 +106,7 @@ Scope {
             [all[i], all[j]] = [all[j], all[i]]
         }
         root.randomWallpapers = all.slice(0, root.carouselExtraCount)
+        console.warn(`[DesktopMenu DEBUG] carousel current=${current} folder=${root.carouselFolderPath} random=${JSON.stringify(root.randomWallpapers)}`)
         root.updateCarouselModel()
     }
 
@@ -112,12 +125,24 @@ Scope {
             id: menuWindow
 
             screen: GlobalStates.desktopMenuScreen ?? Quickshell.screens[0]
+            readonly property string monitorWallpaperPath: root.wallpaperPathForScreen(menuWindow.screen)
 
             color: "transparent"
             exclusionMode: ExclusionMode.Ignore
             exclusiveZone: 0
             WlrLayershell.namespace: "quickshell:desktopMenu"
             WlrLayershell.layer: WlrLayer.Overlay
+
+            Component.onCompleted: {}
+            onScreenChanged: {}
+            onVisibleChanged: {
+                if (visible) {
+                    MonitorThemes.debugSelection("desktop-menu", menuWindow)
+                    console.warn(`[DesktopMenu DEBUG] palette surface=${root.themeColor("surface_container_low", "fallback")} primary=${root.themeColor("primary_container", "fallback")}`)
+                    console.warn(`[DesktopMenu DEBUG] visible monitor=${menuWindow.screen?.name ?? "null"} wallpaper=${menuWindow.monitorWallpaperPath}`)
+                    console.warn(`[DesktopMenu DEBUG] global target=${GlobalStates.desktopMenuScreen?.name ?? "null"} x=${GlobalStates.desktopMenuX} y=${GlobalStates.desktopMenuY} mode=${Config.options.background.wallpaperMode} monitorWallpapers=${JSON.stringify(Config.options.background.monitorWallpapers ?? [])}`)
+                }
+            }
 
             anchors {
                 top: true
@@ -150,7 +175,7 @@ Scope {
                 x: Math.min(Math.max(GlobalStates.desktopMenuX - width / 2, 8), menuWindow.width - width - 8)
                 y: Math.min(Math.max(GlobalStates.desktopMenuY - implicitHeight / 2, 8), menuWindow.height - implicitHeight - 8)
                 radius: Appearance.rounding.verylarge
-                color: "transparent"
+                color: root.themeColor("surface_container_low", Appearance.colors.colLayer0)
 
                 scale: 0.85
                 opacity: 0
@@ -182,14 +207,19 @@ Scope {
                         Layout.fillWidth: true
                         implicitHeight: 160
                         radius: Appearance.rounding.verylarge
-                        color: root.themeColor("surface_container_low", MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0))
+                        color: root.themeColor("surface_container", Appearance.colors.colLayer2)
                         clip: true
 
                         Carousel {
                             anchors.fill: parent
                             anchors.margins: 10
-                            model: root.carouselModel
+                            model: [
+                                root.displayPathFor(menuWindow.monitorWallpaperPath),
+                                ...root.randomWallpapers.map(path => root.displayPathFor(path))
+                            ]
+                            Component.onCompleted: console.warn(`[DesktopMenu DEBUG] carousel instantiated monitor=${menuWindow.screen?.name ?? "null"} source=${JSON.stringify(model)}`)
                             onWallpaperSelected: (path) => {
+                                console.warn(`[DesktopMenu DEBUG] wallpaper selected path=${path} target=${GlobalStates.desktopMenuScreen?.name ?? "null"} perMonitor=${Config.options.background.wallpaperMode === "perMonitor"}`)
                                 // The menu already opens on/for the monitor that
                                 // was right-clicked (see desktopMenuScreen, set
                                 // from Background.qml's per-screen click area) -
@@ -219,24 +249,27 @@ Scope {
                     GroupedList {
                         Layout.fillWidth: true
                         itemVerticalPadding: 16
-                        bgcolor: root.themeColor("surface_container_low", MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0))
+                        bgcolor: "transparent"
 
                         // Wallpapers
                         RippleButton {
                             id: wallpaperRow
                             implicitHeight: 40
+                            rippleEnabled: false
                             colBackground: "transparent"
-                            colBackgroundHover: root.themeColor("surface_container", MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2))
+                            colBackgroundHover: root.themeColor("primary_container", Appearance.colors.colPrimaryContainer)
                             contentItem: RowLayout {
                                 anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
                                 spacing: 12
-                                MaterialSymbol { text: "format_paint"; iconSize: Appearance.font.pixelSize.larger; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) }
-                                StyledText { Layout.fillWidth: true; text: "Wallpaper & style"; font.pixelSize: Appearance.font.pixelSize.normal; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) }
-                                MaterialSymbol { text: "chevron_right"; iconSize: Appearance.font.pixelSize.normal; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1); opacity: 0.4 }
+                                MaterialSymbol { text: "format_paint"; iconSize: Appearance.font.pixelSize.larger; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1) }
+                                StyledText { Layout.fillWidth: true; text: "Wallpaper & style"; font.pixelSize: Appearance.font.pixelSize.normal; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1) }
+                                MaterialSymbol { text: "chevron_right"; iconSize: Appearance.font.pixelSize.normal; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1); opacity: 0.4 }
                             }
                             Component {
                                 id: wallpaperSubmenu
-                                WallpaperSubmenu {}
+                                WallpaperSubmenu {
+                                    monitorName: menuWindow.screen?.name ?? ""
+                                }
                             }
                             HoverHandler {
                                 onHoveredChanged: {
@@ -256,14 +289,15 @@ Scope {
                         RippleButton {
                             id: widgetsRow
                             implicitHeight: 40
+                            rippleEnabled: false
                             colBackground: "transparent"
-                            colBackgroundHover: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
+                            colBackgroundHover: root.themeColor("primary_container", Appearance.colors.colPrimaryContainer)
                             contentItem: RowLayout {
                                 anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
                                 spacing: 12
-                                MaterialSymbol { text: "widgets"; iconSize: Appearance.font.pixelSize.larger; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) }
-                                StyledText { Layout.fillWidth: true; text: "Widgets"; font.pixelSize: Appearance.font.pixelSize.normal; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) }
-                                MaterialSymbol { text: "chevron_right"; iconSize: Appearance.font.pixelSize.normal; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1); opacity: 0.4 }
+                                MaterialSymbol { text: "widgets"; iconSize: Appearance.font.pixelSize.larger; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1) }
+                                StyledText { Layout.fillWidth: true; text: "Widgets"; font.pixelSize: Appearance.font.pixelSize.normal; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1) }
+                                MaterialSymbol { text: "chevron_right"; iconSize: Appearance.font.pixelSize.normal; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1); opacity: 0.4 }
                             }
 
                             Component {
@@ -288,25 +322,26 @@ Scope {
 
                         RippleButton {
                             implicitHeight: 40
+                            rippleEnabled: false
                             colBackground: "transparent"
-                            colBackgroundHover: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
+                            colBackgroundHover: root.themeColor("primary_container", Appearance.colors.colPrimaryContainer)
                             contentItem: RowLayout {
                                 anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
                                 spacing: 12
-                                MaterialSymbol { text: "stacks"; iconSize: Appearance.font.pixelSize.larger; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) }
-                                StyledText { Layout.fillWidth: true; text: "DropShelf"; font.pixelSize: Appearance.font.pixelSize.normal; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) }
+                                MaterialSymbol { text: "stacks"; iconSize: Appearance.font.pixelSize.larger; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1) }
+                                StyledText { Layout.fillWidth: true; text: "DropShelf"; font.pixelSize: Appearance.font.pixelSize.normal; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1) }
                                 StyledText {
                                     visible: DropShelf.items.length > 0
                                     text: DropShelf.items.length
                                     font.pixelSize: Appearance.font.pixelSize.small
-                                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+ color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1)
                                     opacity: 0.6
                                 }
                                 MaterialSymbol {
                                     visible: DropShelf.items.length === 0
                                     text: "chevron_right"
                                     iconSize: Appearance.font.pixelSize.normal
-                                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+                                    color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1)
                                     opacity: 0.4
                                 }
                             }
@@ -320,18 +355,19 @@ Scope {
 
                         RippleButton {
                             implicitHeight: 40
+                            rippleEnabled: false
                             colBackground: "transparent"
-                            colBackgroundHover: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
+                            colBackgroundHover: root.themeColor("primary_container", Appearance.colors.colPrimaryContainer)
                             contentItem: RowLayout {
                                 anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
                                 spacing: 12
-                                MaterialSymbol { text: "video_template"; iconSize: Appearance.font.pixelSize.larger; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) }
-                                StyledText { Layout.fillWidth: true; text: "Live Wallpaper"; font.pixelSize: Appearance.font.pixelSize.normal; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) }
+                                MaterialSymbol { text: "video_template"; iconSize: Appearance.font.pixelSize.larger; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1) }
+                                StyledText { Layout.fillWidth: true; text: "Live Wallpaper"; font.pixelSize: Appearance.font.pixelSize.normal; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1) }
                                 MaterialSymbol {
                                     visible: DropShelf.items.length === 0
                                     text: "chevron_right"
                                     iconSize: Appearance.font.pixelSize.normal
-                                    color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+                                    color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1)
                                     opacity: 0.4
                                 }
                             }
@@ -346,14 +382,15 @@ Scope {
 
                         RippleButton {
                             implicitHeight: 40
+                            rippleEnabled: false
                             colBackground: "transparent"
-                            colBackgroundHover: MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
+                            colBackgroundHover: root.themeColor("primary_container", Appearance.colors.colPrimaryContainer)
                             contentItem: RowLayout {
                                 anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
                                 spacing: 12
-                                MaterialSymbol { text: "settings"; iconSize: Appearance.font.pixelSize.larger; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) }
-                                StyledText { Layout.fillWidth: true; text: "Settings"; font.pixelSize: Appearance.font.pixelSize.normal; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1) }
-                                MaterialSymbol { text: "chevron_right"; iconSize: Appearance.font.pixelSize.normal; color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1); opacity: 0.4 }
+                                MaterialSymbol { text: "settings"; iconSize: Appearance.font.pixelSize.larger; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1) }
+                                StyledText { Layout.fillWidth: true; text: "Settings"; font.pixelSize: Appearance.font.pixelSize.normal; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1) }
+                                MaterialSymbol { text: "chevron_right"; iconSize: Appearance.font.pixelSize.normal; color: root.themeColor("on_surface_variant", Appearance.colors.colOnLayer1); opacity: 0.4 }
                             }
                             onClicked: {
                                 GlobalStates.desktopMenuOpen = false

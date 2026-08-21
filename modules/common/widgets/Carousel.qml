@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
@@ -9,6 +10,7 @@ Item {
     id: root
 
     property var model: []
+    property string cacheKey: MonitorThemes.wallpaperSignature
     // Optional caption per model index (e.g. which monitor/slot an item is
     // for) - parallel array, same length as model. Empty entry or index
     // beyond its length just shows no caption for that item.
@@ -40,6 +42,7 @@ Item {
     }
 
     function handleItemClick(index, modelData) {
+        console.warn(`[Carousel DEBUG] click index=${index} current=${listView.currentIndex} focused=${root.focusedIndex} path=${modelData}`)
         if (root.clickAction) {
             root.clickAction(index, modelData);
             return;
@@ -47,6 +50,9 @@ Item {
         listView.currentIndex = index;
         root.wallpaperSelected(modelData);
     }
+
+    onModelChanged: console.warn(`[Carousel DEBUG] model length=${root.model.length} items=${JSON.stringify(root.model)}`)
+    onCurrentIndexChanged: console.warn(`[Carousel DEBUG] current index=${root.currentIndex} focused=${root.focusedIndex}`)
 
     ListView {
         id: listView
@@ -103,13 +109,14 @@ Item {
                 id: cardBg
                 anchors.fill: parent
                 radius: Appearance.rounding.large
-                color: Appearance.colors.colSurfaceContainerHigh
+                color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerHigh", Appearance.colors.colSurfaceContainerHigh)
                 clip: true
 
                 Loader {
                     anchors.fill: parent
-                    sourceComponent: root.delegate ?? defaultImageDelegate
-                    property var modelData: itemRoot.modelData
+            sourceComponent: root.delegate ?? defaultImageDelegate
+            property var modelData: itemRoot.modelData
+            property string cacheKey: root.cacheKey
                     property real fixedWidth: root.width * root.largeItemWidthRatio
                     property real fixedHeight: listView.height
                 }
@@ -143,13 +150,13 @@ Item {
                     width: 32
                     height: 32
                     radius: width / 2
-                    color: Appearance.colors.colPrimary
+                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
 
                     MaterialSymbol {
                         anchors.centerIn: parent
                         text: "check"
                         iconSize: Appearance.font.pixelSize.larger
-                        color: Appearance.colors.colOnPrimary
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                         fill: 1
                     }
                 }
@@ -183,6 +190,7 @@ Item {
             property real fixedWidth: parent?.fixedWidth ?? width
             property real fixedHeight: parent?.fixedHeight ?? height
             sourcePath: FileUtils.trimFileProtocol(modelData)
+            cacheKey: parent?.cacheKey ?? ""
             fillMode: Image.PreserveAspectCrop
             cache: true
             sourceSize.width: fixedWidth * 1.5
