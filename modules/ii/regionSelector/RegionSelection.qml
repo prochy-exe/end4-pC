@@ -1077,6 +1077,7 @@ PanelWindow {
             spacing: 6
 
             OptionsToolbar {
+                Component.onCompleted: console.warn(`[RegionSelector DEBUG] OptionsToolbar created screen=${root.screen?.name ?? "null"} width=${width} height=${height} implicit=${implicitWidth}x${implicitHeight}`)
                 Synchronizer on action {
                     property alias source: root.action
                 }

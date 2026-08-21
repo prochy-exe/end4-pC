@@ -43,10 +43,13 @@ Scope {
     function openSelector() {
         root.controlsMonitorName = root.currentFocusedMonitorName()
         root.hoveredMonitorName = root.controlsMonitorName
+        console.warn(`[RegionSelector DEBUG] openSelector action=${root.action} selectionMode=${root.selectionMode} controlsMonitor=${root.controlsMonitorName} screens=${Quickshell.screens.map(s => s.name).join(",")}`)
         if (root.controlsMonitorName === "") {
+            console.warn("[RegionSelector DEBUG] openSelector aborted: no controls monitor")
             return
         }
         GlobalStates.regionSelectorOpen = true
+        console.warn(`[RegionSelector DEBUG] regionSelectorOpen=${GlobalStates.regionSelectorOpen}`)
     }
 
     property var action: RegionSelection.SnipAction.Copy
@@ -118,6 +121,7 @@ Scope {
 
             sourceComponent: RegionSelection {
                 screen: regionSelectorLoader.modelData
+                Component.onCompleted: console.warn(`[RegionSelector DEBUG] RegionSelection created screen=${screen?.name ?? "null"} showControls=${showControls} size=${width}x${height}`)
                 onDismiss: root.dismiss()
                 onOcrTranslateRequested: text => root.triggerSidebarTranslator(text)
                 onRecordingStarted: root.postMode = true
@@ -132,6 +136,7 @@ Scope {
                 recordMicAudio: root.recordMicAudio
                 showInputOverlay: root.showInputOverlay
                 showControls: regionSelectorLoader.modelData.name === root.controlsMonitorName
+                onShowControlsChanged: console.warn(`[RegionSelector DEBUG] showControls changed screen=${screen?.name ?? "null"} showControls=${showControls} controlsMonitor=${root.controlsMonitorName}`)
                 cursorGlobalX: root.cursorGlobalX
                 cursorGlobalY: root.cursorGlobalY
                 postMode: root.postMode
