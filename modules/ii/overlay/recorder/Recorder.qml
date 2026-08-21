@@ -31,7 +31,7 @@ StyledOverlayWidget {
                     name: "Screenshot region"
                     onClicked: {
                         GlobalStates.overlayOpen = false;
-                        Quickshell.execDetached(["qs", "-n", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "screenshot"]);
+                        Quickshell.execDetached(["qs", "ipc", "--path", Quickshell.shellPath(""), "call", "region", "screenshot"]);
                     }
                 }
 
