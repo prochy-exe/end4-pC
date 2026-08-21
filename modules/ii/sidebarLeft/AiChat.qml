@@ -517,7 +517,7 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
                         wrapMode: TextArea.Wrap
                         padding: 10
                         color: activeFocus ? MonitorThemes.colorForItem(root, "on_surface", Appearance.m3colors.m3onSurface) : MonitorThemes.colorForItem(root, "on_surface_variant", Appearance.m3colors.m3onSurfaceVariant)
-                        placeholderText: Translation.tr('Message the model... "%1" for commands').arg(root.commandPrefix)
+                        placeholderText: Translation.tr('Message the model... "%1" for commands').arg(root?.commandPrefix ?? "/")
 
                         background: null
 
@@ -750,14 +750,14 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
                     // Model indicator
                     icon: "api"
                     text: Ai.getModel().name
-                    tooltipText: Translation.tr("Current model: %1\nSet it with %2model MODEL").arg(Ai.getModel().name).arg(root.commandPrefix)
+                    tooltipText: Translation.tr("Current model: %1\nSet it with %2model MODEL").arg(Ai.getModel().name).arg(root?.commandPrefix ?? "/")
                 }
 
                 ApiInputBoxIndicator {
                     // Tool indicator
                     icon: "service_toolbox"
                     text: Ai.currentTool.charAt(0).toUpperCase() + Ai.currentTool.slice(1)
-                    tooltipText: Translation.tr("Current tool: %1\nSet it with %2tool TOOL").arg(Ai.currentTool).arg(root.commandPrefix)
+                    tooltipText: Translation.tr("Current tool: %1\nSet it with %2tool TOOL").arg(Ai.currentTool).arg(root?.commandPrefix ?? "/")
                 }
 
                 Item {
