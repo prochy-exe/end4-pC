@@ -170,7 +170,7 @@ RowLayout {
         visible: root.searchPrefixType !== SearchBar.SearchPrefixType.Bitwarden
         onClicked: {
             GlobalStates.overviewOpen = false;
-            Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "search"]);
+            Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x quickshell | head -n1) && exec qs ipc --pid \"$pid\" call region search"]);
         }
         text: "image_search"
         StyledToolTip {

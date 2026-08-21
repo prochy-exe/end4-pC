@@ -49,7 +49,7 @@ StyledOverlayWidget {
                     name: "Record region"
                     onClicked: {
                         GlobalStates.overlayOpen = false;
-                        Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "record"]);
+                        Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x quickshell | head -n1) && exec qs ipc --pid \"$pid\" call region record"]);
                     }
                 }
 
