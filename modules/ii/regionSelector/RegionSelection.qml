@@ -80,6 +80,7 @@ PanelWindow {
     property string ocrResultText: ""
     property var phase: RegionSelection.Phase.Select
     onVisibleChanged: {
+        console.warn(`[RegionSelector DEBUG] screen=${screen?.name ?? "null"} visible=${visible} showControls=${showControls} phase=${phase} dragging=${dragging} controls=${regionSelectionControls.visible} size=${width}x${height}`)
         if (root.visible && root.phase === RegionSelection.Phase.Select) {
             root.resetSelectionState();
         }
@@ -1060,11 +1061,13 @@ PanelWindow {
             Connections {
                 target: root
                 function onVisibleChanged() {
+                    console.warn(`[RegionSelector DEBUG] toolbar screen=${root.screen?.name ?? "null"} visible=${regionSelectionControls.visible} width=${regionSelectionControls.width} height=${regionSelectionControls.height} bottomMargin=${regionSelectionControls.anchors.bottomMargin}`)
                     if (!visible) return;
                     regionSelectionControls.anchors.bottomMargin = 8;
                     regionSelectionControls.opacity = 1;
                 }
             }
+            onVisibleChanged: console.warn(`[RegionSelector DEBUG] toolbar visibility changed screen=${root.screen?.name ?? "null"} visible=${visible} rootVisible=${root.visible} showControls=${root.showControls} phase=${root.phase} dragging=${root.dragging} size=${width}x${height}`)
             Behavior on opacity {
                 animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
             }

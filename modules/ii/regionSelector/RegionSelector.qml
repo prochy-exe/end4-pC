@@ -72,15 +72,8 @@ Scope {
         const payload = `${text ?? ""}`
         if (payload.trim().length === 0)
             return
-        Quickshell.execDetached([
-            "qs",
-            "-p",
-            Quickshell.shellPath(""),
-            "ipc",
-            "call",
-            "sidebarLeft",
-            "openTranslator",
-            payload
+        Quickshell.execDetached(["bash", "-c",
+            `pid=$(pgrep -x quickshell | head -n1) && exec qs ipc --pid "$pid" call sidebarLeft openTranslator '${payload.replace(/'/g, "'\\''")}'`
         ])
     }
 
