@@ -16,7 +16,7 @@ LazyLoader {
     property bool keepOpenWhileHovered: false
     property int hoverCloseDelay: 120
     property bool popupHovered: false
-    readonly property bool targetHovered: hoverTarget && hoverTarget.containsMouse
+    readonly property bool targetHovered: !!hoverTarget && !!hoverTarget.containsMouse
     readonly property bool wantsVisible: targetHovered || (keepOpenWhileHovered && popupHovered)
     // Keep loader lifetime independent from PopupState ownership. PopupState is
     // coordination only; feeding it into active made hover and close state form
