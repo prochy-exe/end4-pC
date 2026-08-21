@@ -28,7 +28,6 @@ Scope {
         screen: targetScreen
         readonly property string monitorName: screen?.name ?? ""
         onScreenChanged: {
-            console.warn(`[FocusStutter DEBUG] settings screen=${screen?.name ?? "null"} visible=${visible}`)
             MonitorThemes.activateForSurface(panelWindow)
         }
 
@@ -53,7 +52,6 @@ Scope {
             if (visible)
                 targetScreen = Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
             if (visible) {
-                console.warn(`[Settings DEBUG] screen=${panelWindow.screen?.name ?? "null"} monitorName=${panelWindow.monitorName} palettes=${Object.keys(MonitorThemes.palettes).join(",")}`)
                 MonitorThemes.activateForSurface(panelWindow)
             }
             if (visible) {

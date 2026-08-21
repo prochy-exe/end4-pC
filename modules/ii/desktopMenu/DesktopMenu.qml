@@ -53,11 +53,9 @@ Scope {
             const override = (Config.options.background.monitorWallpapers ?? [])
                 .find(entry => entry.name === screen?.name)?.path;
             if (override) {
-                console.warn(`[DesktopMenu DEBUG] wallpaper override screen=${screen?.name ?? "null"} path=${override}`)
                 return override;
             }
         }
-        console.warn(`[DesktopMenu DEBUG] shared wallpaper screen=${screen?.name ?? "null"} path=${Config.options.background.wallpaperPath}`)
         return Config.options.background.wallpaperPath;
     }
 
@@ -106,7 +104,6 @@ Scope {
             [all[i], all[j]] = [all[j], all[i]]
         }
         root.randomWallpapers = all.slice(0, root.carouselExtraCount)
-        console.warn(`[DesktopMenu DEBUG] carousel current=${current} folder=${root.carouselFolderPath} random=${JSON.stringify(root.randomWallpapers)}`)
         root.updateCarouselModel()
     }
 
@@ -136,12 +133,6 @@ Scope {
             Component.onCompleted: {}
             onScreenChanged: {}
             onVisibleChanged: {
-                if (visible) {
-                    MonitorThemes.debugSelection("desktop-menu", menuWindow)
-                    console.warn(`[DesktopMenu DEBUG] palette surface=${root.themeColor("surface_container_low", "fallback")} primary=${root.themeColor("primary_container", "fallback")}`)
-                    console.warn(`[DesktopMenu DEBUG] visible monitor=${menuWindow.screen?.name ?? "null"} wallpaper=${menuWindow.monitorWallpaperPath}`)
-                    console.warn(`[DesktopMenu DEBUG] global target=${GlobalStates.desktopMenuScreen?.name ?? "null"} x=${GlobalStates.desktopMenuX} y=${GlobalStates.desktopMenuY} mode=${Config.options.background.wallpaperMode} monitorWallpapers=${JSON.stringify(Config.options.background.monitorWallpapers ?? [])}`)
-                }
             }
 
             anchors {
@@ -217,9 +208,7 @@ Scope {
                                 root.displayPathFor(menuWindow.monitorWallpaperPath),
                                 ...root.randomWallpapers.map(path => root.displayPathFor(path))
                             ]
-                            Component.onCompleted: console.warn(`[DesktopMenu DEBUG] carousel instantiated monitor=${menuWindow.screen?.name ?? "null"} source=${JSON.stringify(model)}`)
                             onWallpaperSelected: (path) => {
-                                console.warn(`[DesktopMenu DEBUG] wallpaper selected path=${path} target=${GlobalStates.desktopMenuScreen?.name ?? "null"} perMonitor=${Config.options.background.wallpaperMode === "perMonitor"}`)
                                 // The menu already opens on/for the monitor that
                                 // was right-clicked (see desktopMenuScreen, set
                                 // from Background.qml's per-screen click area) -

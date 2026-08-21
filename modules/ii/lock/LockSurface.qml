@@ -57,7 +57,6 @@ MouseArea {
     Connections {
         target: context
         function onShouldReFocus() {
-            console.warn(`[WakeRefocus DEBUG] LockSurface onShouldReFocus screen=${root.QsWindow?.window?.screen?.name ?? "unknown"} at ${new Date().toISOString()}`)
             forceFieldFocus();
             nudgeRepaint();
         }
@@ -90,10 +89,7 @@ MouseArea {
         forceFieldFocus();
         toolbarScale = 1;
         toolbarOpacity = 1;
-        console.warn(`[LockSurface DEBUG] created lockMonitorName=${root.lockMonitorName} focused=${Hyprland.focusedMonitor?.name ?? ""} sessionScreen=${root.sessionScreen?.name ?? "null"} parentScreen=${root.parent?.screen?.name ?? "null"}`)
     }
-    onLockMonitorNameChanged: console.warn(`[LockSurface DEBUG] monitor changed lockMonitorName=${root.lockMonitorName} focused=${Hyprland.focusedMonitor?.name ?? ""}`)
-    onIsFocusedMonitorChanged: console.warn(`[LockSurface DEBUG] focus match=${root.isFocusedMonitor} monitor=${root.lockMonitorName} focused=${Hyprland.focusedMonitor?.name ?? ""}`)
 
     // Key presses
     property bool ctrlHeld: false
@@ -157,7 +153,6 @@ MouseArea {
     //         GlobalStates.screenLocked = false;
     //     }
     //     contentItem: StyledText {
-    //         text: "[[ DEBUG BYPASS ]]"
     //     }
     // }
 
@@ -165,7 +160,6 @@ MouseArea {
     Toolbar {
         id: mainIsland
         visible: root.isFocusedMonitor
-        onVisibleChanged: console.warn(`[LockSurface DEBUG] main toolbar visible=${visible} monitor=${root.lockMonitorName} focused=${Hyprland.focusedMonitor?.name ?? ""}`)
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: parent.bottom

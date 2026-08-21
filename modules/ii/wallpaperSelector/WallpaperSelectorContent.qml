@@ -85,7 +85,6 @@ MouseArea {
                     const entry = { name: monitorName, path: finalPath };
                     if (index >= 0) list[index] = entry; else list.push(entry);
                     Config.options.background.monitorWallpapers = list;
-                    console.warn(`[Wallpaper DEBUG] monitor wallpaper assigned monitor=${monitorName} path=${finalPath}`)
                     MonitorThemes.refresh();
                     GlobalStates.wallpaperSelectorTarget = "wallpaper";
                     GlobalStates.wallpaperSelectorOpen = false;

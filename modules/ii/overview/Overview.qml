@@ -24,7 +24,6 @@ Scope {
         property var targetScreen: Quickshell.screens[0]
         screen: targetScreen
         onScreenChanged: {
-            console.warn(`[FocusStutter DEBUG] overview screen=${screen?.name ?? "null"} visible=${visible}`)
             MonitorThemes.activateForSurface(panelWindow)
         }
         onVisibleChanged: {

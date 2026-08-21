@@ -12,8 +12,6 @@ Singleton {
 
     property var palettes: ({})
     property string wallpaperSignature: ""
-    property string lastObservedFocusMonitor: ""
-    property int refreshSerial: 0
     readonly property bool active: ((GlobalStates.screenLocked && Config.options.background.lockWallpaperMode === "perMonitor")
         || (!GlobalStates.screenLocked && Config.options.background.wallpaperMode === "perMonitor")
         || (GlobalStates.screenLocked && Config.options.background.lockWallpaperMode !== "perMonitor"
@@ -71,16 +69,6 @@ Singleton {
                 ? "__blended__"
                 : (Config.options.background.componentColorMonitor || ownMonitor || "__blended__")
         return root.color(monitorName, role, fallback)
-    }
-
-    function debugSelection(label, item) {
-        const ownMonitor = item?.monitorName ?? item?.name ?? item?.screen?.name ?? item?.QsWindow?.window?.screen?.name ?? ""
-        const selected = Config.options.background.useMonitorSpecificColors
-            ? (ownMonitor || "__blended__")
-            : Config.options.background.blendMonitorColors
-                ? "__blended__"
-                : (Config.options.background.componentColorMonitor || ownMonitor || "__blended__")
-        console.warn(`[MonitorThemes DEBUG] ${label} own=${ownMonitor || "none"} selected=${selected} blend=${Config.options.background.blendMonitorColors} specific=${Config.options.background.useMonitorSpecificColors} primary=${root.palettes[selected]?.primary ?? "fallback"}`)
     }
 
     function m3ColorForItem(item, name, fallback) {
@@ -164,8 +152,6 @@ Singleton {
     }
 
     function refresh() {
-        root.refreshSerial += 1
-        console.warn(`[MonitorThemes DEBUG] refresh #${root.refreshSerial} at ${new Date().toISOString()} focused=${Hyprland.focusedMonitor?.name ?? "none"}`)
         if (generator.running) generator.running = false
         refreshTimer.restart()
     }
@@ -182,11 +168,6 @@ Singleton {
         repeat: true
         running: true
         onTriggered: {
-            const focusedMonitor = Hyprland.focusedMonitor?.name ?? "none"
-            if (root.lastObservedFocusMonitor !== focusedMonitor) {
-                console.warn(`[MonitorThemes DEBUG] focus changed ${root.lastObservedFocusMonitor || "none"} -> ${focusedMonitor}; palette polling does not refresh on focus`)
-                root.lastObservedFocusMonitor = focusedMonitor
-            }
             const entries = Config.options.background.wallpaperMode === "perMonitor"
                 ? (Config.options.background.monitorWallpapers ?? [])
                 : [];
@@ -208,7 +189,6 @@ Singleton {
             if (root.wallpaperSignature === "") {
                 root.wallpaperSignature = signature;
             } else if (root.wallpaperSignature !== signature) {
-                console.warn(`[MonitorThemes DEBUG] palette signature changed while focused=${focusedMonitor}`)
                 root.wallpaperSignature = signature;
                 root.refresh();
             }
@@ -218,9 +198,7 @@ Singleton {
     Process {
         id: generator
         command: ["python3", Quickshell.shellPath("scripts/colors/generate-monitor-themes.py")]
-        onRunningChanged: if (running) console.warn("[MonitorThemes DEBUG] generator started")
         onExited: (exitCode) => {
-            console.warn(`[MonitorThemes DEBUG] generator exited code=${exitCode}`)
             if (exitCode === 0) {
                 paletteFile.reload()
             } else {

@@ -24,7 +24,6 @@ Scope {
             property var sessionScreen: sessionLockSurface.screen
             onLoaded: if (item) item.sessionScreen = sessionScreen
             onSessionScreenChanged: {
-                console.warn(`[LockSurface DEBUG] session screen changed=${sessionScreen?.name ?? "null"}`)
                 if (item) item.sessionScreen = sessionScreen
             }
             opacity: active ? 1 : 0
@@ -34,7 +33,6 @@ Scope {
             sourceComponent: root.lockSurface
         }
         onScreenChanged: {
-            console.warn(`[LockSurface DEBUG] WlSessionLockSurface screen changed=${screen?.name ?? "null"}`)
             lockSurfaceLoader.sessionScreen = screen
             if (lockSurfaceLoader.item) lockSurfaceLoader.item.sessionScreen = screen
         }
@@ -43,7 +41,6 @@ Scope {
     Process {
         id: unlockKeyringProc
         onExited: (exitCode, exitStatus) => {
-            console.warn(`[KeyringUnlock DEBUG] unlock.sh exited code=${exitCode} status=${exitStatus}`)
             KeyringStorage.fetchKeyringData();
             keyringDebugCheckProc.running = true;
         }
@@ -52,7 +49,6 @@ Scope {
         id: keyringDebugCheckProc
         command: ["bash", "-c", Quickshell.shellPath("scripts/keyring/is_unlocked.sh")]
         onExited: (exitCode, exitStatus) => {
-            console.warn(`[KeyringUnlock DEBUG] post-unlock is_unlocked.sh exitCode=${exitCode} (0=unlocked)`)
         }
     }
     function unlockKeyring() {
@@ -61,7 +57,6 @@ Scope {
         const password = lockContext.currentText.length > 0
             ? lockContext.currentText
             : lockContext.lastKnownPassword
-        console.warn(`[KeyringUnlock DEBUG] unlockKeyring() called, password.length=${password.length}`)
         if (password.length === 0) return
         unlockKeyringProc.exec({
             environment: ({
@@ -154,7 +149,6 @@ Scope {
             + "decides to keyboard-unfocus the lock screen"
 
         onPressed: {
-            console.warn(`[WakeRefocus DEBUG] lockFocus GlobalShortcut fired at ${new Date().toISOString()}, screenLocked=${GlobalStates.screenLocked}`)
             lockContext.shouldReFocus();
             // hypridle's after_sleep_cmd can fire before Hyprland has fully
             // re-initialized outputs that were powered off during sleep, so a
@@ -170,7 +164,6 @@ Scope {
         id: wakeRefocusRetryTimer
         interval: 500
         onTriggered: {
-            console.warn(`[WakeRefocus DEBUG] retry timer fired at ${new Date().toISOString()}`)
             lockContext.shouldReFocus()
         }
     }

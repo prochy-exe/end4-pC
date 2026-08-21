@@ -12,7 +12,6 @@ import QtQuick.Layouts
 Item {
     id: root
     property string monitorName: ""
-    Component.onCompleted: console.warn(`[WallpaperSubmenu DEBUG] monitor=${root.monitorName} wallpapers=${JSON.stringify(Config.options.background.monitorWallpapers ?? [])}`)
     implicitHeight: col.implicitHeight
 
     readonly property var shapeOptions: [

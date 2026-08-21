@@ -17,7 +17,6 @@ Scope {
         visible: GlobalStates.sidebarRightOpen
         property var targetScreen: Quickshell.screens[0]
         screen: targetScreen
-        onScreenChanged: console.warn(`[FocusStutter DEBUG] sidebar-right screen=${screen?.name ?? "null"} visible=${visible}`)
         readonly property string monitorName: screen?.name ?? ""
         readonly property bool barVertical: Config.getBarSetting(monitorName, ["vertical"], Config.options.bar.vertical)
         readonly property bool barAtBottom: Config.getBarSetting(monitorName, ["bottom"], Config.options.bar.bottom)
@@ -58,7 +57,6 @@ Scope {
             if (visible)
                 targetScreen = Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
             if (visible) {
-                MonitorThemes.debugSelection("sidebar-right", panelWindow)
                 MonitorThemes.activateForSurface(panelWindow)
             }
             if (visible) {

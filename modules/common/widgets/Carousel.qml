@@ -42,7 +42,6 @@ Item {
     }
 
     function handleItemClick(index, modelData) {
-        console.warn(`[Carousel DEBUG] click index=${index} current=${listView.currentIndex} focused=${root.focusedIndex} path=${modelData}`)
         if (root.clickAction) {
             root.clickAction(index, modelData);
             return;
@@ -51,8 +50,6 @@ Item {
         root.wallpaperSelected(modelData);
     }
 
-    onModelChanged: console.warn(`[Carousel DEBUG] model length=${root.model.length} items=${JSON.stringify(root.model)}`)
-    onCurrentIndexChanged: console.warn(`[Carousel DEBUG] current index=${root.currentIndex} focused=${root.focusedIndex}`)
 
     ListView {
         id: listView
