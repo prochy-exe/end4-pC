@@ -136,14 +136,14 @@ Item {
             id: screenSnipM3
             UtilButton {
                 iconText: "screenshot_region"
-                onClicked: Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "screenshot"])
+                onClicked: Quickshell.execDetached(["qs", "-n", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "screenshot"])
             }
         }
 
         Component {
             id: legacyScreenSnip
             CircleUtilButton {
-                onClicked: Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "screenshot"])
+                onClicked: Quickshell.execDetached(["qs", "-n", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "screenshot"])
                 MaterialSymbol {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 1; text: "screenshot_region"
