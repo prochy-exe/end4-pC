@@ -21,7 +21,7 @@ QuickToggleModel {
         interval: 300
         repeat: false
         onTriggered: {
-            Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -xo quickshell) && exec qs ipc --pid \"$pid\" call region screenshot"]);
+            Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x qs | head -n1) && exec qs ipc --pid \"$pid\" call region screenshot"]);
         }
     }
 

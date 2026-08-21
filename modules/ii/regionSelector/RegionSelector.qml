@@ -76,7 +76,7 @@ Scope {
         if (payload.trim().length === 0)
             return
         Quickshell.execDetached(["bash", "-c",
-            `pid=$(pgrep -x quickshell | head -n1) && exec qs ipc --pid "$pid" call sidebarLeft openTranslator '${payload.replace(/'/g, "'\\''")}'`
+            `pid=$(pgrep -x qs | head -n1) && exec qs ipc --pid "$pid" call sidebarLeft openTranslator '${payload.replace(/'/g, "'\\''")}'`
         ])
     }
 
@@ -178,7 +178,7 @@ Scope {
         Quickshell.execDetached([
             "bash",
             "-c",
-            `if pgrep wf-recorder >/dev/null; then '${Directories.recordScriptPath}'; else pid=$(pgrep -xo quickshell) && qs ipc --pid "$pid" call region screenshot; fi`
+            `if pgrep wf-recorder >/dev/null; then '${Directories.recordScriptPath}'; else pid=$(pgrep -x qs | head -n1) && qs ipc --pid "$pid" call region screenshot; fi`
         ])
     }
 

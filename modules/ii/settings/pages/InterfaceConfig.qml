@@ -725,8 +725,8 @@ ContentPage {
     // approximation, so what appears here is guaranteed identical to real
     // usage.
     function previewAll() {
-        Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x quickshell | head -n1) && qs ipc --pid \"$pid\" call mediaTicker trigger"])
-        Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x quickshell | head -n1) && qs ipc --pid \"$pid\" call osdVolume trigger"])
+        Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x qs | head -n1) && qs ipc --pid \"$pid\" call mediaTicker trigger"])
+        Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x qs | head -n1) && qs ipc --pid \"$pid\" call osdVolume trigger"])
         Quickshell.execDetached(["notify-send", Translation.tr("Preview"), Translation.tr("This is what a real notification looks like."), "-a", "Shell"])
     }
 
