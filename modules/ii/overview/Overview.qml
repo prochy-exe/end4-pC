@@ -21,6 +21,17 @@ Scope {
         readonly property HyprlandMonitor monitor: Hyprland.monitorFor(panelWindow.screen)
         property bool monitorIsFocused: (Hyprland.focusedMonitor?.id == monitor?.id)
         visible: GlobalStates.overviewOpen
+        property var targetScreen: Quickshell.screens[0]
+        screen: targetScreen
+        onScreenChanged: {
+            console.warn(`[FocusStutter DEBUG] overview screen=${screen?.name ?? "null"} visible=${visible}`)
+            MonitorThemes.activateForSurface(panelWindow)
+        }
+        onVisibleChanged: {
+            if (visible)
+                targetScreen = Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+            if (visible) MonitorThemes.activateForSurface(panelWindow)
+        }
 
         WlrLayershell.namespace: "quickshell:overview"
         WlrLayershell.layer: WlrLayer.Top

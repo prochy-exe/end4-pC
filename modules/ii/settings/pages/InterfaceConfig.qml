@@ -62,7 +62,9 @@ ContentPage {
             value: page.currentMonitorBarSetting(monitorSwitch.settingPath, monitorSwitch.fallbackValue)
         }
 
-        onClicked: page.setCurrentMonitorBarSetting(settingPath, checked)
+        onClicked: {
+            page.setCurrentMonitorBarSetting(settingPath, checked)
+        }
     }
 
     component CustomResourceRow: ColumnLayout {
@@ -81,12 +83,12 @@ ContentPage {
             MaterialSymbol {
                 text: (CustomBarResources.isRunning(row.entry.id) ? row.entry.iconOn : row.entry.iconOff) || "help"
                 iconSize: Appearance.font.pixelSize.large
-                color: Appearance.colors.colPrimary
+                color: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
             }
             StyledText {
                 Layout.fillWidth: true
                 text: (row.entry.name ?? "").length > 0 ? row.entry.name : Translation.tr("(unnamed)")
-                color: Appearance.colors.colOnLayer1
+                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
             }
             RippleButton {
                 buttonRadius: Appearance.rounding.full
@@ -98,7 +100,7 @@ ContentPage {
                     anchors.centerIn: parent
                     text: "delete"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                 }
             }
         }
@@ -771,7 +773,7 @@ ContentPage {
     readonly property var popupPreviewItems: [
         {
             id: "ticker", label: Translation.tr("Media ticker"), iconName: "music_note",
-            accentColor: Appearance.colors.colPrimary,
+            accentColor: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary),
             monitorMode: Config.options.media.tickerMonitorMode, monitorName: Config.options.media.tickerMonitorName,
             position: Config.options.media.tickerPosition,
             customX: Config.options.media.tickerCustomX, customY: Config.options.media.tickerCustomY,
@@ -779,7 +781,7 @@ ContentPage {
         },
         {
             id: "notifications", label: Translation.tr("Notifications"), iconName: "notifications",
-            accentColor: Appearance.colors.colTertiary,
+            accentColor: MonitorThemes.shellColorForItem(page, "colTertiary", Appearance.colors.colTertiary),
             monitorMode: Config.options.notifications.monitorMode, monitorName: Config.options.notifications.monitorName,
             position: Config.options.notifications.position,
             customX: Config.options.notifications.customX, customY: Config.options.notifications.customY,
@@ -787,7 +789,7 @@ ContentPage {
         },
         {
             id: "osd", label: Translation.tr("On-screen display"), iconName: "tune",
-            accentColor: Appearance.colors.colSecondary,
+            accentColor: MonitorThemes.shellColorForItem(page, "colSecondary", Appearance.colors.colSecondary),
             monitorMode: Config.options.osd.monitorMode, monitorName: Config.options.osd.monitorName,
             position: Config.options.osd.position,
             customX: Config.options.osd.customX, customY: Config.options.osd.customY,
@@ -808,9 +810,9 @@ ContentPage {
         Rectangle {
             anchors.fill: parent
             radius: Appearance.rounding.normal
-            color: Appearance.colors.colLayer0
+            color: MonitorThemes.shellColorForItem(page, "colLayer0", Appearance.colors.colLayer0)
             border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            border.color: MonitorThemes.shellColorForItem(page, "colLayer0Border", Appearance.colors.colLayer0Border)
         }
 
         SecondaryTabBar {
@@ -1095,7 +1097,7 @@ ContentPage {
                         Layout.fillWidth: true
                         text: Translation.tr("Configure bar layout for the selected monitor.")
                         wrapMode: Text.Wrap
-                        color: Appearance.colors.colSubtext
+                        color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                     }
 
                     RippleButtonWithIcon {
@@ -1331,9 +1333,9 @@ ContentPage {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 105
                         radius: Appearance.rounding.normal
-                        color: Appearance.colors.colLayer1
+                        color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                         border.width: 1
-                        border.color: Appearance.colors.colLayer0Border
+                        border.color: MonitorThemes.shellColorForItem(page, "colLayer0Border", Appearance.colors.colLayer0Border)
                         ColumnLayout {
                             anchors {
                                 top: parent.top
@@ -1347,7 +1349,7 @@ ContentPage {
                                 MaterialSymbol {
                                     text: widgetCard.modelData.icon
                                     iconSize: Appearance.font.pixelSize.normal + 5
-                                    color: Appearance.colors.colPrimary
+                                    color: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
                                 }
                                 Item { Layout.fillWidth: true }
                                 ConfigSwitch {
@@ -1386,12 +1388,12 @@ ContentPage {
                             StyledText {
                                 text: widgetCard.modelData.name
                                 font.pixelSize: Appearance.font.pixelSize.normal
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                             }
                             StyledText {
                                 text: widgetCard.effectivelyEnabled ? Translation.tr("Enabled") : Translation.tr("Disabled")
                                 font.pixelSize: Appearance.font.pixelSize.small
-                                color: Appearance.colors.colSubtext
+                                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                             }
                         }
                     }
@@ -1518,7 +1520,7 @@ ContentPage {
                     Layout.fillWidth: true
                     text: Translation.tr("Your own toggle buttons, shown alongside the utility buttons above (not part of the reorderable list yet). \"Command\" keeps a shell command running while on and stops it when toggled off; \"Systemd service\" starts/stops a systemctl --user unit. Icon fields take a Material Symbol name (the same icon font used throughout the shell) - shown live as you type. Same on every monitor.")
                     wrapMode: Text.Wrap
-                    color: Appearance.colors.colSubtext
+                    color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                 }
             }
 
@@ -1526,7 +1528,7 @@ ContentPage {
                 Layout.fillWidth: true
                 visible: (Config.options.bar.customResources ?? []).length > 0
                 radius: Appearance.rounding.normal
-                color: Appearance.colors.colLayer1
+                color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                 implicitHeight: customResourceRows.implicitHeight + 16
 
                 ColumnLayout {
@@ -1619,7 +1621,7 @@ ContentPage {
                     Layout.fillWidth: true
                     text: Translation.tr("Which resources show on the selected monitor's bar. Not set here = same as the default.")
                     wrapMode: Text.Wrap
-                    color: Appearance.colors.colSubtext
+                    color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                 }
 
                 RippleButtonWithIcon {
@@ -1717,7 +1719,7 @@ ContentPage {
                         Layout.fillWidth: true
                         text: Translation.tr("Shared by every visualizer in the shell. Output can follow whichever app is playing, or be pinned to one app or device.")
                         wrapMode: Text.WordWrap
-                        color: Appearance.colors.colSubtext
+                        color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                     }
                 }
 
@@ -1737,7 +1739,7 @@ ContentPage {
                     StyledText {
                         Layout.fillWidth: true
                         text: Translation.tr("Capturing: %1").arg(page.resolvedOutputVisualizerSource())
-                        color: Appearance.colors.colSubtext
+                        color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                         elide: Text.ElideRight
                     }
                 }
@@ -1758,7 +1760,7 @@ ContentPage {
                     StyledText {
                         Layout.fillWidth: true
                         text: Translation.tr("Capturing: %1").arg(page.resolvedInputVisualizerSource())
-                        color: Appearance.colors.colSubtext
+                        color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                         elide: Text.ElideRight
                     }
                 }
@@ -1814,7 +1816,7 @@ ContentPage {
             StyledText {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
-                color: Appearance.colors.colSubtext
+                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                 text: Translation.tr("The monitor setup preview above shows where the ticker, notifications and on-screen display currently sit. Items following the active monitor show mirrored on every monitor there, since the real one is decided live. Click \"Edit positions\" to drag them for real, on your actual screen(s) - dragging one onto a different monitor moves it there too if \"Follow active monitor\" is off.")
             }
 
@@ -1915,6 +1917,12 @@ ContentPage {
                             }
                         }
                     }
+                    ConfigSwitch {
+                        buttonIcon: "open_in_full"
+                        text: Translation.tr("Expand notification popups")
+                        checked: Config.options.notifications.expandPopups
+                        onCheckedChanged: Config.options.notifications.expandPopups = checked
+                    }
                     // "Default", not "Duration": Notifications.qml only falls
                     // back to this when the sender passes expireTimeout < 0,
                     // i.e. asked for no particular duration. A sender's own
@@ -1988,7 +1996,7 @@ ContentPage {
                     Layout.fillHeight: true
                     implicitHeight: mediaCol.implicitHeight + 24
                     radius: Appearance.rounding.normal
-                    color: Appearance.colors.colLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                     border.width: 1
                     border.color: "transparent"
 
@@ -2000,18 +2008,18 @@ ContentPage {
                         MaterialSymbol {
                             text: "music_note_2"
                             iconSize: Appearance.font.pixelSize.huge
-                            color: Appearance.colors.colPrimary
+                            color: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
                         }
                         StyledText {
                             text: Translation.tr("Media Player")
                             font.pixelSize: Appearance.font.pixelSize.normal
                             font.weight: Font.Medium
-                            color: Appearance.colors.colOnLayer1
+                            color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                         }
                         Item { Layout.fillHeight: true }
                         GroupedList {
                             Layout.fillWidth: true
-                            bgcolor: Appearance.colors.colLayer2
+                            bgcolor: MonitorThemes.shellColorForItem(page, "colLayer2", Appearance.colors.colLayer2)
                             ConfigSwitch {
                                 buttonIcon: "check"
                                 text: Translation.tr("Enable")
@@ -2036,7 +2044,7 @@ ContentPage {
                         Layout.fillWidth: true
                         implicitHeight: aiCol.implicitHeight + 24
                         radius: Appearance.rounding.normal
-                        color: Appearance.colors.colLayer1
+                        color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                         border.width: 1
                         border.color: "transparent"
 
@@ -2048,13 +2056,13 @@ ContentPage {
                             MaterialSymbol {
                                 text: "smart_toy"
                                 iconSize: Appearance.font.pixelSize.huge
-                                color: Appearance.colors.colPrimary
+                                color: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
                             }
                             StyledText {
                                 text: Translation.tr("AI")
                                 font.pixelSize: Appearance.font.pixelSize.normal
                                 font.weight: Font.Medium
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                             }
                             ConfigSelectionArray {
                                 Layout.fillWidth: false
@@ -2074,7 +2082,7 @@ ContentPage {
                         Layout.fillWidth: true
                         implicitHeight: weebCol.implicitHeight + 24
                         radius: Appearance.rounding.normal
-                        color: Appearance.colors.colLayer1
+                        color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                         border.width: 1
                         border.color: "transparent"
 
@@ -2086,13 +2094,13 @@ ContentPage {
                             MaterialSymbol {
                                 text: "playing_cards"
                                 iconSize: Appearance.font.pixelSize.huge
-                                color: Appearance.colors.colPrimary
+                                color: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary)
                             }
                             StyledText {
                                 text: Translation.tr("Weeb")
                                 font.pixelSize: Appearance.font.pixelSize.normal
                                 font.weight: Font.Medium
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(page, "colOnLayer1", Appearance.colors.colOnLayer1)
                             }
                             ConfigSelectionArray {
                                 Layout.fillWidth: false
@@ -2115,7 +2123,7 @@ ContentPage {
                 Layout.topMargin: 4
                 implicitHeight: translatorCol.implicitHeight + 24
                 radius: Appearance.rounding.normal
-                color: Appearance.colors.colLayer1
+                color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
                 border.width: 1
                 border.color: "transparent"
 
@@ -2726,7 +2734,7 @@ ContentPage {
                     Layout.fillWidth: true
                     implicitHeight: crosshairCol.implicitHeight + 28
                     radius: Appearance.rounding.normal
-                    color: Appearance.colors.colLayer1
+                    color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
 
                     ColumnLayout {
                         id: crosshairCol
@@ -2761,7 +2769,7 @@ ContentPage {
                                 Layout.fillWidth: true
                                 text: Translation.tr("Press Super+G to open the overlay and pin the crosshair")
                                 font.pixelSize: Appearance.font.pixelSize.smaller
-                                color: Appearance.colors.colSubtext
+                                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
                                 wrapMode: Text.Wrap
                             }
                             RippleButtonWithIcon {

@@ -13,8 +13,14 @@ StyledPopup {
     required property real usage
     required property string sublabel
     required property var detailRows
-    readonly property string longestDetailLabel: detailRows.reduce((longest, row) => row.label.length > longest.length ? row.label : longest, "")
-    readonly property string longestDetailValue: detailRows.reduce((longest, row) => row.value.length > longest.length ? row.value : longest, "")
+    readonly property string longestDetailLabel: detailRows.reduce((longest, row) => {
+        const label = row.label ?? ""
+        return label.length > longest.length ? label : longest
+    }, "")
+    readonly property string longestDetailValue: detailRows.reduce((longest, row) => {
+        const value = row.value ?? ""
+        return value.length > longest.length ? value : longest
+    }, "")
     readonly property real desiredWidth: Math.max(300, Math.min(380,
         (longestDetailLabel.length + longestDetailValue.length) * Appearance.font.pixelSize.small * 0.6 + 60))
 
@@ -145,7 +151,7 @@ StyledPopup {
                         StyledText {
                             visible: detailRow.modelData.section !== undefined
                                 && (detailRow.index === 0 || root.detailRows[detailRow.index - 1].section !== detailRow.modelData.section)
-                            text: detailRow.modelData.section
+                            text: detailRow.modelData.section ?? ""
                             font.pixelSize: Appearance.font.pixelSize.smallest
                             font.weight: Font.DemiBold
                             color: MonitorThemes.shellColorForItem(root, "colOnSurfaceVariant", Appearance.colors.colOnSurfaceVariant)
@@ -155,9 +161,9 @@ StyledPopup {
 
                         StyledPopupValueRow {
                             Layout.fillWidth: true
-                            icon: detailRow.modelData.icon
-                            label: detailRow.modelData.label
-                            value: detailRow.modelData.value
+                            icon: detailRow.modelData.icon ?? ""
+                            label: detailRow.modelData.label ?? ""
+                            value: detailRow.modelData.value ?? ""
                             elideLabel: false
                         }
                     }

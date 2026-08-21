@@ -24,6 +24,13 @@ Scope {
     PanelWindow {
         id: panelWindow
         visible: GlobalStates.settingsOpen
+        property var targetScreen: Quickshell.screens[0]
+        screen: targetScreen
+        readonly property string monitorName: screen?.name ?? ""
+        onScreenChanged: {
+            console.warn(`[FocusStutter DEBUG] settings screen=${screen?.name ?? "null"} visible=${visible}`)
+            MonitorThemes.activateForSurface(panelWindow)
+        }
 
         function hide() {
             GlobalStates.settingsOpen = false;
@@ -43,6 +50,12 @@ Scope {
         }
 
         onVisibleChanged: {
+            if (visible)
+                targetScreen = Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+            if (visible) {
+                console.warn(`[Settings DEBUG] screen=${panelWindow.screen?.name ?? "null"} monitorName=${panelWindow.monitorName} palettes=${Object.keys(MonitorThemes.palettes).join(",")}`)
+                MonitorThemes.activateForSurface(panelWindow)
+            }
             if (visible) {
                 GlobalFocusGrab.addDismissable(panelWindow);
                 settingsWindow.userMoved = false;
@@ -93,9 +106,11 @@ Scope {
             id: settingsWindow
             width: Math.min(parent.width - 64, 1150)
             height: Math.min(parent.height - 64, 760)
-            color: Appearance.colors.colLayer0
+            color: MonitorThemes.shellColorForItem(panelWindow, "colLayer0", Appearance.colors.colLayer0)
             border.width: 1
-            border.color: Appearance.colors.colLayer0Border
+            border.color: MonitorThemes.shellColorForItem(panelWindow, "colLayer0Border", Appearance.colors.colLayer0Border)
+            Behavior on color { ColorAnimation { duration: Appearance.animation.elementMoveFast.duration } }
+            Behavior on border.color { ColorAnimation { duration: Appearance.animation.elementMoveFast.duration } }
             radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 5
             z: 1
 
@@ -138,6 +153,7 @@ Scope {
             }
 
             SettingsContent {
+                monitorName: panelWindow.monitorName
                 anchors.fill: parent
             }
         }

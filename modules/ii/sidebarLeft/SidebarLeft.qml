@@ -116,6 +116,7 @@ Scope { // Scope
     Component.onCompleted: {
         root.sidebarContent = contentComponent.createObject(null, {
             "scopeRoot": root,
+            "monitorName": Hyprland.focusedMonitor?.name ?? "",
         });
         sidebarLoader.item.contentParent.children = [root.sidebarContent];
     }
@@ -142,6 +143,9 @@ Scope { // Scope
         sourceComponent: PanelWindow { // Window
             id: panelWindow
             visible: GlobalStates.sidebarLeftOpen
+            property var targetScreen: Quickshell.screens[0]
+            screen: targetScreen
+            onScreenChanged: console.warn(`[FocusStutter DEBUG] sidebar-left screen=${screen?.name ?? "null"} visible=${visible}`)
             readonly property string monitorName: screen?.name ?? ""
             readonly property bool barVertical: Config.getBarSetting(monitorName, ["vertical"], Config.options.bar.vertical)
             readonly property bool barAtBottom: Config.getBarSetting(monitorName, ["bottom"], Config.options.bar.bottom)
@@ -189,6 +193,12 @@ Scope { // Scope
             }
 
             onVisibleChanged: {
+                if (visible)
+                    targetScreen = Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+                if (visible) {
+                    MonitorThemes.debugSelection("sidebar-left", this)
+                    MonitorThemes.activateForSurface(this)
+                }
                 if (visible) {
                     GlobalFocusGrab.addDismissable(panelWindow);
                 } else {
@@ -215,9 +225,9 @@ Scope { // Scope
                 anchors.leftMargin: Appearance.sizes.hyprlandGapsOut
                 width: panelWindow.sidebarWidth - Appearance.sizes.hyprlandGapsOut - Appearance.sizes.elevationMargin
                 height: parent.height - Appearance.sizes.hyprlandGapsOut * 2
-                color: Appearance.colors.colLayer0
+                color: MonitorThemes.shellColorForItem(panelWindow, "colLayer0", Appearance.colors.colLayer0)
                 border.width: 1
-                border.color: Appearance.colors.colLayer0Border
+                border.color: MonitorThemes.shellColorForItem(panelWindow, "colLayer0Border", Appearance.colors.colLayer0Border)
                 radius: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
 
                 Behavior on width {
@@ -260,7 +270,7 @@ Scope { // Scope
             Rectangle {
                 id: detachedSidebarBackground
                 anchors.fill: parent
-                color: Appearance.colors.colLayer0
+                color: MonitorThemes.shellColorForItem(detachedSidebarRoot, "colLayer0", Appearance.colors.colLayer0)
 
                 Keys.onPressed: (event) => {
                     if (event.modifiers === Qt.ControlModifier) {

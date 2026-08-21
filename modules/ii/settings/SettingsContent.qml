@@ -14,6 +14,7 @@ import qs.modules.common.functions as CF
 Item {
     id: root
     property real contentPadding: 8
+    property string monitorName: ""
     property int currentPage: 0
     property bool showingProfile: false
 
@@ -70,13 +71,6 @@ Item {
 
     Component.onCompleted: {
         Config.readWriteDelay = 0
-        Qt.callLater(() => {
-            for (let i = 0; i < root.pages.length; i++) {
-                let loader = pagesRepeater.itemAt(i)
-                if (loader) loader.active = true
-            }
-            if (profileLoader) profileLoader.active = true
-        })
     }
 
     ColumnLayout {
@@ -95,7 +89,7 @@ Item {
                 Layout.fillHeight: true
                 Layout.margins: 0
                 implicitWidth: navRail.expanded ? 240 : fab.baseSize
-                color: Appearance.m3colors.m3surfaceContainerLow
+                color: MonitorThemes.colorForItem(root, "surface_container_low", Appearance.m3colors.m3surfaceContainerLow)
                 radius: Appearance.rounding.normal
 
                 Behavior on implicitWidth {
@@ -126,12 +120,12 @@ Item {
                             width: 48
                             height: 48
                             radius: width / 2
-                            color: Appearance.colors.colPrimaryContainer
+                            color: MonitorThemes.colorForItem(root, "primary_container", Appearance.colors.colPrimaryContainer)
 
                             Image {
                                 id: avatarImage
                                 anchors.fill: parent
-                                source: Config.options.profile.avatarPicture !== ""
+                                source: Config.options.profile.avatarPicture !== "" 
                                     ? "file://" + Config.options.profile.avatarPicture 
                                     : ""
                                 sourceSize.width: avatarImage.width * 2
@@ -155,7 +149,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: "account_circle"
                                 iconSize: 32
-                                color: Appearance.colors.colOnPrimaryContainer
+                                color: MonitorThemes.colorForItem(root, "on_primary_container", Appearance.colors.colOnPrimaryContainer)
                                 visible: avatarImage.status !== Image.Ready
                             }
                         }
@@ -167,7 +161,7 @@ Item {
                             StyledText {
                                 text: Config.options.profile.displayName === "" ? SystemInfo.username : Config.options.profile.displayName
                                 font.pixelSize: Appearance.font.pixelSize.normal
-                                color: Appearance.colors.colOnLayer1
+                                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                                 font.weight: Font.Medium
                                 elide: Text.ElideRight
                                 Layout.maximumWidth: 100
@@ -176,7 +170,7 @@ Item {
                             StyledText {
                                 id: distroText
                                 font.pixelSize: Appearance.font.pixelSize.smaller
-                                color: Appearance.colors.colSubtext
+                                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
                                 elide: Text.ElideRight
                                 Layout.maximumWidth: 100
 
@@ -200,8 +194,8 @@ Item {
                         gradient: Gradient {
                             orientation: Gradient.Horizontal
                             GradientStop { position: 0.0; color: "transparent" }
-                            GradientStop { position: 0.2; color: Appearance.colors.colOutline }
-                            GradientStop { position: 0.8; color: Appearance.colors.colOutline }
+                            GradientStop { position: 0.2; color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutline) }
+                            GradientStop { position: 0.8; color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutline) }
                             GradientStop { position: 1.0; color: "transparent" }
                         }
                         opacity: 0.15
@@ -246,7 +240,7 @@ Item {
                             width: navRailScroll.width
                             currentIndex: root.currentPage
                             expanded: navRail.expanded
-                            colToggled: root.showingProfile ? "transparent" : Appearance.colors.colSecondaryContainer
+                            colToggled: root.showingProfile ? "transparent" : MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
                             Repeater {
                                 model: root.pages
                                 NavigationRailButton {
