@@ -64,6 +64,7 @@ LazyLoader {
         return bottom ? "right" : "left"
     }
     readonly property real barThickness: barVertical ? Appearance.sizes.verticalBarWidth : Appearance.sizes.barHeight
+    readonly property bool barVisibleOnScreen: PopupPlacement.barInfoFor(root.targetScreen).present
 
     component: PanelWindow {
         id: popupWindow
@@ -109,16 +110,16 @@ LazyLoader {
         margins {
             left: {
                 if (root.barEdge === "right") return 0
-                if (root.barEdge === "left") return root.barThickness
+                if (root.barEdge === "left") return root.barVisibleOnScreen ? root.barThickness : 0
                 return centerOffsetX 
             }
             top: {
                 if (root.barEdge === "bottom") return 0
-                if (root.barEdge === "top") return root.barThickness
+                if (root.barEdge === "top") return root.barVisibleOnScreen ? root.barThickness : 0
                 return centerOffsetY
             }
-            right: root.barEdge === "right" ? root.barThickness : 0
-            bottom: root.barEdge === "bottom" ? root.barThickness : 0
+            right: root.barEdge === "right" && root.barVisibleOnScreen ? root.barThickness : 0
+            bottom: root.barEdge === "bottom" && root.barVisibleOnScreen ? root.barThickness : 0
         }
         WlrLayershell.namespace: "quickshell:popup"
         WlrLayershell.layer: WlrLayer.Overlay

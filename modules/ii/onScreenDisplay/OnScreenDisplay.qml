@@ -115,6 +115,7 @@ Scope {
             id: osdRoot
             color: "transparent"
             screen: PopupPlacement.resolveScreen(Config.options.osd.monitorMode, Config.options.osd.monitorName)
+            readonly property bool barVisibleOnScreen: PopupPlacement.barInfoFor(osdRoot.screen).present
             readonly property var osdMargins: PopupPlacement.barMargins(root.osdPosition, true, root.osdAnchors, root.osdEdgeGap,
                 Config.options.osd.customX, Config.options.osd.customY,
                 osdRoot.screen?.width ?? 0, osdRoot.screen?.height ?? 0,
@@ -141,7 +142,8 @@ Scope {
             // needs pixel-exact placement - letting the compositor silently
             // shift it away from the bar's reserved zone would put it
             // dozens of px from wherever it was actually dropped.
-            exclusionMode: (root.osdPosition === "bar" || root.osdIsCustom) ? ExclusionMode.Ignore : ExclusionMode.Normal
+            exclusionMode: (root.osdPosition === "bar" || root.osdIsCustom || !osdRoot.barVisibleOnScreen)
+                ? ExclusionMode.Ignore : ExclusionMode.Normal
             exclusiveZone: 0
             margins {
                 top: osdRoot.osdMargins.top
