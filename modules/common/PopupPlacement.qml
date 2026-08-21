@@ -242,7 +242,13 @@ Singleton {
             }
             return { top: clampTop(customY * screenH), bottom: 0, left: clampLeft(customX * screenW), right: 0 }
         }
-        const isBar = supportsBar && position === "bar"
+        // `usable` is the monitor area after subtracting the bar's currently
+        // reserved strip. When fullscreen (or an auto-hidden bar) makes that
+        // strip disappear, it is the full monitor and the popup must not add
+        // the configured bar thickness just because the position is "bar".
+        const barVisible = usable
+            && (usable.width < screenW || usable.height < screenH)
+        const isBar = supportsBar && position === "bar" && barVisible
         const barMargin = root.barThickness + root.barGap
         return {
             top: (isBar && anchors.top) ? barMargin : edgeGap,
