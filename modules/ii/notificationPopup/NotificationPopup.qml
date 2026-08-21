@@ -18,6 +18,7 @@ Scope {
         property string monitorName: Config.options.notifications.monitorName ?? ""
 
         screen: PopupPlacement.resolveScreen(root.monitorMode, root.monitorName)
+        readonly property bool barVisibleOnScreen: PopupPlacement.barInfoFor(root.screen).present
 
         property string position: {
             const raw = Config.options.notifications.position ?? "top_right"
@@ -43,7 +44,9 @@ Scope {
         // dropped (confirmed by measuring a real screenshot - see
         // MediaControls.qml's tickerWindow.exclusionMode for the same fix
         // applied there and to OnScreenDisplay.qml).
-        exclusionMode: root.position === "custom" ? ExclusionMode.Ignore : ExclusionMode.Normal
+        exclusionMode: root.position === "custom" || !root.barVisibleOnScreen
+            ? ExclusionMode.Ignore
+            : ExclusionMode.Normal
 
         anchors {
             top: true
