@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import qs.modules.common
+import qs.services
 
 // Shared monitor-resolution and position-preset helpers for OSD-style popups
 // (media ticker, notifications, on-screen display) - see NotificationPopup.qml,
@@ -85,6 +86,13 @@ Singleton {
         const name = screen.name
         const list = Config.options.bar.screenList ?? []
         if (list.length > 0 && !list.includes(name)) return empty
+
+        // A normal fullscreen window buries the bar, so popups must use the
+        // full monitor instead of reserving space for a bar the user cannot
+        // see. Special workspaces keep the bar on the overlay layer.
+        const monitor = HyprlandData.monitors.find(item => item.name === name)
+        const workspace = HyprlandData.workspaceById[monitor?.activeWorkspace?.id]
+        if (workspace?.hasfullscreen && !(monitor?.specialWorkspace?.name ?? "")) return empty
 
         const vertical = Config.getBarSetting(name, ["vertical"], Config.options.bar.vertical)
         const bottom = Config.getBarSetting(name, ["bottom"], Config.options.bar.bottom)
