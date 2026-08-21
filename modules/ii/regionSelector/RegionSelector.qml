@@ -180,7 +180,7 @@ Scope {
         Quickshell.execDetached([
             "bash",
             "-c",
-            `if pgrep wf-recorder >/dev/null; then '${Directories.recordScriptPath}'; else qs ipc --path '${Quickshell.shellPath("shell.qml")}' call region screenshot; fi`
+            `if pgrep wf-recorder >/dev/null; then '${Directories.recordScriptPath}'; else pid=$(pgrep -xo quickshell) && qs ipc --pid "$pid" call region screenshot; fi`
         ])
     }
 
