@@ -21,7 +21,7 @@ QuickToggleModel {
         interval: 300
         repeat: false
         onTriggered: {
-            Quickshell.execDetached(["qs", "ipc", "--path", Quickshell.shellPath(""), "call", "region", "screenshot"]);
+            Quickshell.execDetached(["qs", "ipc", "--path", Quickshell.shellPath("shell.qml"), "call", "region", "screenshot"]);
         }
     }
 
