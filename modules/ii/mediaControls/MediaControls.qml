@@ -130,6 +130,7 @@ Scope {
         sourceComponent: PanelWindow {
             id: panelWindow
             visible: true
+            screen: PopupPlacement.resolveScreen("focused", "")
 
             exclusionMode: ExclusionMode.Ignore
             exclusiveZone: 0
