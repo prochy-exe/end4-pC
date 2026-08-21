@@ -146,15 +146,15 @@ Scope {
             }
             margins {
                 top: {
-                    if (root.barVisibleOnScreen && root.barEdge === "top") return root.barThickness + (root.cornerStyleReducesGap ? -root.gap -6 : root.gap)
-                    if (root.barVisibleOnScreen && root.barEdge === "bottom") return panelWindow.screen.height - root.barThickness - (root.cornerStyleReducesGap ? -root.gap : root.gap) - playerColumnLayout.implicitHeight
+                    if (panelWindow.barVisibleOnScreen && root.barEdge === "top") return root.barThickness + (root.cornerStyleReducesGap ? -root.gap -6 : root.gap)
+                    if (panelWindow.barVisibleOnScreen && root.barEdge === "bottom") return panelWindow.screen.height - root.barThickness - (root.cornerStyleReducesGap ? -root.gap : root.gap) - playerColumnLayout.implicitHeight
                     if (root.mediaPosition === "left") return 0
                     if (root.mediaPosition === "right") return panelWindow.screen.height - playerColumnLayout.implicitHeight - root.gap
                     return (panelWindow.screen.height - playerColumnLayout.implicitHeight) / 2
                 }
                 left: {
-                    if (root.barVisibleOnScreen && root.barEdge === "left") return root.barThickness + (root.cornerStyleReducesGap ? -root.gap : root.gap)
-                    if (root.barVisibleOnScreen && root.barEdge === "right") return panelWindow.screen.width - root.barThickness - (root.cornerStyleReducesGap ? -root.gap : root.gap) - root.widgetWidth
+                    if (panelWindow.barVisibleOnScreen && root.barEdge === "left") return root.barThickness + (root.cornerStyleReducesGap ? -root.gap : root.gap)
+                    if (panelWindow.barVisibleOnScreen && root.barEdge === "right") return panelWindow.screen.width - root.barThickness - (root.cornerStyleReducesGap ? -root.gap : root.gap) - root.widgetWidth
                     if (root.mediaPosition === "left") return 0
                     if (root.mediaPosition === "right") return panelWindow.screen.width - root.widgetWidth - root.gap
                     return (panelWindow.screen.width - root.widgetWidth) / 2
