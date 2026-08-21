@@ -283,9 +283,9 @@ AbstractBackgroundWidget {
                 id: avatarImage
                 anchors.fill: parent
                 anchors.margins: 3
-                source: Config.options.profile.avatarPath !== ""
+                source: Config.options.profile.avatarPicture !== ""
                     ? "file://" + Config.options.profile.avatarPicture
-                    : "file:///home/" + (Quickshell.env("USER") ?? "user") + "/.face"
+                    : ""
                 sourceSize.width: avatarImage.width * 2
                 sourceSize.height: avatarImage.height * 2
                 fillMode: Image.PreserveAspectCrop
@@ -308,7 +308,7 @@ AbstractBackgroundWidget {
                 text: "account_circle"
                 iconSize: 32
                 color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                visible: avatarImage.status === Image.Error
+                visible: avatarImage.status !== Image.Ready
             }
         }
 

@@ -131,9 +131,9 @@ Item {
                             Image {
                                 id: avatarImage
                                 anchors.fill: parent
-                                source: Config.options.profile.avatarPath !== "" 
+                                source: Config.options.profile.avatarPicture !== ""
                                     ? "file://" + Config.options.profile.avatarPicture 
-                                    : "file:///home/" + (Quickshell.env("USER") ?? "user") + "/.face"
+                                    : ""
                                 sourceSize.width: avatarImage.width * 2
                                 sourceSize.height: avatarImage.height * 2
                                 fillMode: Image.PreserveAspectCrop
@@ -156,7 +156,7 @@ Item {
                                 text: "account_circle"
                                 iconSize: 32
                                 color: Appearance.colors.colOnPrimaryContainer
-                                visible: avatarImage.status === Image.Error
+                                visible: avatarImage.status !== Image.Ready
                             }
                         }
 
@@ -188,11 +188,9 @@ Item {
                             }
                         }
 
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: root.showingProfile = !root.showingProfile
-                        }
+                            TapHandler {
+                                onTapped: root.showingProfile = !root.showingProfile
+                            }
                     }
 
                     Rectangle {
@@ -324,7 +322,7 @@ Item {
 
                     Loader {
                         id: profileLoader
-                        active: false
+                        active: Config.ready && (root.showingProfile || item !== null)
                         anchors.fill: parent
                         source: Qt.resolvedUrl("pages/Profile.qml")
 

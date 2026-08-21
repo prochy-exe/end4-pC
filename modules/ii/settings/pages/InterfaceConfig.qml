@@ -62,7 +62,7 @@ ContentPage {
             value: page.currentMonitorBarSetting(monitorSwitch.settingPath, monitorSwitch.fallbackValue)
         }
 
-        onCheckedChanged: page.setCurrentMonitorBarSetting(settingPath, checked)
+        onClicked: page.setCurrentMonitorBarSetting(settingPath, checked)
     }
 
     component CustomResourceRow: ColumnLayout {

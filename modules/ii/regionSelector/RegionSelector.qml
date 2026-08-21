@@ -257,7 +257,7 @@ Scope {
         function recordWithSound() {
             root.recordWithSound()
         }
-        function recordWithOptions(systemAudio, micAudio) {
+        function recordWithOptions(systemAudio: bool, micAudio: bool): void {
             root.recordWithOptions(systemAudio, micAudio)
         }
         function stopRecording() {

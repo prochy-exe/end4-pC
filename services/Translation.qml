@@ -28,7 +28,8 @@ Singleton {
         if (configLang !== "auto")
             return configLang;
 
-        return Qt.locale().name;
+        const systemLocale = Qt.locale().name;
+        return (systemLocale === "C" || systemLocale === "POSIX") ? "en_US" : systemLocale;
     }
 
     TranslationScanner {

@@ -203,9 +203,9 @@ Item {
                                     Image {
                                         id: avatarImage
                                         anchors.fill: parent
-                                        source: Config.options.profile.avatarPath !== "" 
+                                        source: Config.options.profile.avatarPicture !== ""
                                             ? "file://" + Config.options.profile.avatarPicture 
-                                            : "file:///home/" + (Quickshell.env("USER") ?? "user") + "/.face"
+                                            : ""
                                         sourceSize.width: avatarImage.width * 2
                                         sourceSize.height: avatarImage.height * 2
                                         fillMode: Image.PreserveAspectCrop
@@ -227,7 +227,7 @@ Item {
                                         text: "account_circle"
                                         iconSize: 32
                                         color: Appearance.colors.colOnPrimaryContainer
-                                        visible: avatarImage.status === Image.Error
+                                        visible: avatarImage.status !== Image.Ready
                                     }
                                 }
 

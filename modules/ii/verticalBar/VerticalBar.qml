@@ -249,13 +249,6 @@ Scope {
         }
     }
 
-    IpcHandler {
-        target: "bar"
-        function toggle(): void { GlobalStates.barOpen = !GlobalStates.barOpen }
-        function close(): void { GlobalStates.barOpen = false }
-        function open(): void { GlobalStates.barOpen = true }
-    }
-
     GlobalShortcut {
         name: "barToggle"
         description: "Toggles bar on press"

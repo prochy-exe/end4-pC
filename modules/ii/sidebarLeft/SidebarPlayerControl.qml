@@ -44,6 +44,8 @@ Item {
 
     onArtFilePathChanged: {
         if (!root.artUrl || root.artUrl.length == 0) {
+            root.downloaded = false
+            coverArtDownloader.running = false
             root.artDominantColor = Appearance.m3colors.m3secondaryContainer
             return
         }
@@ -58,7 +60,9 @@ Item {
         property string targetFile: root.artUrl
         property string artFilePath: root.artFilePath
         command: ["bash", "-c", `[ -f ${artFilePath} ] || curl -sSL '${targetFile}' -o '${artFilePath}'`]
-        onExited: (exitCode, exitStatus) => { root.downloaded = true }
+        onExited: (exitCode, exitStatus) => {
+            root.downloaded = exitCode === 0 && root.artUrl === targetFile
+        }
     }
 
     ColorQuantizer {

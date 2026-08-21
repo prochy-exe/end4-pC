@@ -113,24 +113,19 @@ ContentPage {
                     }
                 }
             }
-            RowLayout {
-                anchors.bottom: parent.bottom
-                anchors.right: parent.right
-                anchors.margins: 0
-                spacing: 8
-                RippleButton {
-                    buttonText: Translation.tr("Update Dots")
-                    buttonRadius: Appearance.rounding.full
-                    colBackground: Appearance.colors.colPrimaryContainer
-                    colBackgroundHover: Appearance.colors.colPrimaryContainerHover
-                    Layout.preferredHeight: 44
-                    downAction: () => runUpdateDots()
-                    contentItem: StyledText {
-                        text: parent.buttonText
-                        horizontalAlignment: Text.AlignHCenter
-                        leftPadding: 10
-                        rightPadding: 10
-                    }
+            RippleButton {
+                Layout.alignment: Qt.AlignRight | Qt.AlignBottom
+                buttonText: Translation.tr("Update Dots")
+                buttonRadius: Appearance.rounding.full
+                colBackground: Appearance.colors.colPrimaryContainer
+                colBackgroundHover: Appearance.colors.colPrimaryContainerHover
+                Layout.preferredHeight: 44
+                downAction: () => runUpdateDots()
+                contentItem: StyledText {
+                    text: parent.buttonText
+                    horizontalAlignment: Text.AlignHCenter
+                    leftPadding: 10
+                    rightPadding: 10
                 }
             }
         }

@@ -15,7 +15,7 @@ Item {
     id: root
     implicitWidth: Appearance.sizes.verticalBarWidth
     height: parent.height
-    property var screen: root.QsWindow.window?.screen
+    property var screen: root.QsWindow?.window?.screen
 
     readonly property real barPadding: 0
     readonly property string monitorName: root.screen?.name ?? ""
@@ -162,8 +162,8 @@ Item {
                                 source: root.getWidgetUrl(modelData)
                                 onLoaded: {
                                     if (item && "vertical" in item) item.vertical = true
-                                    if (item && item.hasOwnProperty("mirrored"))
-                                        item.mirrored = root.getMirroredForIndex(root.effectiveLeftLayout, index)
+                                    if (item)
+                                        item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveLeftLayout, index)
                                 }
                             }
                         }
@@ -189,8 +189,8 @@ Item {
                             source: root.getWidgetUrl(modelData)
                             onLoaded: {
                                 if (item && "vertical" in item) item.vertical = true
-                                if (item && item.hasOwnProperty("mirrored"))
-                                    item.mirrored = root.getMirroredForIndex(root.effectiveLeftLayout, index)
+                                if (item)
+                                    item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveLeftLayout, index)
                             }
                         }
                     }
@@ -238,8 +238,8 @@ Item {
                                 source: root.getWidgetUrl(modelData)
                                 onLoaded: {
                                     if (item && "vertical" in item) item.vertical = true
-                                    if (item && item.hasOwnProperty("mirrored"))
-                                        item.mirrored = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
+                                    if (item)
+                                        item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
                                 }
                             }
                         }
@@ -265,8 +265,8 @@ Item {
                             source: root.getWidgetUrl(modelData)
                             onLoaded: {
                                 if (item && "vertical" in item) item.vertical = true
-                                if (item && item.hasOwnProperty("mirrored"))
-                                    item.mirrored = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
+                                if (item)
+                                    item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
                             }
                         }
                     }
@@ -315,8 +315,8 @@ Item {
                                 source: root.getWidgetUrl(modelData)
                                 onLoaded: {
                                     if (item && "vertical" in item) item.vertical = true
-                                    if (item && item.hasOwnProperty("mirrored"))
-                                        item.mirrored = root.getMirroredForIndex(root.effectiveRightLayout, index)
+                                    if (item)
+                                        item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveRightLayout, index)
                                 }
                             }
                         }
@@ -342,8 +342,8 @@ Item {
                             source: root.getWidgetUrl(modelData)
                             onLoaded: {
                                 if (item && "vertical" in item) item.vertical = true
-                                if (item && item.hasOwnProperty("mirrored"))
-                                    item.mirrored = root.getMirroredForIndex(root.effectiveRightLayout, index)
+                                if (item)
+                                    item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveRightLayout, index)
                             }
                         }
                     }

@@ -172,8 +172,8 @@ Item {
                                 Layout.fillHeight: true
                                 source: root.getWidgetUrl(modelData)
                                 onLoaded: {
-                                    if (item && item.hasOwnProperty("mirrored"))
-                                        item.mirrored = root.getMirroredForIndex(root.effectiveLeftLayout, index)
+                                    if (item)
+                                        item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveLeftLayout, index)
                                 }
                             }
                         }
@@ -205,8 +205,8 @@ Item {
                             Layout.fillHeight: true
                             source: root.getWidgetUrl(modelData)
                             onLoaded: {
-                                if (item && item.hasOwnProperty("mirrored"))
-                                    item.mirrored = root.getMirroredForIndex(root.effectiveLeftLayout, index)
+                                if (item)
+                                    item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveLeftLayout, index)
                             }
                         }
                     }
@@ -221,8 +221,8 @@ Item {
                         Layout.alignment: Qt.AlignVCenter
                         source: root.getWidgetUrl(modelData)
                         onLoaded: {
-                            if (item && item.hasOwnProperty("mirrored"))
-                                item.mirrored = root.getMirroredForIndex(root.effectiveLeftLayout, index)
+                            if (item)
+                                item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveLeftLayout, index)
                         }
                     }
                 }
@@ -270,8 +270,8 @@ Item {
                                 Layout.fillHeight: true
                                 source: root.getWidgetUrl(modelData)
                                 onLoaded: {
-                                    if (item && item.hasOwnProperty("mirrored"))
-                                        item.mirrored = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
+                                    if (item)
+                                        item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
                                 }
                             }
                         }
@@ -303,8 +303,8 @@ Item {
                             Layout.fillHeight: true
                             source: root.getWidgetUrl(modelData)
                             onLoaded: {
-                                if (item && item.hasOwnProperty("mirrored"))
-                                    item.mirrored = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
+                                if (item)
+                                    item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
                             }
                         }
                     }
@@ -318,8 +318,8 @@ Item {
                         Layout.topMargin: root.currentBottom ? -5 : 3
                         source: root.getWidgetUrl(modelData)
                         onLoaded: {
-                            if (item && item.hasOwnProperty("mirrored"))
-                                item.mirrored = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
+                            if (item)
+                                item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
                         }
                     }
                 }
@@ -368,8 +368,8 @@ Item {
                                 Layout.fillHeight: true
                                 source: root.getWidgetUrl(modelData)
                                 onLoaded: {
-                                    if (item && item.hasOwnProperty("mirrored"))
-                                        item.mirrored = root.getMirroredForIndex(root.effectiveRightLayout, index)
+                                    if (item)
+                                        item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveRightLayout, index)
                                 }
                             }
                         }
@@ -401,8 +401,8 @@ Item {
                             Layout.fillHeight: true
                             source: root.getWidgetUrl(modelData)
                             onLoaded: {
-                                if (item && item.hasOwnProperty("mirrored"))
-                                    item.mirrored = root.getMirroredForIndex(root.effectiveRightLayout, index)
+                                if (item)
+                                    item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveRightLayout, index)
                             }
                         }
                     }
@@ -416,8 +416,8 @@ Item {
                         Layout.topMargin: root.currentBottom ? -5 : 3
                         source: root.getWidgetUrl(modelData)
                         onLoaded: {
-                            if (item && item.hasOwnProperty("mirrored"))
-                                item.mirrored = root.getMirroredForIndex(root.effectiveRightLayout, index)
+                            if (item)
+                                item.LayoutMirroring.enabled = root.getMirroredForIndex(root.effectiveRightLayout, index)
                         }
                     }
                 }

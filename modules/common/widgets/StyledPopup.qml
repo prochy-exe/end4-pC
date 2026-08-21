@@ -21,7 +21,7 @@ LazyLoader {
     readonly property bool ownsHover: !keepOpenWhileHovered || targetHovered || PopupState.activeHoverPopup === root
 
     active: keepOpenWhileHovered
-        ? (ownsHover && (wantsVisible || closeTimer.running) && !raisePulse)
+        ? (wantsVisible || closeTimer.running)
         : targetHovered
 
     function raiseToFront() {
