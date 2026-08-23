@@ -1,2 +1,4 @@
 .superpowers/
 __pycache__/
+scripts/keychron/.kb_link_cache.json
+scripts/keychron/.mouse_profile_count_*.json

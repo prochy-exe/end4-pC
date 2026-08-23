@@ -211,6 +211,7 @@ ContentPage {
         { id: "visualizerInput",   name: Translation.tr("Visualizer (Input)"),   icon: "mic" },
         { id: "hyprlandXkbIndicator",   name: Translation.tr("Keyboard Layout"), icon: "keyboard" },
         { id: "divisor",            name: Translation.tr("Divider"),             icon: "horizontal_distribute" },
+        { id: "keychronIndicator", name: Translation.tr("Keychron Devices"),    icon: "devices" },
     ]
 
     property var utilButtonActions: [
