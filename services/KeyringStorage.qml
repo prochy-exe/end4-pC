@@ -70,23 +70,43 @@ Singleton {
     }
 
     function saveKeyringData() {
-        saveData.stdinEnabled = true;
-        saveData.running = true;
+        // The secret is passed via an environment variable, then written to a
+        // private 0600 temp file for `secret-tool store` to read as its
+        // stdin, rather than written directly over the process's own stdin
+        // pipe with stdinEnabled toggled off afterward to signal "done".
+        // That used to be how this worked, but Process.stdinEnabled set to
+        // false *after* already-true does not reliably close/EOF the pipe --
+        // confirmed directly: secret-tool (like curl reading `-d @-`) reads
+        // stdin until EOF before returning, and sat blocked for a lot longer
+        // than it should have with data written but the pipe still open.
+        // Silently, this meant every saved Bitwarden session/API key
+        // potentially never actually got persisted to the keyring, with no
+        // error raised anywhere. A real file's EOF is unambiguous, so this
+        // sidesteps the unreliable close-the-pipe mechanism entirely.
+        const args = root.propertiesAsArgs
+            .map(a => `'${StringUtils.shellSingleQuoteEscape(a)}'`)
+            .join(" ")
+        saveData.exec({
+            command: ["bash", "-c", [
+                "f=$(mktemp -p \"${XDG_RUNTIME_DIR:-/tmp}\")",
+                "chmod 600 \"$f\"",
+                "printf '%s' \"$KEYRING_SAVE_JSON\" > \"$f\"",
+                `secret-tool store --label='${StringUtils.shellSingleQuoteEscape(root.keyringLabel)}' ${args} < "$f"`,
+                "code=$?",
+                "rm -f \"$f\"",
+                "exit $code"
+            ].join("\n")],
+            environment: { KEYRING_SAVE_JSON: JSON.stringify(root.keyringData) }
+        })
+        root.dataChanged()
     }
 
     Process {
         id: saveData
-        command: [
-            "secret-tool", "store", "--label=" + keyringLabel,
-            ...propertiesAsArgs,
-        ]
-        onRunningChanged: {
-            if (saveData.running) {
-                // console.log("[KeyringStorage] Saving with command: '" + saveData.command.join("' '") + "'");
-                saveData.write(JSON.stringify(root.keyringData));
-                root.dataChanged()
-                stdinEnabled = false // End input stream
-            }
+
+        onExited: (exitCode, exitStatus) => {
+            if (exitCode !== 0)
+                console.error("[KeyringStorage] Failed to save to keyring, exit code:", exitCode)
         }
     }
 

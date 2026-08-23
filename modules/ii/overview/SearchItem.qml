@@ -295,6 +295,29 @@ RippleButton {
                     colBackgroundHover: MonitorThemes.shellColorForItem(root, "colSecondaryContainerHover", Appearance.colors.colSecondaryContainerHover)
                     colRipple: MonitorThemes.shellColorForItem(root, "colSecondaryContainerActive", Appearance.colors.colSecondaryContainerActive)
 
+                    // Countdown ring for the "copy verification code" action
+                    // only, showing how much of the current 30s TOTP window
+                    // is left. Binds straight to Bitwarden.totpSecondsRemaining
+                    // from inside this per-delegate item -- unlike the label
+                    // text fix elsewhere, this can't cause the whole results
+                    // list to rebuild, since it's not part of that model
+                    // construction at all, just a live repaint of this one ring.
+                    CircularProgress {
+                        anchors.centerIn: parent
+                        visible: modelData.showTotpCountdown === true
+                        implicitSize: actionButton.implicitWidth + 4
+                        lineWidth: 2
+                        value: Bitwarden.totpSecondsRemaining / 30
+                        // Snap instantly on the exact tick a new 30s window
+                        // starts (value jumps from ~empty back to full)
+                        // instead of animating a reverse-fill; every other
+                        // tick still animates the normal 1s-at-a-time drain.
+                        enableAnimation: Bitwarden.totpSecondsRemaining !== 30
+                        animationDuration: 900
+                        colPrimary: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                        colSecondary: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+                    }
+
                     contentItem: Item {
                         id: actionContentItem
                         anchors.centerIn: parent

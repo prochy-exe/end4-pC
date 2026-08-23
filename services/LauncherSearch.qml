@@ -16,6 +16,17 @@ Singleton {
 
     property string query: ""
 
+    // Kicks off the actual Bitwarden vault search/status-refresh whenever the
+    // query changes. Deliberately outside the `results` computed property
+    // below (which just reads Bitwarden's state to build result rows) --
+    // see the comment in that property's Bitwarden branch for why.
+    onQueryChanged: {
+        if (root.query.startsWith(Config.options.search.prefix.bitwarden)) {
+            const searchString = StringUtils.cleanPrefix(root.query, Config.options.search.prefix.bitwarden).trim()
+            Bitwarden.triggerSearch(searchString)
+        }
+    }
+
     function ensurePrefix(prefix) {
         if ([Config.options.search.prefix.action, Config.options.search.prefix.app, Config.options.search.prefix.bitwarden, Config.options.search.prefix.clipboard, Config.options.search.prefix.emojis, Config.options.search.prefix.symbols, Config.options.search.prefix.math, Config.options.search.prefix.shellCommand, Config.options.search.prefix.webSearch,].some(i => root.query.startsWith(i))) {
             root.query = prefix + root.query.slice(1);
@@ -360,10 +371,25 @@ Singleton {
             }).filter(Boolean);
         } else if (root.query.startsWith(Config.options.search.prefix.bitwarden)) {
             // Bitwarden
+            // Kicking off the actual search happens in onQueryChanged below,
+            // not here -- calling a mutating function as a side effect of
+            // evaluating this computed property is what caused Qt's binding
+            // loop detector to fire against `results` once Bitwarden's own
+            // state started changing fast enough (bw serve) to sometimes
+            // still be settling while this was being (re-)evaluated.
+            // Deliberately NOT reading Bitwarden.totpSecondsRemaining here (it
+            // used to be, alongside _bwRev) -- that ticks every second via
+            // totpCountdownTimer, and reading it here made this whole
+            // property depend on it, so the *entire* results array got
+            // rebuilt from scratch every second whenever a TOTP-bearing item
+            // was showing. Every list view bound to `results` then saw a
+            // brand new array each second and reset its selection back to
+            // index 0 -- which is what looked like a highlighted row
+            // "pulsing"/refusing to stay selected while navigating. The
+            // per-second countdown label is instead a live Qt.binding() on
+            // just that one action below, so only its own text updates.
             const _bwRev = Bitwarden.revision
-            const _bwTotpRemaining = Bitwarden.totpSecondsRemaining
             const searchString = StringUtils.cleanPrefix(root.query, Config.options.search.prefix.bitwarden).trim();
-            Bitwarden.triggerSearch(searchString)
 
             const buildBitwardenItemResult = (item, recent) => {
                 const itemId = item.id ?? ""
@@ -404,12 +430,19 @@ Singleton {
                             }
                         }),
                         hasTotp ? resultComp.createObject(null, {
-                            name: (Config.options.search.bitwardenTotp?.showCountdown ?? true)
+                            // Qt.binding(): keeps just this label's text live
+                            // (re-evaluated every time totpSecondsRemaining
+                            // ticks) without that dependency leaking out to
+                            // the `results` property itself -- see the note
+                            // above on _bwRev/_bwTotpRemaining for why that
+                            // distinction matters.
+                            name: Qt.binding(() => (Config.options.search.bitwardenTotp?.showCountdown ?? true)
                                 ? Translation.tr("Copy verification code (%1s left)").arg(Bitwarden.totpSecondsRemaining)
-                                : Translation.tr("Copy verification code"),
+                                : Translation.tr("Copy verification code")),
                             iconName: "shield_lock",
                             iconType: LauncherSearchResult.IconType.Material,
                             dismissOnExecute: Config.options.search.bitwardenDismissOnInteract,
+                            showTotpCountdown: true,
                             execute: () => {
                                 Bitwarden.setLastInteracted(item)
                                 Bitwarden.copyTotp(itemId, hasTotp)
@@ -432,11 +465,18 @@ Singleton {
                 return []
             }
 
-            if (["locked", "unauthenticated", "missing-cli", "timeout", "error"].includes(Bitwarden.status)) {
+            // "locked" specifically is now handled by the search field itself
+            // turning into an inline password prompt (see SearchBar.qml) --
+            // showing this guidance row too, on top of that, was a highlighted,
+            // auto-selected "fake" result duplicating the same message right
+            // underneath the actual password field.
+            if (Bitwarden.status === "locked") {
+                return []
+            }
+
+            if (["unauthenticated", "missing-cli", "timeout", "error"].includes(Bitwarden.status)) {
                 const guidance = (() => {
                     switch (Bitwarden.status) {
-                    case "locked":
-                        return Translation.tr("Vault locked")
                     case "unauthenticated":
                         return Translation.tr("Login required")
                     case "missing-cli":

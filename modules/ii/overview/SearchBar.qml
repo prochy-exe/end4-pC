@@ -74,10 +74,48 @@ RowLayout {
         implicitHeight: 40
         focus: GlobalStates.overviewOpen
         font.pixelSize: Appearance.font.pixelSize.small
-        placeholderText: root.searchPrefixType === SearchBar.SearchPrefixType.Bitwarden
-            ? Translation.tr("Type to search Bitwarden vault")
-            : Translation.tr("Search, calculate or run")
+
+        readonly property bool bitwardenLocked: root.searchPrefixType === SearchBar.SearchPrefixType.Bitwarden
+            && Bitwarden.status === "locked"
+
+        // Auto-switches into a masked password field the moment the vault
+        // shows up locked, so the field the user is already typing/focused in
+        // becomes the unlock prompt instead of requiring a separate dialog.
+        echoMode: bitwardenLocked ? TextInput.Password : TextInput.Normal
+        placeholderText: {
+            if (bitwardenLocked) return Translation.tr("Vault locked - enter password")
+            if (root.searchPrefixType === SearchBar.SearchPrefixType.Bitwarden) return Translation.tr("Type to search Bitwarden vault")
+            return Translation.tr("Search, calculate or run")
+        }
         implicitWidth: root.searchingText == "" ? Appearance.sizes.searchWidthCollapsed : Appearance.sizes.searchWidth
+
+        // The "!" mode-switch prefix only needs to live in the text while we
+        // don't yet know the lock state. Once locked, leaving it in would get
+        // echoMode-masked along with the password itself -- rendered as an
+        // extra bullet glued to the front of whatever's typed, with the
+        // placeholder overlay below misaligned next to it (its position was
+        // computed from the prefix's normal glyph width, not its masked
+        // width). Clearing it is safe: root.searchPrefixType is driven by
+        // searchingText, which onTextChanged (below) already freezes the
+        // moment we're locked, so it doesn't fall back to a different mode
+        // just because the field is now empty.
+        onBitwardenLockedChanged: {
+            if (bitwardenLocked) {
+                searchInput.text = ""
+            } else if (searchInput.text === "") {
+                // bitwardenLocked can only have just been true (searchPrefixType
+                // was already Bitwarden, and onTextChanged above blocks anything
+                // from changing that classification while locked), so reaching
+                // false here means we were locked and just stopped being locked
+                // -- almost always a successful unlock. Restore the mode prefix
+                // so the field is a ready, empty Bitwarden search box instead of
+                // a plain unmarked one that falls through to the global search
+                // on the next keystroke. Without this, only fully closing and
+                // reopening via Super+B (which re-sets the prefix itself) got
+                // back into Bitwarden search mode.
+                searchInput.text = Config.options.search.prefix.bitwarden
+            }
+        }
 
         Behavior on implicitWidth {
             id: searchWidthBehavior
@@ -89,9 +127,32 @@ RowLayout {
             }
         }
 
-        onTextChanged: LauncherSearch.query = text
+        // Don't feed a partially-typed master password into the live search
+        // (would spam pointless "!<password chars so far>" vault lookups).
+        // Also catches a gap onBitwardenLockedChanged (above) has on its own:
+        // that only fires on an actual locked-state *transition*. Reopening
+        // Bitwarden mode while it was already locked from before (no new
+        // transition, since it's still just as locked as when it was closed)
+        // sets the field's text back to the "!" prefix via setSearchingText()
+        // without ever re-triggering that handler -- leaving the leading "!"
+        // in place for whatever gets typed next, silently turning a correct
+        // password into "!<password>" and making a real password look wrong.
+        onTextChanged: {
+            if (bitwardenLocked) {
+                if (text === Config.options.search.prefix.bitwarden)
+                    searchInput.text = ""
+                return
+            }
+            LauncherSearch.query = text
+        }
 
         onAccepted: {
+            if (bitwardenLocked) {
+                const password = searchInput.text
+                searchInput.text = ""
+                Bitwarden.unlockWithPassword(password)
+                return
+            }
             if (appResults.count > 0) {
                 // Get the first visible delegate and trigger its click
                 let firstItem = appResults.itemAtIndex(0);
@@ -114,7 +175,10 @@ RowLayout {
         // Entering Bitwarden mode sets the field's text to the prefix itself
         // (e.g. "!"), so it's never actually empty and the native
         // placeholderText above never gets a chance to show. This overlay hint
-        // fills that in once nothing's typed past the prefix.
+        // fills that in once nothing's typed past the prefix. Only needed for
+        // the not-yet-locked case now -- once locked, searchInput.text gets
+        // cleared to "" (see onBitwardenLockedChanged above), so the native
+        // placeholderText shows correctly on its own without this overlay.
         TextMetrics {
             id: bitwardenPrefixMetrics
             font: searchInput.font
@@ -125,6 +189,7 @@ RowLayout {
             anchors.left: parent.left
             anchors.leftMargin: searchInput.leftPadding + bitwardenPrefixMetrics.width
             visible: root.searchPrefixType === SearchBar.SearchPrefixType.Bitwarden
+                && !searchInput.bitwardenLocked
                 && searchInput.text === Config.options.search.prefix.bitwarden
             text: Translation.tr("Type to search Bitwarden vault")
             color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
