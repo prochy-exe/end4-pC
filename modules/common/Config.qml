@@ -847,6 +847,12 @@ Singleton {
                 // key/bind press (e.g. a song ending and the next one
                 // starting on its own).
                 property bool tickerOnTrackChange: false
+                // Skips showing the ticker if the player's own app window is
+                // already visible (mapped, on a workspace currently shown on
+                // some monitor) - matched by desktopEntry/identity against
+                // open windows' class, so there's no point popping up a
+                // ticker for something already on screen.
+                property bool tickerHideIfPlayerVisible: true
                 // "focused" follows whichever monitor currently has input
                 // focus; "specific" pins to tickerMonitorName regardless.
                 property string tickerMonitorMode: "focused"

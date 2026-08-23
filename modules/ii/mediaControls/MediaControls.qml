@@ -272,8 +272,25 @@ Scope {
         }
     }
 
+    // Best-effort match: player.desktopEntry/identity (lowercased) against
+    // open windows' class - close enough for the common case (a player's
+    // desktopEntry is normally the same string apps set as their window
+    // class), but not a guaranteed match for every player.
+    function isPlayerWindowVisible(player) {
+        if (!player) return false
+        const ident = MprisController.playerIdentifier(player)
+        if (!ident) return false
+        return HyprlandData.windowList.some(win => {
+            const cls = (win.class || "").toLowerCase()
+            if (!cls) return false
+            if (cls !== ident && !cls.includes(ident) && !ident.includes(cls)) return false
+            return win.mapped !== false && win.visible !== false
+        })
+    }
+
     function triggerTicker(player) {
         if (GlobalStates.mediaControlsOpen || !Config.options.media.tickerEnabled) return
+        if (Config.options.media.tickerHideIfPlayerVisible && root.isPlayerWindowVisible(player)) return
         root.tickerPlayer = player
         GlobalStates.mediaTickerOpen = true
         tickerTimeout.restart()

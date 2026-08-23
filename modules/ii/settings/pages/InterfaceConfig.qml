@@ -1858,6 +1858,11 @@ ContentPage {
                         checked: Config.options.media.tickerOnTrackChange
                         onCheckedChanged: Config.options.media.tickerOnTrackChange = checked
                     }
+                    ConfigSwitch {
+                        text: Translation.tr("Hide if the player's window is visible")
+                        checked: Config.options.media.tickerHideIfPlayerVisible
+                        onCheckedChanged: Config.options.media.tickerHideIfPlayerVisible = checked
+                    }
                     ConfigComboBox {
                         text: Translation.tr("Position")
                         buttonIcon: "picture_in_picture"
