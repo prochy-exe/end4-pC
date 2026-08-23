@@ -14,6 +14,12 @@ LazyLoader {
     property real popupBackgroundMargin: 0
 
     property bool keepOpenWhileHovered: false
+    // Popups are mouse-only by default (matches every existing one - none of
+    // them take keyboard input), so the window itself never requests focus.
+    // Set true from a popup that embeds something like a TextField (only
+    // while that field is actually meant to be usable) to let it receive
+    // key events at all.
+    property bool wantsKeyboardFocus: false
     property int hoverCloseDelay: 120
     property bool popupHovered: false
     // Set while a different popup is taking over, to force this one to close
@@ -111,6 +117,8 @@ LazyLoader {
 
         // Bring contentItem reference into this scope
         property Item innerContent: root.contentItem
+
+        WlrLayershell.keyboardFocus: root.wantsKeyboardFocus ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
         color: "transparent"
         anchors.left: root.barEdge !== "right"
