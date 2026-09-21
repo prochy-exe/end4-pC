@@ -15,7 +15,9 @@ Item {
     property bool isMaterial: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle) === 3
     property bool mirrored: false
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
-    readonly property bool isPlaying: activePlayer?.isPlaying ?? false
+    readonly property bool isPlaying: sourceType === "input"
+        ? points.length > 0
+        : (activePlayer?.isPlaying ?? false)
     readonly property list<real> points: sourceType === "input"
         ? GlobalStates.visualizerInputPoints
         : (GlobalStates.visualizerOutputPoints.length > 0 ? GlobalStates.visualizerOutputPoints : GlobalStates.visualizerPoints)

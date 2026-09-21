@@ -63,7 +63,13 @@ Scope {
                 property bool monitorHasFullscreen: HyprlandData.workspaceById[thisMonitorData?.activeWorkspace?.id]?.hasfullscreen ?? false
                 property bool monitorHasSpecialOpen: (thisMonitorData?.specialWorkspace?.name ?? "") !== ""
                 exclusionMode: ExclusionMode.Ignore
-                exclusiveZone: (currentAutoHideEnable && (!mustShow || !currentAutoHidePushWindows)) ? 0 : Appearance.sizes.baseBarHeight + (currentCornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0) + (currentCornerStyle === 2 ? -6 : 0)
+                // No reserved strip on a monitor whose own workspace is fullscreen (unless a
+                // special workspace keeps the bar on top of it) - otherwise the fullscreen
+                // window is left with an empty gap where the now-hidden bar used to reserve
+                // space. monitorHasFullscreen/monitorHasSpecialOpen are already this bar's own
+                // monitor, so this is naturally per-monitor: other monitors keep their padding.
+                exclusiveZone: (monitorHasFullscreen && !monitorHasSpecialOpen) ? 0
+                    : (currentAutoHideEnable && (!mustShow || !currentAutoHidePushWindows)) ? 0 : Appearance.sizes.baseBarHeight + (currentCornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0) + (currentCornerStyle === 2 ? -6 : 0)
                 WlrLayershell.namespace: "quickshell:bar"
                 // Overlay layer only while special workspace sits on top of a fullscreen window on this monitor,
                 // else Top layer so fullscreen apps cover the bar as normal (Hyprland buries Top layer under fullscreen+special).
@@ -104,9 +110,9 @@ Scope {
                 }
 
                 margins {
-                    top: currentCornerStyle === 3 ? 5 : 0
+                    top: currentCornerStyle === 3 ? Appearance.sizes.hyprlandGapsOut : 0
                     right: (Config.options.interactions.deadPixelWorkaround.enable && barRoot.anchors.right) * -1
-                    bottom: (Config.options.interactions.deadPixelWorkaround.enable && barRoot.anchors.bottom) * -1 || currentCornerStyle === 3 ? 5 : 0
+                    bottom: (Config.options.interactions.deadPixelWorkaround.enable && barRoot.anchors.bottom) * -1 || currentCornerStyle === 3 ? Appearance.sizes.hyprlandGapsOut : 0
                 }
 
                 // Include in focus grab

@@ -128,7 +128,7 @@ MouseArea { // Notification group area
         anchors.left: parent.left
         width: parent.width
         color: popup ? Appearance.colors.colBackgroundSurfaceContainer : MonitorThemes.shellColorForItem(root, "colLayer2", Appearance.colors.colLayer2)
-        radius: Appearance.rounding.normal
+        radius: popup ? Appearance.rounding.popupRounding : Appearance.rounding.normal
         anchors.leftMargin: root.xOffset
 
         Behavior on anchors.leftMargin {

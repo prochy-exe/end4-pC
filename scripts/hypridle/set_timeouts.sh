@@ -1,25 +1,28 @@
 #!/usr/bin/env bash
-# Writes the idle->lock and idle->suspend listener timeouts into
-# hypridle.conf and restarts hypridle so they take effect (hypridle has no
-# config live-reload/signal, so a restart is the only way).
+# Writes the idle->lock, idle->screen-off, and idle->suspend listener
+# timeouts into hypridle.conf and restarts hypridle so they take effect
+# (hypridle has no config live-reload/signal, so a restart is the only way).
 #
-# Usage: set_timeouts.sh <lock_timeout_sec> <sleep_after_lock_sec>
+# Usage: set_timeouts.sh <lock_timeout_sec> <sleep_after_lock_sec> <dpms_delay_sec>
 #   lock_timeout_sec:     idle seconds before the lock screen activates
 #   sleep_after_lock_sec: additional idle seconds after that before suspend
+#   dpms_delay_sec:       additional idle seconds after the lock before the display powers off
 set -euo pipefail
 
 LOCK_TIMEOUT="$1"
 SLEEP_AFTER_LOCK="$2"
+DPMS_DELAY="$3"
+DPMS_TIMEOUT=$((LOCK_TIMEOUT + DPMS_DELAY))
 SUSPEND_TIMEOUT=$((LOCK_TIMEOUT + SLEEP_AFTER_LOCK))
 CONF="$HOME/.config/hypr/hypridle.conf"
 
 [[ -f "$CONF" ]] || exit 0
 
-python3 - "$CONF" "$LOCK_TIMEOUT" "$SUSPEND_TIMEOUT" <<'PY'
+python3 - "$CONF" "$LOCK_TIMEOUT" "$DPMS_TIMEOUT" "$SUSPEND_TIMEOUT" <<'PY'
 import re
 import sys
 
-path, lock_timeout, suspend_timeout = sys.argv[1], sys.argv[2], sys.argv[3]
+path, lock_timeout, dpms_timeout, suspend_timeout = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 
 with open(path) as f:
     content = f.read()
@@ -39,10 +42,12 @@ def set_timeout(block, seconds):
 
 def rewrite_listener(match):
     block = match.group(0)
-    # Identify the listener by its on-timeout command rather than position,
+    # Identify each listener by its on-timeout command rather than position,
     # so this stays correct if blocks get reordered.
     if "on-timeout" in block and "loginctl lock-session" in block:
         return set_timeout(block, lock_timeout)
+    if "dpms" in block and '"disable"' in block:
+        return set_timeout(block, dpms_timeout)
     if "$suspend_cmd" in block:
         return set_timeout(block, suspend_timeout)
     return block

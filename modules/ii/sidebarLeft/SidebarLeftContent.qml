@@ -25,7 +25,8 @@ Item {
         ...(root.aiChatEnabled ? [{"icon": "neurology", "name": Translation.tr("Intelligence")}] : []),
         ...(root.translatorEnabled ? [{"icon": "translate", "name": Translation.tr("Translator")}] : []),
         ...(root.mediaEnabled ? [{"icon": "music_note", "name": Translation.tr("Media")}] : []),
-        ...((root.animeEnabled && !root.animeCloset) ? [{"icon": "bookmark_heart", "name": Translation.tr("Anime")}] : [])
+        ...((root.animeEnabled && !root.animeCloset) ? [{"icon": "bookmark_heart", "name": Translation.tr("Anime")}] : []),
+        {"icon": "image_search", "name": Translation.tr("Reverse Search")}
     ]
     property int tabCount: swipeView.count
 
@@ -49,7 +50,9 @@ Item {
         }
         if (root.animeEnabled && !root.animeCloset) {
             if (request === "anime") return index
+            index += 1
         }
+        if (request === "reversesearch" || request === "reverse search" || request === "reverse-search") return index
         return -1
     }
 
@@ -235,6 +238,7 @@ Item {
                     ...(root.mediaEnabled ? [media.createObject()] : []),
                     ...((root.tabButtonList.length === 0 || (!root.aiChatEnabled && !root.translatorEnabled && root.animeCloset)) ? [placeholder.createObject()] : []),
                     ...(root.animeEnabled ? [anime.createObject()] : []),
+                    reverseSearch.createObject(),
                 ]
             }
         }
@@ -254,6 +258,10 @@ Item {
         Component {
             id: anime
             Anime {}
+        }
+        Component {
+            id: reverseSearch
+            ReverseSearch {}
         }
         Component {
             id: placeholder

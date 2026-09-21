@@ -17,18 +17,24 @@ Scope {
     // Same preset/anchor scheme as the media ticker (MediaControls.qml) -
     // "bar" hugs whichever edge the bar is on (default, matches the OSD's
     // original hardcoded look), corner/edge/center presets are independent
-    // of the bar, "custom" is anchored top+left, or bottom+left if
-    // osdCustomAnchor is "bottom", with free positioning expressed through
-    // pixel margins alone. PopupPlacement.qml is the single source of truth
-    // for this (also used by the popup editor/preview so they can't
-    // silently drift from what actually renders); "true" here (unlike the
-    // ticker) means the OSD's "bar" preset also hugs a vertical bar's edge,
-    // not just a horizontal one.
+    // of the bar. PopupPlacement.qml is the single source of truth for this
+    // (also used by the preview so it can't silently drift from what
+    // actually renders); "true" here (unlike the ticker) means the OSD's
+    // "bar" preset also hugs a vertical bar's edge, not just a horizontal
+    // one.
     readonly property string osdPosition: Config.options.osd.position
-    readonly property bool osdIsCustom: root.osdPosition === "custom"
-    readonly property real osdEdgeGap: Appearance.sizes.hyprlandGapsOut
-    readonly property string osdCustomAnchor: Config.options.osd.customAnchor
-    readonly property var osdAnchors: PopupPlacement.barAnchors(root.osdPosition, true, true, root.osdCustomAnchor)
+    // OsdValueIndicator's card sits inset by elevationMargin inside this
+    // window (room for its own drop shadow - see OsdValueIndicator.qml), so
+    // anchoring the WINDOW at a plain gapsOut margin would leave the visible
+    // card sitting elevationMargin further from the screen edge than an
+    // actual tiled window at the same gap. Subtracting it here cancels that
+    // inset out, so the card's real edge lands exactly at gapsOut like a
+    // window's does; the now-oversized window can spill past the screen
+    // edge, which is harmless since it's transparent and only its shadow
+    // occupies that extra space (a real window's shadow gets clipped by the
+    // screen edge the same way).
+    readonly property real osdEdgeGap: Appearance.sizes.hyprlandGapsOut - Appearance.sizes.elevationMargin
+    readonly property var osdAnchors: PopupPlacement.barAnchors(root.osdPosition, true, true)
 
     property string currentIndicator: "volume"
     property var indicators: [
@@ -97,6 +103,14 @@ Scope {
         }
     }
 
+    // Audio bridge (dx5ii/wamp) volume and output changes get their own
+    // dedicated OSD (modules/ii/audioBridge/AudioBridgeOsd.qml), not this
+    // shared one - that one needs to be draggable/interactive, which this
+    // system's hover-to-dismiss MouseArea below would fight against, and
+    // combining an output-change with the volume-change it often triggers
+    // into one merged card isn't something this single-indicator-at-a-time
+    // system does cleanly.
+
     Connections {
         // Listen to protection triggers
         target: Audio
@@ -117,10 +131,12 @@ Scope {
             screen: PopupPlacement.resolveScreen(Config.options.osd.monitorMode, Config.options.osd.monitorName)
             readonly property bool barVisibleOnScreen: PopupPlacement.barInfoFor(osdRoot.screen).present
             readonly property var osdMargins: PopupPlacement.barMargins(root.osdPosition, true, root.osdAnchors, root.osdEdgeGap,
-                Config.options.osd.customX, Config.options.osd.customY,
                 osdRoot.screen?.width ?? 0, osdRoot.screen?.height ?? 0,
-                root.osdCustomAnchor, osdRoot.implicitWidth, osdRoot.implicitHeight,
-                PopupPlacement.usableRectFor(osdRoot.screen))
+                PopupPlacement.usableRectFor(osdRoot.screen),
+                // Unlike the ticker/Super+M menu, the OSD isn't part of the
+                // bar - it wants a real gap between itself and the bar, not
+                // just enough margin to reach it.
+                Appearance.sizes.hyprlandGapsOut)
 
             WlrLayershell.namespace: "quickshell:onScreenDisplay"
             WlrLayershell.layer: WlrLayer.Overlay
@@ -138,11 +154,7 @@ Scope {
             // this is conditional: "bar" hugs the bar with an already-exact
             // margin and shouldn't also be pushed by its exclusive zone;
             // named presets should respect it, matching NotificationPopup.qml.
-            // "custom" ALSO ignores it, since a freely-dragged position
-            // needs pixel-exact placement - letting the compositor silently
-            // shift it away from the bar's reserved zone would put it
-            // dozens of px from wherever it was actually dropped.
-            exclusionMode: (root.osdPosition === "bar" || root.osdIsCustom || !osdRoot.barVisibleOnScreen)
+            exclusionMode: (root.osdPosition === "bar" || !osdRoot.barVisibleOnScreen)
                 ? ExclusionMode.Ignore : ExclusionMode.Normal
             exclusiveZone: 0
             margins {
@@ -156,10 +168,8 @@ Scope {
             implicitHeight: columnLayout.implicitHeight
             visible: osdLoader.active
 
-            // Real size -> popup editor, so its dot sits on the real OSD
-            // rather than on PopupPlacement's static estimate of it. See
-            // PopupPlacement.reportFootprint() for why the estimate being a
-            // little off turns into a permanently offset drag target.
+            // Real size -> preview canvas, so its marker sits on the real
+            // OSD rather than on PopupPlacement's static estimate of it.
             function reportFootprint() {
                 PopupPlacement.reportFootprint("osd", osdRoot.implicitWidth, osdRoot.implicitHeight)
             }
@@ -229,7 +239,7 @@ Scope {
                                 property real padding: 10
                                 implicitHeight: protectionMessageRowLayout.implicitHeight + padding * 2
                                 implicitWidth: protectionMessageRowLayout.implicitWidth + padding * 2
-                                radius: Appearance.rounding.normal
+                                radius: Appearance.rounding.popupRounding
 
                                 RowLayout {
                                     id: protectionMessageRowLayout

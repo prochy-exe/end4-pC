@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 
 import qs.modules.common
+import qs.modules.ii.audioBridge
 import qs.modules.ii.background
 import qs.modules.ii.bar
 import qs.modules.ii.cheatsheet
@@ -13,7 +14,6 @@ import qs.modules.ii.onScreenDisplay
 import qs.modules.ii.onScreenKeyboard
 import qs.modules.ii.overview
 import qs.modules.ii.polkit
-import qs.modules.ii.popupEditor
 import qs.modules.ii.settings
 import qs.modules.ii.regionSelector
 import qs.modules.ii.recordingInput
@@ -29,6 +29,8 @@ import qs.modules.ii.desktopMenu
 import qs.modules.ii.dropover
 
 Scope {
+    PanelLoader { component: AudioBridge {} }
+    PanelLoader { component: AudioBridgeOsd {} }
     PanelLoader { component: Bar {} }
     PanelLoader { component: Background {} }
     PanelLoader { component: Cheatsheet {} }
@@ -41,7 +43,6 @@ Scope {
     PanelLoader { component: Overlay {} }
     PanelLoader { component: Overview {} }
     PanelLoader { component: Polkit {} }
-    PanelLoader { component: PopupEditorOverlay {} }
     PanelLoader { component: RegionSelector {} }
     PanelLoader { component: ScreenCorners {} }
     PanelLoader { component: ScreenTranslator {} }

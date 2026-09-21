@@ -727,8 +727,8 @@ ContentPage {
     // approximation, so what appears here is guaranteed identical to real
     // usage.
     function previewAll() {
-        Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x qs | head -n1) && qs ipc --pid \"$pid\" call mediaTicker trigger"])
-        Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x qs | head -n1) && qs ipc --pid \"$pid\" call osdVolume trigger"])
+        Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x 'qs|quickshell' | head -n1) && qs ipc --pid \"$pid\" call mediaTicker trigger"])
+        Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x 'qs|quickshell' | head -n1) && qs ipc --pid \"$pid\" call osdVolume trigger"])
         Quickshell.execDetached(["notify-send", Translation.tr("Preview"), Translation.tr("This is what a real notification looks like."), "-a", "Shell"])
     }
 
@@ -736,23 +736,14 @@ ContentPage {
         Config.options.media.tickerPosition = "bar"
         Config.options.media.tickerMonitorMode = "focused"
         Config.options.media.tickerMonitorName = ""
-        Config.options.media.tickerCustomX = 0.5
-        Config.options.media.tickerCustomY = 0.5
-        Config.options.media.tickerCustomAnchor = "top"
 
         Config.options.notifications.position = "top_right"
         Config.options.notifications.monitorMode = "focused"
         Config.options.notifications.monitorName = ""
-        Config.options.notifications.customX = 0.7
-        Config.options.notifications.customY = 0.7
-        Config.options.notifications.customAnchor = "top"
 
         Config.options.osd.position = "bar"
         Config.options.osd.monitorMode = "focused"
         Config.options.osd.monitorName = ""
-        Config.options.osd.customX = 0.5
-        Config.options.osd.customY = 0.5
-        Config.options.osd.customAnchor = "top"
     }
 
     readonly property var positionModel: [
@@ -765,7 +756,6 @@ ContentPage {
         { displayName: Translation.tr("Bottom left"), value: "bottom_left" },
         { displayName: Translation.tr("Bottom center"), value: "bottom_center" },
         { displayName: Translation.tr("Bottom right"), value: "bottom_right" },
-        { displayName: Translation.tr("Custom (set via live editor)"), value: "custom" },
     ]
     readonly property var positionModelWithBar: [{ displayName: Translation.tr("Follow bar"), value: "bar" }].concat(page.positionModel)
     // Fed to the shared MonitorSetupCanvas below (used to be Popup
@@ -778,24 +768,18 @@ ContentPage {
             accentColor: MonitorThemes.shellColorForItem(page, "colPrimary", Appearance.colors.colPrimary),
             monitorMode: Config.options.media.tickerMonitorMode, monitorName: Config.options.media.tickerMonitorName,
             position: Config.options.media.tickerPosition,
-            customX: Config.options.media.tickerCustomX, customY: Config.options.media.tickerCustomY,
-            customAnchor: Config.options.media.tickerCustomAnchor,
         },
         {
             id: "notifications", label: Translation.tr("Notifications"), iconName: "notifications",
             accentColor: MonitorThemes.shellColorForItem(page, "colTertiary", Appearance.colors.colTertiary),
             monitorMode: Config.options.notifications.monitorMode, monitorName: Config.options.notifications.monitorName,
             position: Config.options.notifications.position,
-            customX: Config.options.notifications.customX, customY: Config.options.notifications.customY,
-            customAnchor: Config.options.notifications.customAnchor,
         },
         {
             id: "osd", label: Translation.tr("On-screen display"), iconName: "tune",
             accentColor: MonitorThemes.shellColorForItem(page, "colSecondary", Appearance.colors.colSecondary),
             monitorMode: Config.options.osd.monitorMode, monitorName: Config.options.osd.monitorName,
             position: Config.options.osd.position,
-            customX: Config.options.osd.customX, customY: Config.options.osd.customY,
-            customAnchor: Config.options.osd.customAnchor,
         },
     ]
     MonitorConfigOption { id: monitorConfig }
@@ -1078,6 +1062,180 @@ ContentPage {
                             monitorConfig.updateMonitor(page.selectedMonitorIndex, { y: value })
                             monitorConfig.applyAndSave(page.selectedMonitorIndex)
                         }
+                    }
+                }
+            }
+        }
+        ContentSection {
+            icon: "control_camera"
+            shape: MaterialShape.Shape.Pentagon
+            title: Translation.tr("Popup positions")
+
+            StyledText {
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
+                text: Translation.tr("The monitor setup preview above shows where the ticker, notifications and on-screen display currently sit. Items following the active monitor show mirrored on every monitor there, since the real one is decided live.")
+            }
+
+            RowLayout {
+                Layout.topMargin: 4
+                spacing: 8
+                RippleButtonWithIcon {
+                    materialIcon: "visibility"
+                    mainText: Translation.tr("Preview")
+                    downAction: () => page.previewAll()
+                }
+                RippleButtonWithIcon {
+                    materialIcon: "restart_alt"
+                    mainText: Translation.tr("Reset to defaults")
+                    downAction: () => page.resetToDefaults()
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Media ticker")
+                tooltip: Translation.tr("A small popup that flashes briefly whenever a media key/bind changes playback - album art, title/artist and the visualizer background, nothing clickable.")
+
+                GroupedList {
+                    // Moved here from ServicesConfig.qml's Media > Ticker
+                    // subsection, which is now gone: everything about this
+                    // popup lives on this page, alongside the other two.
+                    ConfigSwitch {
+                        text: Translation.tr("Enable ticker")
+                        checked: Config.options.media.tickerEnabled
+                        onCheckedChanged: Config.options.media.tickerEnabled = checked
+                    }
+                    ConfigSwitch {
+                        text: Translation.tr("Also flash on auto track change")
+                        checked: Config.options.media.tickerOnTrackChange
+                        onCheckedChanged: Config.options.media.tickerOnTrackChange = checked
+                    }
+                    ConfigSwitch {
+                        text: Translation.tr("Hide if the player's window is visible")
+                        checked: Config.options.media.tickerHideIfPlayerVisible
+                        onCheckedChanged: Config.options.media.tickerHideIfPlayerVisible = checked
+                    }
+                    ConfigComboBox {
+                        text: Translation.tr("Position")
+                        buttonIcon: "picture_in_picture"
+                        currentValue: Config.options.media.tickerPosition
+                        onSelected: newValue => Config.options.media.tickerPosition = newValue
+                        model: page.positionModelWithBar
+                    }
+                    ConfigSwitch {
+                        buttonIcon: "my_location"
+                        text: Translation.tr("Follow active monitor")
+                        checked: Config.options.media.tickerMonitorMode === "focused"
+                        onCheckedChanged: {
+                            if (checked) {
+                                Config.options.media.tickerMonitorMode = "focused"
+                            } else {
+                                Config.options.media.tickerMonitorMode = "specific"
+                                page.ensureSpecificMonitor(
+                                    () => Config.options.media.tickerMonitorName,
+                                    v => Config.options.media.tickerMonitorName = v)
+                            }
+                        }
+                    }
+                    ConfigSpinBox {
+                        icon: "timer"
+                        text: Translation.tr("Duration (ms)")
+                        value: Config.options.media.tickerTimeout
+                        from: 500; to: 8000; stepSize: 250
+                        onValueChanged: Config.options.media.tickerTimeout = value
+                    }
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Notifications")
+                tooltip: Translation.tr("The timeout here is a fallback: it only applies to notifications that don't ask for a duration of their own. An app that requests one is respected, and one that asks to stay until dismissed still does.")
+
+                GroupedList {
+                    ConfigComboBox {
+                        text: Translation.tr("Position")
+                        buttonIcon: "my_location"
+                        currentValue: Config.options.notifications.position
+                        onSelected: newValue => Config.options.notifications.position = newValue
+                        model: page.positionModel
+                    }
+                    ConfigSwitch {
+                        buttonIcon: "my_location"
+                        text: Translation.tr("Follow active monitor")
+                        checked: Config.options.notifications.monitorMode === "focused"
+                        onCheckedChanged: {
+                            if (checked) {
+                                Config.options.notifications.monitorMode = "focused"
+                            } else {
+                                Config.options.notifications.monitorMode = "specific"
+                                page.ensureSpecificMonitor(
+                                    () => Config.options.notifications.monitorName,
+                                    v => Config.options.notifications.monitorName = v)
+                            }
+                        }
+                    }
+                    ConfigSwitch {
+                        buttonIcon: "open_in_full"
+                        text: Translation.tr("Expand notification popups")
+                        checked: Config.options.notifications.expandPopups
+                        onCheckedChanged: Config.options.notifications.expandPopups = checked
+                    }
+                    // "Default", not "Duration": Notifications.qml only falls
+                    // back to this when the sender passes expireTimeout < 0,
+                    // i.e. asked for no particular duration. A sender's own
+                    // value wins, and expireTimeout == 0 means "until
+                    // dismissed" and gets no timer at all - so this number
+                    // genuinely does not apply to every notification.
+                    ConfigSpinBox {
+                        icon: "timer"
+                        text: Translation.tr("Default timeout (ms)")
+                        value: Config.options.notifications.timeout
+                        from: 1000; to: 30000; stepSize: 500
+                        onValueChanged: Config.options.notifications.timeout = value
+                    }
+                }
+            }
+
+            ContentSubsection {
+                title: Translation.tr("On-screen display")
+                tooltip: Translation.tr("Volume, brightness and gamma indicators.")
+
+                GroupedList {
+                    ConfigComboBox {
+                        text: Translation.tr("Position")
+                        buttonIcon: "tune"
+                        currentValue: Config.options.osd.position
+                        onSelected: newValue => Config.options.osd.position = newValue
+                        model: page.positionModelWithBar
+                    }
+                    ConfigSwitch {
+                        buttonIcon: "my_location"
+                        text: Translation.tr("Follow active monitor")
+                        checked: Config.options.osd.monitorMode === "focused"
+                        onCheckedChanged: {
+                            if (checked) {
+                                Config.options.osd.monitorMode = "focused"
+                            } else {
+                                Config.options.osd.monitorMode = "specific"
+                                page.ensureSpecificMonitor(
+                                    () => Config.options.osd.monitorName,
+                                    v => Config.options.osd.monitorName = v)
+                            }
+                        }
+                    }
+                    // Same range/step as the copy that remains in
+                    // InterfaceConfig.qml's On-screen display section - both
+                    // write the one config value, so they stay in sync either
+                    // way, but mismatched bounds would let one page offer a
+                    // number the other refuses (and, because a ConfigSpinBox
+                    // writes its clamped value back, silently rewrite it).
+                    ConfigSpinBox {
+                        icon: "av_timer"
+                        text: Translation.tr("Timeout (ms)")
+                        value: Config.options.osd.timeout
+                        from: 100; to: 8000; stepSize: 100
+                        onValueChanged: Config.options.osd.timeout = value
                     }
                 }
             }
@@ -1811,185 +1969,6 @@ ContentPage {
             }
         }
         ContentSection {
-            icon: "control_camera"
-            shape: MaterialShape.Shape.Pentagon
-            title: Translation.tr("Popup positions")
-
-            StyledText {
-                Layout.fillWidth: true
-                wrapMode: Text.Wrap
-                color: MonitorThemes.shellColorForItem(page, "colSubtext", Appearance.colors.colSubtext)
-                text: Translation.tr("The monitor setup preview above shows where the ticker, notifications and on-screen display currently sit. Items following the active monitor show mirrored on every monitor there, since the real one is decided live. Click \"Edit positions\" to drag them for real, on your actual screen(s) - dragging one onto a different monitor moves it there too if \"Follow active monitor\" is off.")
-            }
-
-            RowLayout {
-                Layout.topMargin: 4
-                spacing: 8
-                RippleButtonWithIcon {
-                    materialIcon: "edit"
-                    mainText: Translation.tr("Edit positions")
-                    downAction: () => GlobalStates.popupEditorOpen = true
-                }
-                RippleButtonWithIcon {
-                    materialIcon: "visibility"
-                    mainText: Translation.tr("Preview")
-                    downAction: () => page.previewAll()
-                }
-                RippleButtonWithIcon {
-                    materialIcon: "restart_alt"
-                    mainText: Translation.tr("Reset to defaults")
-                    downAction: () => page.resetToDefaults()
-                }
-            }
-
-            ContentSubsection {
-                title: Translation.tr("Media ticker")
-                tooltip: Translation.tr("A small popup that flashes briefly whenever a media key/bind changes playback - album art, title/artist and the visualizer background, nothing clickable.")
-
-                GroupedList {
-                    // Moved here from ServicesConfig.qml's Media > Ticker
-                    // subsection, which is now gone: everything about this
-                    // popup lives on this page, alongside the other two.
-                    ConfigSwitch {
-                        text: Translation.tr("Enable ticker")
-                        checked: Config.options.media.tickerEnabled
-                        onCheckedChanged: Config.options.media.tickerEnabled = checked
-                    }
-                    ConfigSwitch {
-                        text: Translation.tr("Also flash on auto track change")
-                        checked: Config.options.media.tickerOnTrackChange
-                        onCheckedChanged: Config.options.media.tickerOnTrackChange = checked
-                    }
-                    ConfigSwitch {
-                        text: Translation.tr("Hide if the player's window is visible")
-                        checked: Config.options.media.tickerHideIfPlayerVisible
-                        onCheckedChanged: Config.options.media.tickerHideIfPlayerVisible = checked
-                    }
-                    ConfigComboBox {
-                        text: Translation.tr("Position")
-                        buttonIcon: "picture_in_picture"
-                        currentValue: Config.options.media.tickerPosition
-                        onSelected: newValue => Config.options.media.tickerPosition = newValue
-                        model: page.positionModelWithBar
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "my_location"
-                        text: Translation.tr("Follow active monitor")
-                        checked: Config.options.media.tickerMonitorMode === "focused"
-                        onCheckedChanged: {
-                            if (checked) {
-                                Config.options.media.tickerMonitorMode = "focused"
-                            } else {
-                                Config.options.media.tickerMonitorMode = "specific"
-                                page.ensureSpecificMonitor(
-                                    () => Config.options.media.tickerMonitorName,
-                                    v => Config.options.media.tickerMonitorName = v)
-                            }
-                        }
-                    }
-                    ConfigSpinBox {
-                        icon: "timer"
-                        text: Translation.tr("Duration (ms)")
-                        value: Config.options.media.tickerTimeout
-                        from: 500; to: 8000; stepSize: 250
-                        onValueChanged: Config.options.media.tickerTimeout = value
-                    }
-                }
-            }
-
-            ContentSubsection {
-                title: Translation.tr("Notifications")
-                tooltip: Translation.tr("The timeout here is a fallback: it only applies to notifications that don't ask for a duration of their own. An app that requests one is respected, and one that asks to stay until dismissed still does.")
-
-                GroupedList {
-                    ConfigComboBox {
-                        text: Translation.tr("Position")
-                        buttonIcon: "my_location"
-                        currentValue: Config.options.notifications.position
-                        onSelected: newValue => Config.options.notifications.position = newValue
-                        model: page.positionModel
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "my_location"
-                        text: Translation.tr("Follow active monitor")
-                        checked: Config.options.notifications.monitorMode === "focused"
-                        onCheckedChanged: {
-                            if (checked) {
-                                Config.options.notifications.monitorMode = "focused"
-                            } else {
-                                Config.options.notifications.monitorMode = "specific"
-                                page.ensureSpecificMonitor(
-                                    () => Config.options.notifications.monitorName,
-                                    v => Config.options.notifications.monitorName = v)
-                            }
-                        }
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "open_in_full"
-                        text: Translation.tr("Expand notification popups")
-                        checked: Config.options.notifications.expandPopups
-                        onCheckedChanged: Config.options.notifications.expandPopups = checked
-                    }
-                    // "Default", not "Duration": Notifications.qml only falls
-                    // back to this when the sender passes expireTimeout < 0,
-                    // i.e. asked for no particular duration. A sender's own
-                    // value wins, and expireTimeout == 0 means "until
-                    // dismissed" and gets no timer at all - so this number
-                    // genuinely does not apply to every notification.
-                    ConfigSpinBox {
-                        icon: "timer"
-                        text: Translation.tr("Default timeout (ms)")
-                        value: Config.options.notifications.timeout
-                        from: 1000; to: 30000; stepSize: 500
-                        onValueChanged: Config.options.notifications.timeout = value
-                    }
-                }
-            }
-
-            ContentSubsection {
-                title: Translation.tr("On-screen display")
-                tooltip: Translation.tr("Volume, brightness and gamma indicators.")
-
-                GroupedList {
-                    ConfigComboBox {
-                        text: Translation.tr("Position")
-                        buttonIcon: "tune"
-                        currentValue: Config.options.osd.position
-                        onSelected: newValue => Config.options.osd.position = newValue
-                        model: page.positionModelWithBar
-                    }
-                    ConfigSwitch {
-                        buttonIcon: "my_location"
-                        text: Translation.tr("Follow active monitor")
-                        checked: Config.options.osd.monitorMode === "focused"
-                        onCheckedChanged: {
-                            if (checked) {
-                                Config.options.osd.monitorMode = "focused"
-                            } else {
-                                Config.options.osd.monitorMode = "specific"
-                                page.ensureSpecificMonitor(
-                                    () => Config.options.osd.monitorName,
-                                    v => Config.options.osd.monitorName = v)
-                            }
-                        }
-                    }
-                    // Same range/step as the copy that remains in
-                    // InterfaceConfig.qml's On-screen display section - both
-                    // write the one config value, so they stay in sync either
-                    // way, but mismatched bounds would let one page offer a
-                    // number the other refuses (and, because a ConfigSpinBox
-                    // writes its clamped value back, silently rewrite it).
-                    ConfigSpinBox {
-                        icon: "av_timer"
-                        text: Translation.tr("Timeout (ms)")
-                        value: Config.options.osd.timeout
-                        from: 100; to: 8000; stepSize: 100
-                        onValueChanged: Config.options.osd.timeout = value
-                    }
-                }
-            }
-        }
-        ContentSection {
             icon: "splitscreen_left"
             shape: MaterialShape.Shape.Clover4Leaf
             title: Translation.tr("Left Sidebar")
@@ -2555,6 +2534,7 @@ ContentPage {
                 ConfigSwitch {
                     buttonIcon: "widgets"
                     text: Translation.tr("Show Widgets")
+                    infoText: Translation.tr("Master switch. Per-monitor and per-widget overrides are in the desktop widgets menu (right-click → Widgets).")
                     checked: Config.options.lock.showWidgets
                     onCheckedChanged: { Config.options.lock.showWidgets = checked }
                 }
@@ -2587,6 +2567,16 @@ ContentPage {
                         }
                     }
                     ConfigSpinBox {
+                        icon: "brightness_low"
+                        text: Translation.tr("Screen off after lock (sec)")
+                        value: Config.options.lock.dpmsDelaySec
+                        from: 0; to: 120; stepSize: 5
+                        onValueChanged: {
+                            Config.options.lock.dpmsDelaySec = value;
+                            idleTimeoutsDebounce.restart();
+                        }
+                    }
+                    ConfigSpinBox {
                         icon: "bedtime"
                         text: Translation.tr("Sleep after lock (min)")
                         value: Config.options.lock.sleepAfterLockTimeoutSec / 60
@@ -2608,7 +2598,8 @@ ContentPage {
                         Quickshell.execDetached([
                             Directories.hypridleSetTimeoutsScriptPath,
                             `${Config.options.lock.idleTimeoutSec}`,
-                            `${Config.options.lock.sleepAfterLockTimeoutSec}`
+                            `${Config.options.lock.sleepAfterLockTimeoutSec}`,
+                            `${Config.options.lock.dpmsDelaySec}`
                         ]);
                     }
                 }

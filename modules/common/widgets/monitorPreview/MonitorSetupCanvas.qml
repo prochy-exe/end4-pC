@@ -30,8 +30,7 @@ Item {
     property var monitorConfig
     property string selectedMonitorName: ""
     // [{ id, label, iconName, accentColor, monitorMode, monitorName,
-    // position, customX, customY, customAnchor }, ...] - same shape the old
-    // MonitorPreviewCanvas took.
+    // position }, ...] - same shape the old MonitorPreviewCanvas took.
     property var popupItems: []
     property real padding: 20
     property var previewPositions: ({})
@@ -145,7 +144,7 @@ Item {
             if (!belongsHere) continue
             const footprint = PopupPlacement.footprintFor(item.id)
             const usable = PopupPlacement.usableRectFor({ name: monitor.name, width: logW, height: logH })
-            const rect = PopupPlacement.realRectFor(item.id, item.position, item.customX, item.customY, logW, logH, item.customAnchor, usable)
+            const rect = PopupPlacement.realRectFor(item.id, item.position, logW, logH, usable)
             const fx = (rect.x + footprint.width / 2) / logW
             const fy = (rect.y + footprint.height / 2) / logH
             raw.push(Object.assign({}, item, { fx, fy }))
@@ -322,11 +321,8 @@ Item {
             }
         }
 
-        // Reuses the same read-only marker the live popup editor draws for
-        // every OTHER monitor (PopupEditorWindow.qml) - modules/common/widgets/
-        // monitorPreview/PopupPositionIndicator.qml - rather than
-        // reimplementing it, so this preview and the live editor can never
-        // drift apart visually.
+        // modules/common/widgets/monitorPreview/PopupPositionIndicator.qml -
+        // a read-only marker for where each popup currently lands.
         Repeater {
             model: monRect.placements
             delegate: PopupPositionIndicator {
@@ -353,37 +349,6 @@ Item {
             opacity: 0.6
         }
 
-        Rectangle {
-            visible: monRect.isPrimaryMonitor
-            anchors.top: parent.top
-            anchors.right: parent.right
-            anchors.margins: 6
-            radius: Appearance.rounding.full
-            color: monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) : MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
-            border.width: 1
-            border.color: monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-            implicitHeight: 24
-            implicitWidth: primaryRow.implicitWidth + 12
-
-            RowLayout {
-                id: primaryRow
-                anchors.centerIn: parent
-                spacing: 4
-
-                MaterialSymbol {
-                    text: "home_pin"
-                    iconSize: 14
-                    color: monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                }
-
-                StyledText {
-                    text: Translation.tr("Primary")
-                    font.pixelSize: Appearance.font.pixelSize.small
-                    color: monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer) : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                }
-            }
-        }
-
         Column {
             anchors.centerIn: parent
             spacing: 2
@@ -397,17 +362,34 @@ Item {
                     : MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
             }
 
-            StyledText {
+            // The primary-monitor tag used to be a separate badge pinned to
+            // the rect's top-right corner - which is also right where a
+            // top_right-positioned popup (e.g. the default notification
+            // spot) draws its own marker, so the two would overlap. Shown
+            // inline next to the name instead, so it can't cover anything.
+            Row {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: monRect.monitor?.name ?? ""
-                font.pixelSize: Math.max(9, Math.min(13, monRect.width * 0.1))
-                font.weight: Font.Medium
-                color: monRect.monitor.disabled ? MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
-                    : monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                    : MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
-                elide: Text.ElideMiddle
-                width: Math.min(implicitWidth, monRect.width - 8)
-                horizontalAlignment: Text.AlignHCenter
+                spacing: 2
+
+                MaterialSymbol {
+                    visible: monRect.isPrimaryMonitor
+                    anchors.verticalCenter: nameText.verticalCenter
+                    text: "home_pin"
+                    iconSize: nameText.font.pixelSize
+                    color: nameText.color
+                }
+
+                StyledText {
+                    id: nameText
+                    text: monRect.monitor?.name ?? ""
+                    font.pixelSize: Math.max(9, Math.min(13, monRect.width * 0.1))
+                    font.weight: Font.Medium
+                    color: monRect.monitor.disabled ? MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
+                        : monRect.isSelected ? MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                        : MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
+                    elide: Text.ElideMiddle
+                    width: Math.min(implicitWidth, monRect.width - 8 - (monRect.isPrimaryMonitor ? font.pixelSize + 2 : 0))
+                }
             }
 
             StyledText {

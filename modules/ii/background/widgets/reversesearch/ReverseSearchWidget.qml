@@ -13,20 +13,15 @@ import qs.modules.ii.background.widgets
 AbstractBackgroundWidget {
     id: root
 
-    configEntryName: "images"
+    configEntryName: "reverseSearch"
 
-    property list<var> formatOptions: [
-        { displayName: "PNG",  icon: "image",            value: "png"  },
-        { displayName: "JPG",  icon: "photo",            value: "jpg"  },
-        { displayName: "WEBP", icon: "motion_photos_on", value: "webp" },
-        { displayName: "AVIF", icon: "hd",               value: "avif" },
-        { displayName: "BMP",  icon: "grid_on",          value: "bmp"  },
-        { displayName: "TIFF", icon: "photo_library",    value: "tiff" },
-        { displayName: "PDF",  icon: "picture_as_pdf",   value: "pdf"  },
+    property list<var> engineOptions: [
+        { displayName: "SauceNAO", icon: "auto_awesome", value: "saucenao" },
+        { displayName: "IQDB",     icon: "image_search",  value: "iqdb"     },
     ]
 
-    property string selectedFormat: "webp"
-    property string dropStatus: "idle"   // idle | hover | converting | done | error
+    property string selectedEngine: "saucenao"
+    property string dropStatus: "idle"   // idle | hover | searching | done | error
     property string statusMessage: ""
 
     readonly property var acceptedExtensions: ["png","jpg","jpeg","webp","avif","bmp","gif","tiff","tif"]
@@ -34,21 +29,35 @@ AbstractBackgroundWidget {
     property var fileQueue: []
     property int queueTotal: 0
     property int queueDone: 0
-    property var batchPaths: []
 
     implicitWidth:  276
     implicitHeight: 252
 
+    function engineEndpoint(engine) {
+        if (engine === "iqdb") {
+            return { url: "https://iqdb.org/", origin: "https://iqdb.org/", extraForm: "" }
+        }
+        return { url: "https://saucenao.com/search.php", origin: "https://saucenao.com/", extraForm: "-F 'database=999'" }
+    }
+
+    function buildSearchScript(path) {
+        const endpoint = root.engineEndpoint(root.selectedEngine)
+        const p = StringUtils.shellSingleQuoteEscape(path)
+        return `out=$(mktemp --suffix=.html) && printf '<base href="${endpoint.origin}">' > "$out" && curl -sS --max-time 25 -A 'Mozilla/5.0' -F 'file=@${p}' ${endpoint.extraForm} '${endpoint.url}' >> "$out" && xdg-open "$out"`
+    }
+
+    function startSearch(path) {
+        searcher.command = ["bash", "-c", root.buildSearchScript(path)]
+        searcher.running = true
+    }
+
     Process {
-        id: converter
-        property string inputPath: ""
-        property string outputPath: ""
-        command: ["ffmpeg", "-y", "-i", inputPath, outputPath]
+        id: searcher
         onExited: (exitCode) => {
             root.queueDone++
             if (exitCode !== 0) {
                 root.dropStatus = "error"
-                root.statusMessage = "Failed: " + inputPath.replace(/.*\//, "")
+                root.statusMessage = "Search failed. Is curl/xdg-open installed?"
                 root.fileQueue = []
                 root.queueTotal = 0
                 root.queueDone = 0
@@ -56,35 +65,19 @@ AbstractBackgroundWidget {
                 return
             }
             if (root.fileQueue.length > 0) {
-                root.statusMessage = "Converting " + root.queueDone + " / " + root.queueTotal + "..."
-                processNext()
+                const next = root.fileQueue[0]
+                root.fileQueue = root.fileQueue.slice(1)
+                root.statusMessage = "Searching " + (root.queueDone + 1) + " / " + root.queueTotal + "..."
+                root.startSearch(next)
             } else {
                 root.dropStatus = "done"
                 root.statusMessage = root.queueTotal === 1
-                    ? "Saved: " + outputPath.replace(/.*\//, "")
-                    : root.queueTotal + " files converted"
+                    ? "Opened in browser"
+                    : root.queueTotal + " searches opened"
                 root.queueTotal = 0
                 root.queueDone = 0
                 resetTimer.start()
             }
-        }
-    }
-
-    Process {
-        id: pdfMaker
-        property string outputPath: ""
-        onExited: (exitCode) => {
-            if (exitCode === 0) {
-                root.dropStatus = "done"
-                root.statusMessage = root.batchPaths.length === 1
-                    ? "Saved: " + outputPath.replace(/.*\//, "")
-                    : root.batchPaths.length + " pages → " + outputPath.replace(/.*\//, "")
-            } else {
-                root.dropStatus = "error"
-                root.statusMessage = "PDF failed.\nIs ImageMagick installed?"
-            }
-            root.batchPaths = []
-            resetTimer.start()
         }
     }
 
@@ -93,14 +86,6 @@ AbstractBackgroundWidget {
         interval: 3500
         repeat: false
         onTriggered: root.dropStatus = "idle"
-    }
-
-    function processNext() {
-        var next = root.fileQueue[0]
-        root.fileQueue = root.fileQueue.slice(1)
-        converter.inputPath  = next
-        converter.outputPath = next.replace(/\.[^/.]+$/, "") + "_converted." + root.selectedFormat
-        converter.running = true
     }
 
     function decodeFileUri(raw) {
@@ -115,42 +100,28 @@ AbstractBackgroundWidget {
         var valid = []
         for (var i = 0; i < urls.length; i++) {
             var cleanPath = root.decodeFileUri(urls[i].toString().replace(/^file:\/\//, ""))
+            if (cleanPath.length === 0) continue
             var ext = cleanPath.split(".").pop().toLowerCase()
             if (root.acceptedExtensions.indexOf(ext) !== -1)
                 valid.push(cleanPath)
         }
         if (valid.length === 0) {
             root.dropStatus = "error"
-            root.statusMessage = "No supported files dropped."
+            root.statusMessage = "No supported image found."
             resetTimer.start()
             return
         }
 
-        root.dropStatus = "converting"
-
-        if (root.selectedFormat === "pdf") {
-            root.batchPaths = valid
-            root.statusMessage = valid.length === 1
-                ? "Converting to PDF..."
-                : "Merging " + valid.length + " images into PDF..."
-            var outPdf = valid[0].replace(/\.[^/.]+$/, "") + (valid.length > 1 ? "_merged" : "_converted") + ".pdf"
-            pdfMaker.outputPath = outPdf
-            pdfMaker.command = ["convert"].concat(valid).concat([outPdf])
-            pdfMaker.running = true
-            return
-        }
-
+        root.dropStatus = "searching"
         root.fileQueue  = valid.slice(1)
         root.queueTotal = valid.length
         root.queueDone  = 0
-        root.statusMessage = valid.length > 1 ? "Converting 0 / " + valid.length + "..." : "Converting..."
-        converter.inputPath  = valid[0]
-        converter.outputPath = valid[0].replace(/\.[^/.]+$/, "") + "_converted." + root.selectedFormat
-        converter.running = true
+        root.statusMessage = valid.length > 1 ? "Searching 1 / " + valid.length + "..." : "Searching..."
+        root.startSearch(valid[0])
     }
 
     function pasteFromClipboard() {
-        if (root.dropStatus === "converting") return
+        if (root.dropStatus === "searching") return
         pasteReader.running = true
     }
 
@@ -182,7 +153,7 @@ AbstractBackgroundWidget {
     }
 
     function openFilePicker() {
-        if (root.dropStatus === "converting") return
+        if (root.dropStatus === "searching") return
         filePicker.running = true
     }
 
@@ -222,7 +193,7 @@ AbstractBackgroundWidget {
                 font.pixelSize: Appearance.font.pixelSize.smaller
                 color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                 opacity: 0.4
-                text: "PNG · JPG · WEBP · AVIF · BMP · PDF · TIFF"
+                text: "Reverse Image Search"
             }
 
             Rectangle {
@@ -233,7 +204,7 @@ AbstractBackgroundWidget {
                 color: {
                     switch (root.dropStatus) {
                         case "hover":      return MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
-                        case "converting": return MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+                        case "searching":  return MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
                         case "done":       return MonitorThemes.shellColorForItem(root, "colTertiaryContainer", Appearance.colors.colTertiaryContainer)
                         case "error":      return Qt.rgba(
                                                 MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError).r,
@@ -245,7 +216,7 @@ AbstractBackgroundWidget {
                 border.color: {
                     switch (root.dropStatus) {
                         case "hover":      return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                        case "converting": return MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
+                        case "searching":  return MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary)
                         case "done":       return MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
                         case "error":      return MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
                         default:           return MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
@@ -259,8 +230,8 @@ AbstractBackgroundWidget {
                 MaterialLoadingIndicator {
                     anchors.centerIn: parent
                     anchors.verticalCenterOffset: -14
-                    visible: root.dropStatus === "converting"
-                    loading: root.dropStatus === "converting"
+                    visible: root.dropStatus === "searching"
+                    loading: root.dropStatus === "searching"
                     colBg: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                     colShape: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                     implicitSize: 48
@@ -269,7 +240,7 @@ AbstractBackgroundWidget {
                 MaterialSymbol {
                     anchors.centerIn: parent
                     anchors.verticalCenterOffset: -14
-                    visible: root.dropStatus !== "converting"
+                    visible: root.dropStatus !== "searching"
                     iconSize: 32
                     fill: root.dropStatus === "done" ? 1 : 0
                     color: {
@@ -285,7 +256,7 @@ AbstractBackgroundWidget {
                             case "hover": return "download"
                             case "done":  return "check_circle"
                             case "error": return "error"
-                            default:      return root.selectedFormat === "pdf" ? "picture_as_pdf" : "image"
+                            default:      return "image_search"
                         }
                     }
                 }
@@ -299,21 +270,21 @@ AbstractBackgroundWidget {
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     color: {
                         switch (root.dropStatus) {
-                            case "hover":  return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                            case "done":   return MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
-                            case "error":  return MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
-                            default:       return MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+                            case "hover":     return MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                            case "done":      return MonitorThemes.shellColorForItem(root, "colTertiary", Appearance.colors.colTertiary)
+                            case "error":     return MonitorThemes.shellColorForItem(root, "colError", Appearance.colors.colError)
+                            default:          return MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                         }
                     }
                     opacity: root.dropStatus === "idle" ? 0.6 : 1.0
                     text: {
                         switch (root.dropStatus) {
-                            case "idle":       return "Drop, paste, or click to convert to ." + root.selectedFormat.toUpperCase()
-                            case "hover":      return "Release to convert to ." + root.selectedFormat.toUpperCase()
-                            case "converting": return root.statusMessage
-                            case "done":       return root.statusMessage
-                            case "error":      return root.statusMessage
-                            default:           return ""
+                            case "idle":      return "Drop, paste, or click to search"
+                            case "hover":     return "Release to search"
+                            case "searching": return root.statusMessage
+                            case "done":      return root.statusMessage
+                            case "error":     return root.statusMessage
+                            default:          return ""
                         }
                     }
                     Behavior on opacity { animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this) }
@@ -321,7 +292,7 @@ AbstractBackgroundWidget {
 
                 MouseArea {
                     anchors.fill: parent
-                    enabled: root.dropStatus !== "converting"
+                    enabled: root.dropStatus !== "searching"
                     onClicked: root.openFilePicker()
                 }
 
@@ -329,7 +300,7 @@ AbstractBackgroundWidget {
                     anchors.top: parent.top
                     anchors.right: parent.right
                     anchors.margins: 6
-                    visible: root.dropStatus !== "converting"
+                    visible: root.dropStatus !== "searching"
                     onClicked: root.pasteFromClipboard()
 
                     MaterialSymbol {
@@ -361,6 +332,14 @@ AbstractBackgroundWidget {
                         }
                     }
                 }
+
+                Keys.onPressed: (event) => {
+                    if ((event.key === Qt.Key_V) && (event.modifiers & Qt.ControlModifier)) {
+                        root.pasteFromClipboard()
+                        event.accepted = true
+                    }
+                }
+                focus: true
             }
 
             RowLayout {
@@ -369,7 +348,7 @@ AbstractBackgroundWidget {
 
                 StyledText {
                     Layout.leftMargin: 3
-                    text: "Convert to:"
+                    text: "Search with:"
                     font.pixelSize: Appearance.font.pixelSize.small
                     color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
                     opacity: 0.7
@@ -378,20 +357,20 @@ AbstractBackgroundWidget {
 
                 StyledComboBox {
                     Layout.fillWidth: true
-                    model: root.formatOptions
+                    model: root.engineOptions
                     colBackground: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                     colBackgroundHover: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
-                    colBackgroundActive: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow) // same color I didn't like the hover
+                    colBackgroundActive: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
                     textRole: "displayName"
                     valueRole: "value"
                     currentIndex: {
                         for (var i = 0; i < model.length; i++) {
-                            if (model[i].value === root.selectedFormat) return i;
+                            if (model[i].value === root.selectedEngine) return i;
                         }
                         return 0;
                     }
                     onActivated: (index) => {
-                        root.selectedFormat = model[index].value
+                        root.selectedEngine = model[index].value
                     }
                 }
             }

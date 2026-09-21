@@ -50,6 +50,7 @@ ShellRoot {
     }
 
     Component.onCompleted: {
+        Idle.resyncInhibitor()
         MaterialThemeLoader.reapplyTheme()
         Hyprsunset.load()
         FirstRunExperience.load()

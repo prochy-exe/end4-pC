@@ -1,11 +1,37 @@
+import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Io
+import Quickshell.Hyprland
 
 Item {
     id: root
+    property var liveBinds: []
+
+    Process {
+        id: liveBindsProc
+        command: ["hyprctl", "binds", "-j"]
+        running: true
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.liveBinds = JSON.parse(text)
+                } catch (error) {
+                    console.warn("[Cheatsheet] Could not read active shortcuts:", error)
+                }
+            }
+        }
+    }
+
+    Connections {
+        target: Hyprland
+        function onRawEvent(event) {
+            if (event.name === "configreloaded") liveBindsProc.running = true
+        }
+    }
 
     readonly property var sectionIcons: ({
         "Apps": "apps",
@@ -19,17 +45,29 @@ Item {
         "Custom": "terminal",
     })
 
-    // Merges default (rebindable) and user-created custom keybinds into one
-    // flat, always-current list - reflects rebinds/disables/custom binds live,
-    // since it reads straight from KeybindManager (same source the Keybinds
-    // settings page uses). Disabled shortcuts (no key bound) are hidden.
+    // Include named active bindings that are not managed by Settings.
     function allEntries() {
         const defaults = KeybindManager.keybinds
             .filter(kb => !kb.disabled)
             .map(kb => ({ description: kb.description, section: kb.section, key: kb.currentKey }))
         const custom = KeybindManager.customKeybinds
             .map(c => ({ description: c.description, section: c.section, key: c.key }))
-        return [...defaults, ...custom]
+        const entries = [...defaults, ...custom]
+        const descriptions = new Set(entries.map(entry => entry.description))
+        const seen = new Set()
+        for (const bind of root.liveBinds) {
+            if (!bind.description || descriptions.has(bind.description)) continue
+            const modifiers = [[64, "SUPER"], [4, "CTRL"], [8, "ALT"], [1, "SHIFT"],
+                [2, "CAPS"], [16, "MOD2"], [32, "MOD3"], [128, "MOD5"]]
+                .filter(([mask]) => bind.modmask & mask).map(([, name]) => name)
+            const key = [...modifiers, bind.key || `code:${bind.keycode}`].join(" + ")
+            const identity = JSON.stringify([bind.description, key, bind.submap])
+            if (seen.has(identity)) continue
+            seen.add(identity)
+            const section = bind.description.includes(":") ? bind.description.split(":")[0] : "Custom"
+            entries.push({ description: bind.description, section, key })
+        }
+        return entries
     }
 
     function sectionNames() {
@@ -65,19 +103,20 @@ Item {
         clip: true
         anchors.fill: parent
         anchors.margins: 40
-        contentHeight: height
-        contentWidth: flow.implicitWidth
+        contentHeight: flow.implicitHeight
+        contentWidth: width
+        flickableDirection: Flickable.VerticalFlick
 
         MouseArea {
-            width: flow.implicitWidth
-            height: flickable.height
+            width: flickable.width
+            height: Math.max(flickable.height, flow.implicitHeight)
             onClicked: {} // swallow clicks so they don't dismiss the sheet
         }
 
         Flow {
             id: flow
-            height: flickable.height
-            flow: Flow.TopToBottom
+            width: flickable.width
+            flow: Flow.LeftToRight
             spacing: 24
 
             Repeater {
@@ -85,7 +124,7 @@ Item {
                 delegate: ColumnLayout {
                     id: card
                     required property string modelData
-                    width: 300
+                    width: Math.min(300, flickable.width)
                     spacing: 8
 
                     RowLayout {
@@ -155,10 +194,11 @@ Item {
             }
         }
 
-        ScrollEdgeFade {
-            target: flickable
-            vertical: false
-            color: MonitorThemes.shellColorForItem(root, "colLayer0Base", Appearance.colors.colLayer0Base)
-        }
+    }
+
+    ScrollEdgeFade {
+        target: flickable
+        vertical: true
+        color: MonitorThemes.shellColorForItem(root, "colScrim", Appearance.colors.colScrim)
     }
 }

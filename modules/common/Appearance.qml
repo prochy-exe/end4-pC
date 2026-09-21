@@ -209,6 +209,10 @@ Singleton {
         property int full: 9999
         property int screenRounding: large
         property int windowRounding: 18
+        // Shared corner radius for floating popups (notifications, OSD, media
+        // ticker) - kept in sync with the user's Hyprland window rounding so
+        // popups don't look out of place next to actual windows.
+        property int popupRounding: Math.max(0, Config.options.hyprland.decoration.rounding - 2)
     }
 
     font: QtObject {
@@ -396,7 +400,7 @@ Singleton {
         property real elevationMargin: 10
         property real fabShadowRadius: 5
         property real fabHoveredShadowRadius: 7
-        property real hyprlandGapsOut: 5
+        property real hyprlandGapsOut: Config.options.hyprland.general.gapsOut
         property real mediaControlsWidth: 440
         property real mediaControlsHeight: 160
         property real notificationPopupWidth: 410

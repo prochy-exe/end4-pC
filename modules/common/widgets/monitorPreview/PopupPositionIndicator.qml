@@ -3,10 +3,10 @@ import QtQuick
 import qs.modules.common
 import qs.modules.common.widgets
 
-// A small read-only marker on MonitorPreviewCanvas showing where an item
+// A small read-only marker on MonitorSetupCanvas showing where an item
 // (ticker/notifications/OSD) currently sits - purely visual, no dragging.
-// Actual repositioning happens in the live on-screen editor (popupEditor/)
-// on the real screen; this canvas is just a preview of the result.
+// Position is changed via the preset dropdowns in Settings; this canvas is
+// just a preview of the result.
 Item {
     id: root
     required property string label

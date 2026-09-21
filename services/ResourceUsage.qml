@@ -51,20 +51,21 @@ Singleton {
 
     Process {
         id: tempProc
-        command: ["bash", "-c", "sensors 2>/dev/null | grep -E 'Package id 0|Tctl|Tdie' | grep -oP '\\+\\K[0-9.]+(?=°C)' | head -1"]
+        command: ["sensors"]
         stdout: StdioCollector {
             onStreamFinished: {
-                root.cpuTemp = parseFloat(text.trim())
+                const temperature = text.match(/(?:Package id 0|Tctl|Tdie)[^\n]*?\+([0-9.]+)°C/)
+                root.cpuTemp = temperature ? Number(temperature[1]) : NaN
             }
         }
     }
 
     Process {
         id: diskProc
-        command: ["bash", "-c", "df -k / | awk 'NR==2{print $2,$3,$4}'"]
+        command: ["df", "-k", "--output=size,used,avail", "/"]
         stdout: StdioCollector {
             onStreamFinished: {
-                const parts = text.trim().split(" ").map(Number)
+                const parts = (text.trim().split("\n")[1] ?? "").trim().split(/\s+/).map(Number)
                 if (parts.length >= 3) {
                     root.diskTotal = parts[0]
                     root.diskUsed  = parts[1]
@@ -75,22 +76,33 @@ Singleton {
     }
 
     Process {
-        id: processAndGpuProc
-        command: ["bash", "-c", "ps -eo comm=,%cpu=,%mem= --sort=-%cpu | head -n 4 | awk '{cpu=$(NF-1); mem=$NF; $NF=\"\"; $(NF-1)=\"\"; sub(/[ \\t]+$/, \"\"); printf \"CPU|%s|%s|%s\\n\",$0,cpu,mem}'; ps -eo comm=,%cpu=,%mem= --sort=-%mem | head -n 4 | awk '{cpu=$(NF-1); mem=$NF; $NF=\"\"; $(NF-1)=\"\"; sub(/[ \\t]+$/, \"\"); printf \"MEM|%s|%s|%s\\n\",$0,cpu,mem}'; if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,name --format=csv,noheader,nounits 2>/dev/null | head -n 1 | awk -F', ' '{printf \"GPU|%s|%s|%s|%s\\n\",$1,$2,$3,$4}'; nvidia-smi pmon -c 1 2>/dev/null | awk 'NR>2 && $2 ~ /^[0-9]+$/ && $4 != \"-\" {print $2 \"|\" $4}' | sort -t'|' -k2,2nr | head -n 4 | while IFS='|' read -r pid usage; do commandName=$(ps -p \"$pid\" -o comm= 2>/dev/null | head -n 1); [ -n \"$commandName\" ] && printf \"GPUPROC|%s|%s\\n\" \"$commandName\" \"$usage\"; done; nvidia-smi --query-compute-apps=pid,process_name,used_gpu_memory --format=csv,noheader,nounits 2>/dev/null | sort -t, -k3 -nr | head -n 4 | while IFS=, read -r pid processName memory; do commandName=$(ps -p \"$pid\" -o comm= 2>/dev/null | head -n 1); [ -n \"$commandName\" ] || commandName=${processName##*/}; commandName=${commandName%% *}; printf \"GPUVRAMPROC|%s|%s\\n\" \"$commandName\" \"$memory\"; done; else for busy in /sys/class/drm/card*/device/gpu_busy_percent /sys/class/drm/card*/device/gt_busy_percent; do if [ -r \"$busy\" ]; then usage=$(cat \"$busy\"); usedFile=${busy%/*}/mem_info_vram_used; totalFile=${busy%/*}/mem_info_vram_total; used=0; total=0; [ -r \"$usedFile\" ] && used=$(awk '{printf \"%.0f\",$1/1048576}' \"$usedFile\"); [ -r \"$totalFile\" ] && total=$(awk '{printf \"%.0f\",$1/1048576}' \"$totalFile\"); printf \"GPU|%s|%s|%s|DRM GPU\\n\" \"$usage\" \"$used\" \"$total\"; break; fi; done; fi"]
+        id: processSnapshotProc
+        command: ["ps", "-eo", "comm=,%cpu=,%mem=,rss=,pid=", "--sort=-%cpu"]
         stdout: StdioCollector {
             onStreamFinished: {
-                const cpu = []
-                const memory = []
+                const processes = []
+                for (const line of text.trim().split("\n")) {
+                    const match = line.match(/^(.+?)\s+(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s*$/)
+                    if (match)
+                        processes.push({ name: match[1].trim(), cpu: Number(match[2]), memory: Number(match[3]), rss: Number(match[4]), pid: Number(match[5]) })
+                }
+                root.topCpuProcesses = processes.slice(0, 4)
+                root.topMemoryProcesses = processes.sort((a, b) => b.rss - a.rss || a.pid - b.pid).slice(0, 4)
+            }
+        }
+    }
+
+    Process {
+        id: processAndGpuProc
+        command: ["bash", "-c", "if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,name --format=csv,noheader,nounits 2>/dev/null | head -n 1 | awk -F', ' '{printf \"GPU|%s|%s|%s|%s\\n\",$1,$2,$3,$4}'; nvidia-smi pmon -c 1 2>/dev/null | awk 'NR>2 && $2 ~ /^[0-9]+$/ && $4 != \"-\" {print $2 \"|\" $4}' | sort -t'|' -k2,2nr | head -n 4 | while IFS='|' read -r pid usage; do commandName=$(ps -p \"$pid\" -o comm= 2>/dev/null | head -n 1); [ -n \"$commandName\" ] && printf \"GPUPROC|%s|%s\\n\" \"$commandName\" \"$usage\"; done; nvidia-smi --query-compute-apps=pid,process_name,used_gpu_memory --format=csv,noheader,nounits 2>/dev/null | sort -t, -k3 -nr | head -n 4 | while IFS=, read -r pid processName memory; do commandName=$(ps -p \"$pid\" -o comm= 2>/dev/null | head -n 1); [ -n \"$commandName\" ] || commandName=${processName##*/}; commandName=${commandName%% *}; printf \"GPUVRAMPROC|%s|%s\\n\" \"$commandName\" \"$memory\"; done; else for busy in /sys/class/drm/card*/device/gpu_busy_percent /sys/class/drm/card*/device/gt_busy_percent; do if [ -r \"$busy\" ]; then usage=$(cat \"$busy\"); usedFile=${busy%/*}/mem_info_vram_used; totalFile=${busy%/*}/mem_info_vram_total; used=0; total=0; [ -r \"$usedFile\" ] && used=$(awk '{printf \"%.0f\",$1/1048576}' \"$usedFile\"); [ -r \"$totalFile\" ] && total=$(awk '{printf \"%.0f\",$1/1048576}' \"$totalFile\"); printf \"GPU|%s|%s|%s|DRM GPU\\n\" \"$usage\" \"$used\" \"$total\"; break; fi; done; fi"]
+        stdout: StdioCollector {
+            onStreamFinished: {
                 const gpuProcesses = []
                 const gpuMemoryProcesses = []
                 let foundGpu = false
                 for (const line of text.trim().split("\n")) {
                     const parts = line.split("|")
-                    if (parts[0] === "CPU" && parts.length >= 4)
-                        cpu.push({ name: parts[1], cpu: Number(parts[2]), memory: Number(parts[3]) })
-                    else if (parts[0] === "MEM" && parts.length >= 4)
-                        memory.push({ name: parts[1], cpu: Number(parts[2]), memory: Number(parts[3]) })
-                    else if (parts[0] === "GPU" && parts.length >= 5) {
+                    if (parts[0] === "GPU" && parts.length >= 5) {
                         root.gpuUsage = Number(parts[1])
                         root.gpuMemoryUsed = Number(parts[2])
                         root.gpuMemoryTotal = Number(parts[3])
@@ -101,8 +113,6 @@ Singleton {
                     else if (parts[0] === "GPUVRAMPROC" && parts.length >= 3)
                         gpuMemoryProcesses.push({ name: parts[1], memory: Number(parts[2]) })
                 }
-                root.topCpuProcesses = cpu
-                root.topMemoryProcesses = memory
                 root.topGpuProcesses = gpuProcesses
                 root.topGpuMemoryProcesses = gpuMemoryProcesses
                 if (!foundGpu) {
@@ -122,11 +132,9 @@ Singleton {
         running: true
         repeat: true
         onTriggered: {
-            tempProc.running = false
             tempProc.running = true
-            diskProc.running = false
             diskProc.running = true
-            processAndGpuProc.running = false
+            processSnapshotProc.running = true
             processAndGpuProc.running = true
         }
     }
@@ -136,20 +144,24 @@ Singleton {
     }
 
     function updateMemoryUsageHistory() {
-        memoryUsageHistory = [...memoryUsageHistory, memoryUsedPercentage]
-        if (memoryUsageHistory.length > historyLength) memoryUsageHistory.shift()
+        const history = [...memoryUsageHistory, memoryUsedPercentage]
+        if (history.length > historyLength) history.shift()
+        memoryUsageHistory = history
     }
     function updateSwapUsageHistory() {
-        swapUsageHistory = [...swapUsageHistory, swapUsedPercentage]
-        if (swapUsageHistory.length > historyLength) swapUsageHistory.shift()
+        const history = [...swapUsageHistory, swapUsedPercentage]
+        if (history.length > historyLength) history.shift()
+        swapUsageHistory = history
     }
     function updateCpuUsageHistory() {
-        cpuUsageHistory = [...cpuUsageHistory, cpuUsage]
-        if (cpuUsageHistory.length > historyLength) cpuUsageHistory.shift()
+        const history = [...cpuUsageHistory, cpuUsage]
+        if (history.length > historyLength) history.shift()
+        cpuUsageHistory = history
     }
     function updateDiskUsageHistory() {
-        diskUsageHistory = [...diskUsageHistory, diskUsedPercentage]
-        if (diskUsageHistory.length > historyLength) diskUsageHistory.shift()
+        const history = [...diskUsageHistory, diskUsedPercentage]
+        if (history.length > historyLength) history.shift()
+        diskUsageHistory = history
     }
     function updateHistories() {
         updateMemoryUsageHistory()

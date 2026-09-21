@@ -30,6 +30,32 @@ LockScreen {
         root.layoutBeforeLock = -1
     }
 
+    // Captures which layout is active (by its raw index, e.g. `hyprctl devices`'
+    // active_layout_index) right before we force-switch to the lock layout, so
+    // it can be restored on unlock. Queried fresh via hyprctl rather than
+    // derived from HyprlandXkb's cached name/code, because that mapping goes
+    // through base.lst's layout descriptions and breaks for layout variants
+    // (e.g. a "qwerty" kb_variant resolves to a code like "sk:qwerty" that
+    // never matches the plain "sk" in the configured layout list) -- silently
+    // leaving layoutBeforeLock at -1, so the layout never gets restored.
+    Process {
+        id: captureKeyboardLayoutProc
+        command: ["hyprctl", "-j", "devices"]
+        stdout: StdioCollector {
+            id: captureKeyboardLayoutCollector
+            onStreamFinished: {
+                try {
+                    const parsed = JSON.parse(captureKeyboardLayoutCollector.text)
+                    const kb = parsed.keyboards.find(k => k.main === true)
+                    root.layoutBeforeLock = kb ? kb.active_layout_index : -1
+                } catch (e) {
+                    root.layoutBeforeLock = -1
+                }
+                root.applyLockKeyboardLayout()
+            }
+        }
+    }
+
     Timer {
         id: restoreTimer
         interval: 150
@@ -70,8 +96,7 @@ LockScreen {
         target: GlobalStates
         function onScreenLockedChanged() {
             if (GlobalStates.screenLocked) {
-                root.layoutBeforeLock = HyprlandXkb.layoutCodes.indexOf(HyprlandXkb.currentLayoutCode)
-                root.applyLockKeyboardLayout()
+                captureKeyboardLayoutProc.running = true
                 var wallChanged = Config.options.background.lockWall !== root.lastProcessedLockWall
                 var modeChanged = Appearance.m3colors.darkmode !== root.lastProcessedDarkmode
 

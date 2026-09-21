@@ -15,8 +15,8 @@ Scope {
             if (!mon) {
                 return false
             }
-            const monWidth = mon.width ?? s.width
-            const monHeight = mon.height ?? s.height
+            const monWidth = s.width
+            const monHeight = s.height
             return root.cursorGlobalX >= mon.x
                 && root.cursorGlobalX < mon.x + monWidth
                 && root.cursorGlobalY >= mon.y
@@ -76,7 +76,7 @@ Scope {
         if (payload.trim().length === 0)
             return
         Quickshell.execDetached(["bash", "-c",
-            `pid=$(pgrep -x qs | head -n1) && exec qs ipc --pid "$pid" call sidebarLeft openTranslator '${payload.replace(/'/g, "'\\''")}'`
+            `pid=$(pgrep -x "qs|quickshell" | head -n1) && exec qs ipc --pid "$pid" call sidebarLeft openTranslator '${payload.replace(/'/g, "'\\''")}'`
         ])
     }
 
@@ -178,7 +178,7 @@ Scope {
         Quickshell.execDetached([
             "bash",
             "-c",
-            `if pgrep wf-recorder >/dev/null; then '${Directories.recordScriptPath}'; else pid=$(pgrep -x qs | head -n1) && qs ipc --pid "$pid" call region screenshot; fi`
+            `if pgrep wf-recorder >/dev/null; then '${Directories.recordScriptPath}'; else pid=$(pgrep -x "qs|quickshell" | head -n1) && qs ipc --pid "$pid" call region screenshot; fi`
         ])
     }
 

@@ -14,7 +14,7 @@ Item {
     property string monitorName: ""
 
     readonly property bool widgetsShownOnMonitor: Quickshell.screens.length <= 1
-        || (Config.options.background.screenList ?? []).includes(root.monitorName)
+        || Config.backgroundWidgetsShown(root.monitorName)
 
     function setWidgetsShownOnMonitor(shown) {
         if (Quickshell.screens.length <= 1 || root.monitorName === "") return
@@ -37,6 +37,28 @@ Item {
         Config.options.background.screenList = screens.length === activeNames.length ? [] : screens
     }
 
+    readonly property bool lockWidgetsShownOnMonitor: Quickshell.screens.length <= 1
+        || Config.lockWidgetsShown(root.monitorName)
+
+    function setLockWidgetsShownOnMonitor(shown) {
+        if (Quickshell.screens.length <= 1 || root.monitorName === "") return
+        const activeNames = Quickshell.screens.map(screen => screen.name).filter(name => name !== "")
+        let screens = (Config.options.lock.screenList ?? []).slice()
+
+        if (screens.length === 0)
+            screens = activeNames.slice()
+        else
+            screens = screens.filter(name => activeNames.includes(name))
+
+        if (shown) {
+            if (!screens.includes(root.monitorName)) screens.push(root.monitorName)
+        } else {
+            screens = screens.filter(name => name !== root.monitorName)
+        }
+
+        Config.options.lock.screenList = screens.length === activeNames.length ? [] : screens
+    }
+
     readonly property var widgetList: [
         { key: "visualizer",  icon: "graphic_eq",         name: Translation.tr("Visualizer") },
         { key: "customImage", icon: "image",              name: Translation.tr("Custom Image") },
@@ -44,6 +66,7 @@ Item {
         { key: "clock",       icon: "schedule",           name: Translation.tr("Clock") },
         { key: "media",       icon: "music_note",         name: Translation.tr("Media") },
         { key: "images",      icon: "photo_library",      name: Translation.tr("Image Converter") },
+        { key: "reverseSearch", icon: "image_search",     name: Translation.tr("Reverse Image Search") },
         { key: "resources",   icon: "monitor_heart",      name: Translation.tr("Resources") },
         { key: "calendar",    icon: "calendar_month",     name: Translation.tr("Calendar") },
         { key: "worldClock",  icon: "public",             name: Translation.tr("World Clock") },
@@ -87,6 +110,24 @@ Item {
             onCheckedChanged: Config.options.background.widgetsLocked = checked
         }
 
+        ConfigSwitch {
+            id: showLockWidgetsSwitch
+            Layout.fillWidth: true
+            buttonIcon: "lock_person"
+            monitorName: root.monitorName
+            text: Translation.tr("Show widgets on lockscreen (this monitor)")
+            infoText: Translation.tr("Requires the master \"Show Widgets\" switch in Settings → Interface → Lock screen.")
+            enabled: Config.options.lock.showWidgets
+            onClicked: root.setLockWidgetsShownOnMonitor(!root.lockWidgetsShownOnMonitor)
+
+            Binding {
+                target: showLockWidgetsSwitch
+                property: "checked"
+                value: Config.options.lock.showWidgets && root.lockWidgetsShownOnMonitor
+                restoreMode: Binding.RestoreBinding
+            }
+        }
+
         Rectangle {
             Layout.fillWidth: true
             Layout.topMargin: 4
@@ -98,27 +139,56 @@ Item {
 
         Repeater {
             model: root.widgetList
-            delegate: ConfigSwitch {
-                id: widgetSwitch
+            delegate: RowLayout {
+                id: widgetRow
                 required property var modelData
                 Layout.fillWidth: true
-                buttonIcon: modelData.icon
-                monitorName: root.monitorName
-                text: modelData.name
-                enabled: root.widgetsShownOnMonitor
-                onClicked: {
-                    if (!root.widgetsShownOnMonitor) return
-                    const enabled = Config.getBackgroundWidgetSetting(
-                        root.monitorName, modelData.key, Config.options.background.widgets[modelData.key].enable)
-                    Config.setBackgroundWidgetSetting(root.monitorName, modelData.key, !enabled)
+                spacing: 0
+
+                ConfigSwitch {
+                    id: widgetSwitch
+                    Layout.fillWidth: true
+                    buttonIcon: widgetRow.modelData.icon
+                    monitorName: root.monitorName
+                    text: widgetRow.modelData.name
+                    enabled: root.widgetsShownOnMonitor
+                    onClicked: {
+                        if (!root.widgetsShownOnMonitor) return
+                        const enabled = Config.getBackgroundWidgetSetting(
+                            root.monitorName, widgetRow.modelData.key, Config.options.background.widgets[widgetRow.modelData.key].enable)
+                        Config.setBackgroundWidgetSetting(root.monitorName, widgetRow.modelData.key, !enabled)
+                    }
+
+                    Binding {
+                        target: widgetSwitch
+                        property: "checked"
+                        value: root.widgetsShownOnMonitor && Config.getBackgroundWidgetSetting(
+                            root.monitorName, widgetRow.modelData.key, Config.options.background.widgets[widgetRow.modelData.key].enable)
+                        restoreMode: Binding.RestoreBinding
+                    }
                 }
 
-                Binding {
-                    target: widgetSwitch
-                    property: "checked"
-                    value: root.widgetsShownOnMonitor && Config.getBackgroundWidgetSetting(
-                        root.monitorName, modelData.key, Config.options.background.widgets[modelData.key].enable)
-                    restoreMode: Binding.RestoreBinding
+                // Clock manages its own lockscreen visibility (see "Only show when locked"
+                // in Appearance settings), so it has no generic showOnLock toggle here.
+                CircleUtilButton {
+                    id: lockToggle
+                    visible: widgetRow.modelData.key !== "clock"
+                    readonly property bool showOnLock: Config.options.background.widgets[widgetRow.modelData.key]?.showOnLock ?? true
+                    onClicked: Config.options.background.widgets[widgetRow.modelData.key].showOnLock = !lockToggle.showOnLock
+
+                    MaterialSymbol {
+                        horizontalAlignment: Qt.AlignHCenter
+                        text: lockToggle.showOnLock ? "lock_open" : "lock"
+                        iconSize: Appearance.font.pixelSize.large
+                        color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
+
+                        StyledToolTip {
+                            extraVisibleCondition: lockToggle.hovered
+                            text: lockToggle.showOnLock
+                                ? Translation.tr("Shown on lockscreen — click to hide")
+                                : Translation.tr("Hidden on lockscreen — click to show")
+                        }
+                    }
                 }
             }
         }

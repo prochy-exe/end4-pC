@@ -22,6 +22,7 @@ RowLayout {
     // 0 (the Slider default) keeps continuous dragging, matching every
     // existing caller; only set this to opt into discrete steps.
     property alias stepSize: slider.stepSize
+    property alias pressed: slider.pressed
     property bool usePercentTooltip: true
     property real from: 0
     property real to: 1

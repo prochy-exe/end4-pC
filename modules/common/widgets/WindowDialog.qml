@@ -48,7 +48,7 @@ Rectangle {
         id: dialogBackground
         anchors.horizontalCenter: parent.horizontalCenter
         radius: Appearance.rounding.large
-        color: MonitorThemes.colorForItem(root, "surface_container_high", Appearance.m3colors.m3surfaceContainerHigh) // Use opaque version of layer3
+        color: MonitorThemes.shellColorForItem(root, "colLayer3", Appearance.colors.colLayer3)
         border.width: 1
         border.color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
         

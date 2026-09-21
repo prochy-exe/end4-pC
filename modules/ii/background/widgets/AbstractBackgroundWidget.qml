@@ -16,7 +16,9 @@ AbstractWidget {
     required property int scaledScreenWidth
     required property int scaledScreenHeight
     required property real wallpaperScale
-    property bool visibleWhenLocked: Config.options.lock.showWidgets
+    property string screenName: ""
+    readonly property bool lockWidgetsShownOnMonitor: Quickshell.screens.length <= 1 || Config.lockWidgetsShown(root.screenName)
+    property bool visibleWhenLocked: Config.options.lock.showWidgets && (configEntry.showOnLock ?? true) && root.lockWidgetsShownOnMonitor
     property var configEntry: Config.options.background.widgets[configEntryName]
     property string placementStrategy: configEntry.placementStrategy
     property real targetX: Math.max(0, Math.min(configEntry.x, scaledScreenWidth - width))

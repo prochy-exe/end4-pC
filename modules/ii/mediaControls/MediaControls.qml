@@ -27,25 +27,19 @@ Scope {
     readonly property real osdWidth: Appearance.sizes.osdWidth
     readonly property real widgetWidth: Appearance.sizes.mediaControlsWidth
     readonly property real widgetHeight: Appearance.sizes.mediaControlsHeight
-    property real popupRounding: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
+    property real popupRounding: Appearance.rounding.popupRounding
 
     // "bar" hugs whichever edge the bar is on (original behavior); the
     // explicit corner/edge presets are independent of the bar entirely.
-    // "custom" is anchored top+left, or bottom+left if tickerCustomAnchor is
-    // "bottom" - free positioning is expressed entirely through pixel
-    // margins (see tickerWindow's margins block), not through which edges
-    // are anchored.
     readonly property string tickerPosition: Config.options.media.tickerPosition
-    readonly property bool tickerIsCustom: root.tickerPosition === "custom"
     readonly property real tickerEdgeGap: Appearance.sizes.hyprlandGapsOut
-    readonly property string tickerCustomAnchor: Config.options.media.tickerCustomAnchor
     // Real anchor flags for the ticker's position preset - PopupPlacement.qml
-    // is the single source of truth for this, also used by the popup
-    // editor/preview so they can't silently drift from what actually
-    // renders (they did, before this existed). The margins additionally
-    // need the resolved screen's size, so those are computed on tickerWindow
-    // itself below, where that's actually in scope.
-    readonly property var tickerAnchors: PopupPlacement.barAnchors(root.tickerPosition, true, false, root.tickerCustomAnchor)
+    // is the single source of truth for this, also used by the preview so
+    // it can't silently drift from what actually renders (it did, before
+    // this existed). The margins additionally need the resolved screen's
+    // size, so those are computed on tickerWindow itself below, where
+    // that's actually in scope.
+    readonly property var tickerAnchors: PopupPlacement.barAnchors(root.tickerPosition, true, false)
 
     // The card's height is a fixed constant (Appearance.sizes.mediaControlsHeight),
     // not derived from content - the volume row needs its space added on top
@@ -70,9 +64,10 @@ Scope {
         if (!barVertical) return Config.options.bar.bottom ? "bottom" : "top"
         return Config.options.bar.bottom ? "right" : "left"
     }
-    readonly property real gap: Config.options.bar.cornerStyle === 3 ? Appearance.sizes.hyprlandGapsOut : 0
-    readonly property bool cornerStyleReducesGap: Config.options.bar.cornerStyle === 1 || Config.options.bar.cornerStyle === 2
-    readonly property real barThickness: barVertical ? Appearance.sizes.verticalBarWidth : Appearance.sizes.barHeight
+    // Real bar-hugging thickness for this menu's own hand-rolled margin
+    // formula below (barMargins() applies the same materialPillInset
+    // subtraction internally, but this menu doesn't go through it).
+    readonly property real barFlushThickness: PopupPlacement.barThickness - PopupPlacement.materialPillInset
 
     function filterDuplicatePlayers(players) {
         let filtered = [];
@@ -147,20 +142,20 @@ Scope {
             margins {
                 top: {
                     if (root.barEdge === "top") return panelWindow.barVisibleOnScreen
-                        ? root.barThickness + (root.cornerStyleReducesGap ? -root.gap -6 : root.gap)
-                        : root.gap
-                    if (root.barEdge === "bottom") return panelWindow.screen.height - (panelWindow.barVisibleOnScreen ? root.barThickness : 0) - (root.cornerStyleReducesGap ? -root.gap : root.gap) - playerColumnLayout.implicitHeight
+                        ? root.barFlushThickness + (PopupPlacement.cornerStyleReducesGap ? -PopupPlacement.barGap -6 : PopupPlacement.barGap)
+                        : PopupPlacement.barGap
+                    if (root.barEdge === "bottom") return panelWindow.screen.height - (panelWindow.barVisibleOnScreen ? root.barFlushThickness : 0) - (PopupPlacement.cornerStyleReducesGap ? -PopupPlacement.barGap : PopupPlacement.barGap) - playerColumnLayout.implicitHeight
                     if (root.mediaPosition === "left") return 0
-                    if (root.mediaPosition === "right") return panelWindow.screen.height - playerColumnLayout.implicitHeight - root.gap
+                    if (root.mediaPosition === "right") return panelWindow.screen.height - playerColumnLayout.implicitHeight - PopupPlacement.barGap
                     return (panelWindow.screen.height - playerColumnLayout.implicitHeight) / 2
                 }
                 left: {
                     if (root.barEdge === "left") return panelWindow.barVisibleOnScreen
-                        ? root.barThickness + (root.cornerStyleReducesGap ? -root.gap : root.gap)
-                        : root.gap
-                    if (root.barEdge === "right") return panelWindow.screen.width - (panelWindow.barVisibleOnScreen ? root.barThickness : 0) - (root.cornerStyleReducesGap ? -root.gap : root.gap) - root.widgetWidth
+                        ? root.barFlushThickness + (PopupPlacement.cornerStyleReducesGap ? -PopupPlacement.barGap : PopupPlacement.barGap)
+                        : PopupPlacement.barGap
+                    if (root.barEdge === "right") return panelWindow.screen.width - (panelWindow.barVisibleOnScreen ? root.barFlushThickness : 0) - (PopupPlacement.cornerStyleReducesGap ? -PopupPlacement.barGap : PopupPlacement.barGap) - root.widgetWidth
                     if (root.mediaPosition === "left") return 0
-                    if (root.mediaPosition === "right") return panelWindow.screen.width - root.widgetWidth - root.gap
+                    if (root.mediaPosition === "right") return panelWindow.screen.width - root.widgetWidth - PopupPlacement.barGap
                     return (panelWindow.screen.width - root.widgetWidth) / 2
                 }
             }
@@ -332,20 +327,14 @@ Scope {
     readonly property real tickerMargin: 13 * root.tickerContentScale
     readonly property real tickerSpacing: 15 * root.tickerContentScale
     readonly property real tickerArtSize: root.tickerCardHeight - 2 * root.tickerElevationMargin - 2 * root.tickerMargin
-    // Same *proportional* rounding as the Super+M card, not the same raw
-    // pixel value - popupRounding is tuned for that card's much taller
-    // background (mediaControlsHeight minus elevation margin on both
-    // sides), so reusing it as-is on the ticker's much shorter background
-    // reads as far rounder (same radius, much smaller box). Scale it by
-    // the ratio of the two backgrounds' heights instead. Still clamped
-    // defensively: the art thumbnail sits this far from the card's edge,
-    // and if the radius exceeds that, the mask's curve cuts into the
-    // (square) thumbnail's corner instead of just rounding the card,
-    // distorting it into a lopsided/circular shape.
-    readonly property real superCardBackgroundHeight: Appearance.sizes.mediaControlsHeight - 2 * Appearance.sizes.elevationMargin
-    readonly property real tickerBackgroundHeight: root.tickerCardHeight - 2 * root.tickerElevationMargin
+    // Same raw radius as the Super+M card (popupRounding), so the ticker
+    // actually tracks the user's Hyprland rounding setting like every other
+    // popup does. Still clamped defensively: the art thumbnail sits this far
+    // from the card's edge, and if the radius exceeds that, the mask's curve
+    // cuts into the (square) thumbnail's corner instead of just rounding the
+    // card, distorting it into a lopsided/circular shape.
     readonly property real tickerRadius: Math.min(
-        root.popupRounding * (root.tickerBackgroundHeight / root.superCardBackgroundHeight),
+        root.popupRounding,
         root.tickerElevationMargin + root.tickerMargin)
     readonly property real tickerTextWidth: Math.max(tickerTitleMetrics.width, tickerArtistMetrics.width)
     readonly property real tickerContentOverhead: 2 * root.tickerElevationMargin + 2 * root.tickerMargin + root.tickerArtSize + root.tickerSpacing
@@ -389,9 +378,7 @@ Scope {
             WlrLayershell.layer: WlrLayer.Overlay
             screen: PopupPlacement.resolveScreen(Config.options.media.tickerMonitorMode, Config.options.media.tickerMonitorName)
             readonly property var tickerMargins: PopupPlacement.barMargins(root.tickerPosition, true, root.tickerAnchors, root.tickerEdgeGap,
-                Config.options.media.tickerCustomX, Config.options.media.tickerCustomY,
                 tickerWindow.screen?.width ?? 0, tickerWindow.screen?.height ?? 0,
-                root.tickerCustomAnchor, tickerWindow.implicitWidth, tickerWindow.implicitHeight,
                 PopupPlacement.usableRectFor(tickerWindow.screen))
 
             anchors {
@@ -406,14 +393,8 @@ Scope {
             // an extra, unwanted step further away. Named corner/edge
             // presets respect it instead (ExclusionMode.Normal, same as
             // SidebarLeft.qml), so a preset-placed ticker doesn't render
-            // underneath the bar. "custom" ALSO ignores it - the whole
-            // point of a freely-dragged position is pixel-exact placement
-            // matching the editor's dot; letting the compositor silently
-            // push it away from the bar's reserved zone would put it
-            // dozens of px away from wherever it was actually dropped
-            // (confirmed by measuring a real screenshot: a ~59px offset,
-            // almost exactly the bar's own height).
-            exclusionMode: (root.tickerPosition === "bar" || root.tickerIsCustom) ? ExclusionMode.Ignore : ExclusionMode.Normal
+            // underneath the bar.
+            exclusionMode: root.tickerPosition === "bar" ? ExclusionMode.Ignore : ExclusionMode.Normal
             exclusiveZone: 0
             margins {
                 top: tickerWindow.tickerMargins.top
@@ -445,8 +426,8 @@ Scope {
                 implicitWidth: expanded ? root.widgetWidth : root.tickerCardWidth
                 implicitHeight: expanded ? Appearance.sizes.mediaControlsHeight : root.tickerCardHeight
                 // Same rounding as the Super+M menu card in both states now
-                // - the raw Hyprland decoration.rounding setting was too
-                // round for this.
+                // - popupRounding already backs off the raw Hyprland
+                // decoration.rounding setting a bit (see Appearance.qml).
                 radius: expanded ? root.popupRounding : root.tickerRadius
                 controlElements: expanded ? null : ["visualizer"]
                 contentScale: expanded ? 1.0 : root.tickerContentScale

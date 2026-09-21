@@ -20,7 +20,6 @@ Singleton {
     property list<string> entries: []
     property int pinRevision: 0
     property int videoMetadataRevision: 0
-    property bool suppressClipboardRewriteEvent: false
     property real suppressAutoRewriteUntilMs: 0
     property string lastObservedClipboardText: ""
     property var videoMetadataByEntryKey: ({})
@@ -208,8 +207,6 @@ Singleton {
             return
         }
 
-        root.suspendAutoRewrite(800)
-        root.suppressClipboardRewriteEvent = true
         Quickshell.execDetached(["bash", "-c", `printf '%s' '${StringUtils.shellSingleQuoteEscape(transformed)}' | wl-copy`])
         root.lastObservedClipboardText = transformed
     }
@@ -577,12 +574,10 @@ Singleton {
         target: Quickshell
         function onClipboardTextChanged() {
             const current = `${Quickshell.clipboardText ?? ""}`
-            if (root.suppressClipboardRewriteEvent) {
-                root.suppressClipboardRewriteEvent = false
-            } else {
+            if (current !== root.lastObservedClipboardText) {
                 root.maybeRewriteClipboardValue(current)
             }
-            root.lastObservedClipboardText = `${Quickshell.clipboardText ?? ""}`
+            root.lastObservedClipboardText = current
             delayedUpdateTimer.restart()
         }
     }
@@ -616,11 +611,9 @@ Singleton {
             if (current === root.lastObservedClipboardText) {
                 return
             }
-            root.lastObservedClipboardText = current
 
-            if (!root.suppressClipboardRewriteEvent && Date.now() >= root.suppressAutoRewriteUntilMs) {
-                root.maybeRewriteClipboardValue(current)
-            }
+            root.maybeRewriteClipboardValue(current)
+            root.lastObservedClipboardText = current
 
             delayedUpdateTimer.restart()
         }

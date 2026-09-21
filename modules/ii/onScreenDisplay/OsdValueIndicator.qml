@@ -18,7 +18,7 @@ Item {
     implicitWidth: Appearance.sizes.osdWidth + 4 * Appearance.sizes.elevationMargin + 80
     implicitHeight: valueIndicator.implicitHeight + 2 * Appearance.sizes.elevationMargin
 
-    // Card styling to match NotificationGroup.qml/Player.qml (rounding.normal
+    // Card styling to match NotificationGroup.qml/Player.qml (rounding.popupRounding
     // + a real shadow) instead of the old fully-rounded, flat, shadowless
     // pill - the three real popups should read as one visual family. Doesn't
     // touch implicitWidth/Height above - OSD's size was already fixed/exact,
@@ -33,7 +33,7 @@ Item {
             fill: parent
             margins: Appearance.sizes.elevationMargin
         }
-        radius: Appearance.rounding.normal
+        radius: Appearance.rounding.popupRounding
         color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colBackgroundSurfaceContainer)
         implicitWidth: valueRow.implicitWidth
         implicitHeight: valueRow.implicitHeight

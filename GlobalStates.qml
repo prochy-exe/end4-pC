@@ -11,6 +11,7 @@ Singleton {
     id: root
     // Keep clipboard service alive so Smart Paste auto-rewrite runs globally.
     readonly property var _cliphistBootstrap: Cliphist
+    property bool audioBridgeOpen: false
     property bool barOpen: true
     property bool cheatsheetOpen: false
     property bool crosshairOpen: false
@@ -24,7 +25,6 @@ Singleton {
     property bool settingsOpen: false
     property bool recordingInputOverlayPreview: false
     property bool osdVolumeOpen: false
-    property bool popupEditorOpen: false
     property bool oskOpen: false
     property bool overlayOpen: false
     property bool overviewOpen: false

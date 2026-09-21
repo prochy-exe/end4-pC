@@ -41,7 +41,8 @@ Singleton {
         property string currentPageName: ""
         
         function startHarvesting() {
-            root.settingsKeywordsCache = {}; 
+            root.settingsKeywordsCache = {};
+            root.settingsKeywordsList = {};
             pendingPages = root.settingsIndex.slice();
             next();
         }
@@ -56,7 +57,7 @@ Singleton {
                 Quickshell.shellPath("modules/ii/settings/pages/" + currentPage.path)
             )
 
-            let rawCommand = "grep -oP \"title:\\s*Translation.tr\\(['\\\"].*?['\\\"]\\)\" " + fullPath + " | sed -E \"s/title:\\s*Translation.tr\\(['\\\"](.*)['\\\"]\\)/\\1/g\" | tr '\\n' ' '";
+            let rawCommand = "grep -oP \"title:\\s*Translation.tr\\(['\\\"].*?['\\\"]\\)\" " + fullPath + " | sed -E \"s/title:\\s*Translation.tr\\(['\\\"](.*)['\\\"]\\)/\\1/g\"";
             
             command = ["bash", "-c", rawCommand];
             
@@ -73,6 +74,12 @@ Singleton {
                 let cache = root.settingsKeywordsCache;
                 cache[keywordHarvester.currentPageName] = (cache[keywordHarvester.currentPageName] || "") + " " + data;
                 root.settingsKeywordsCache = cache;
+
+                let list = root.settingsKeywordsList;
+                let pageTitles = list[keywordHarvester.currentPageName] || [];
+                pageTitles.push(data);
+                list[keywordHarvester.currentPageName] = pageTitles;
+                root.settingsKeywordsList = list;
             }
         }
     }
@@ -94,10 +101,12 @@ Singleton {
     }, []).sort()
 
     property var settingsKeywordsCache: ({})
+    property var settingsKeywordsList: ({})
 
     property var settingsIndex: [
         { page: "General",    path: "GeneralConfig.qml" },
         { page: "Appearance", path: "AppearanceConfig.qml" },
+        { page: "Wallpaper effects", path: "WallpaperEffectsConfig.qml" },
         { page: "Interface",  path: "InterfaceConfig.qml" },
         { page: "Services",   path: "ServicesConfig.qml" },
         { page: "Windows",    path: "WindowsConfig.qml" },

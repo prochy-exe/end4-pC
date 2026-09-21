@@ -26,25 +26,13 @@ Scope {
             if (raw === "bottom") return "bottom_right"
             return raw
         }
-        // Only meaningful when position is "custom" - which edge (or
-        // center) customX/Y name. See Config.qml's media.tickerCustomAnchor
-        // doc comment for the full explanation of this convention.
-        property string customAnchor: Config.options.notifications.customAnchor ?? "top"
-
         WlrLayershell.namespace: "quickshell:notificationPopup"
         WlrLayershell.layer: WlrLayer.Overlay
         exclusiveZone: 0
         // Named presets respect the bar's reserved exclusive zone (the
-        // engine default, unset here - this was already "bar aware" before
-        // the popup-position editor existed). "custom" explicitly opts out
-        // (ExclusionMode.Ignore) - a freely-dragged position needs
-        // pixel-exact placement matching the editor's dot; letting the
-        // compositor silently push it away from the bar's reserved zone
-        // put a real notification tens of px from wherever it was actually
-        // dropped (confirmed by measuring a real screenshot - see
-        // MediaControls.qml's tickerWindow.exclusionMode for the same fix
-        // applied there and to OnScreenDisplay.qml).
-        exclusionMode: root.position === "custom" || !root.barVisibleOnScreen
+        // engine default, unset here) so a preset-placed notification
+        // doesn't render underneath the bar.
+        exclusionMode: !root.barVisibleOnScreen
             ? ExclusionMode.Ignore
             : ExclusionMode.Normal
 
@@ -82,20 +70,20 @@ Scope {
                 maskSource: Rectangle {
                     width: listview.width
                     height: listview.height
-                    radius: Appearance.rounding.normal
+                    radius: Appearance.rounding.popupRounding
                 }
             }
 
-            // ONE fixed anchor pair (top+left), for every position - preset,
-            // custom, centered, all of it - with the entire placement
-            // expressed as the two margins. Deliberately not the
-            // "anchors.foo: flag ? parent.foo : undefined" pattern the ticker
-            // and OSD use: those two move their whole PanelWindow, where the
-            // "anchors" are layer-shell's and switching them is free, while
-            // this is a real QML Item inside a full-screen window, where
-            // switching anchor sets at runtime is destructive.
+            // ONE fixed anchor pair (top+left), for every preset, with the
+            // entire placement expressed as the two margins. Deliberately
+            // not the "anchors.foo: flag ? parent.foo : undefined" pattern
+            // the ticker and OSD use: those two move their whole
+            // PanelWindow, where the "anchors" are layer-shell's and
+            // switching them is free, while this is a real QML Item inside
+            // a full-screen window, where switching anchor sets at runtime
+            // is destructive.
             //
-            // Changing e.g. "center" -> "custom" makes QML apply the new
+            // Changing e.g. "center" -> "top_left" makes QML apply the new
             // anchors.left while anchors.horizontalCenter is still set, and
             // an item anchored left AND horizontalCenter has an
             // anchor-DERIVED width (2 * (hcenter - left)) - which silently
@@ -112,26 +100,30 @@ Scope {
             // stays contentHeight no matter what the position is switched to,
             // in any order, at runtime.
             //
-            // anchoredRect() is the SAME shared function the editor and
-            // preview place their dots with (via realRectFor()), so "where
-            // the dot is" and "where the notification lands" cannot drift
-            // apart. supportsBar:false - notifications have no "bar" preset.
+            // anchoredRect() is the SAME shared function the preview places
+            // its markers with (via realRectFor()), so "where the marker is"
+            // and "where the notification lands" cannot drift apart.
+            // supportsBar:false - notifications have no "bar" preset.
             //
             // What gets placed is the SHADOW-PADDED box, not the card: the
             // size handed to anchoredRect() is the card grown by
             // notificationElevationPad on all four sides, and the card is
             // then drawn back inset by that same pad. See that property for
             // why - in short, it is what makes a notification sit level with
-            // a ticker/OSD given the same position, in every mode at once
-            // rather than presets only.
+            // a ticker/OSD given the same position.
             readonly property real pad: PopupPlacement.notificationElevationPad
             readonly property var placement: PopupPlacement.anchoredRect(root.position,
-                Config.options.notifications.customX, Config.options.notifications.customY,
                 root.width, root.height,
                 // The width CONSTANT, not listview.width: reading back the
                 // property being positioned is what starts the loop above.
                 Appearance.sizes.notificationPopupWidth + 2 * pad, listview.height + 2 * pad,
-                PopupPlacement.hyprlandGapsOut, false, false, root.customAnchor,
+                // Subtract pad back out of the edge gap: the padded box is
+                // what's being anchored here, but the card drawn inset
+                // within it (anchors.topMargin/leftMargin below add pad back)
+                // is what should actually land at gapsOut, level with a real
+                // tiled window - see OnScreenDisplay.qml's osdEdgeGap for the
+                // matching fix on the OSD side of this same pad.
+                PopupPlacement.hyprlandGapsOut - pad, false, false,
                 PopupPlacement.usableRectFor(root.screen))
 
             anchors.top: parent.top
@@ -139,13 +131,12 @@ Scope {
             anchors.topMargin: placement.y + pad
             anchors.leftMargin: placement.x + pad
 
-            // Real size -> popup editor, so a dragged custom position lands
-            // on the notification instead of near it. Only while exactly ONE
+            // Real size -> preview canvas, so its marker sits on the real
+            // notification rather than near it. Only while exactly ONE
             // notification is up: that is the case worth being exact about,
             // and the only one with a well-defined height (a stack is however
             // tall the stack is). Reports the same padded box that gets
-            // positioned above, so the editor's centre-to-edge conversion
-            // cancels exactly - see PopupPlacement.reportFootprint().
+            // positioned above - see PopupPlacement.reportFootprint().
             function reportFootprint() {
                 if (listview.count !== 1) return
                 PopupPlacement.reportFootprint("notifications",
@@ -158,11 +149,9 @@ Scope {
 
             // Purely a layout-direction question now that no anchor depends
             // on it: newest notification nearest whichever edge this hugs.
-            readonly property var anchorFlags: PopupPlacement.barAnchors(root.position, false, false, root.customAnchor)
+            readonly property var anchorFlags: PopupPlacement.barAnchors(root.position, false, false)
 
-            // Subsumes the old isBottom/isCustomBottom split into one
-            // check - anchorFlags.bottom is already true for EITHER a
-            // "bottom_*" preset or "custom" with customAnchor "bottom".
+            // anchorFlags.bottom is true for a "bottom_*" preset.
             verticalLayoutDirection: anchorFlags.bottom ? ListView.BottomToTop : ListView.TopToBottom
         }
     }

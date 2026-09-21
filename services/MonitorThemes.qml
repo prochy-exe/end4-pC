@@ -142,6 +142,10 @@ Singleton {
         };
         if (!roles[name]) return fallback
         const value = root.colorForItem(item, roles[name], fallback)
+        if (name === "colScrim" || name === "colShadow") {
+            const color = Qt.color(value)
+            return Qt.rgba(color.r, color.g, color.b, Qt.color(fallback).a)
+        }
         if (!Config.options.appearance.transparency.enable) return value
 
         const backgroundLayer = name === "colLayer0" || name === "colLayer0Base"

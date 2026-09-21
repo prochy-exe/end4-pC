@@ -373,6 +373,7 @@ Item {
         shownPropertyString: "showAudioOutputDialog"
         dialog: VolumeDialog {
             isSink: true
+            showScrim: false
         }
     }
 
@@ -380,12 +381,13 @@ Item {
         shownPropertyString: "showAudioInputDialog"
         dialog: VolumeDialog {
             isSink: false
+            showScrim: false
         }
     }
 
     ToggleDialog {
         shownPropertyString: "showBluetoothDialog"
-        dialog: BluetoothDialog {}
+        dialog: BluetoothDialog { showScrim: false }
         onShownChanged: {
             if (!shown) {
                 Bluetooth.defaultAdapter.discovering = false;
@@ -398,12 +400,12 @@ Item {
 
     ToggleDialog {
         shownPropertyString: "showNightLightDialog"
-        dialog: NightLightDialog {}
+        dialog: NightLightDialog { showScrim: false }
     }
 
     ToggleDialog {
         shownPropertyString: "showWifiDialog"
-        dialog: WifiDialog {}
+        dialog: WifiDialog { showScrim: false }
         onShownChanged: {
             if (!shown) return;
             Network.enableWifi();
@@ -413,7 +415,7 @@ Item {
 
     ToggleDialog {
         shownPropertyString: "showIconPickerDialog"
-        dialog: IconPickerDialog {}
+        dialog: IconPickerDialog { showScrim: false }
     }
 
     component ToggleDialog: Loader {

@@ -207,7 +207,7 @@ Singleton {
     property Process inputProc: Process {
         running: root.inputNeeded
         command: root.inputSource !== "auto"
-            ? root.tapCommand(["--source", root.inputSource])
+            ? root.tapCommand(["--mic", "--source", root.inputSource])
             : root.tapCommand(["--mic"])
         onRunningChanged: {
             if (!inputProc.running) {
@@ -223,6 +223,7 @@ Singleton {
     // Retarget when the allowed player changes - qs-audiotap follows one node,
     // so switching apps means restarting it with a new --app.
     onOutputTargetArgsChanged: root.restartOutput()
+    onInputSourceChanged: root.restartInput()
     onAudioOptsChanged: root.audioSettingsChanged()
     onAnalysisUpdateRateChanged: root.audioSettingsChanged()
     onAnalysisBeatDecayChanged: root.audioSettingsChanged()
@@ -234,7 +235,20 @@ Singleton {
     onAnalysisBarsChanged: root.audioSettingsChanged()
     onAnalysisRangeLowChanged: root.audioSettingsChanged()
     onAnalysisRangeHighChanged: root.audioSettingsChanged()
-    onAudioSettingsChanged: root.restartOutput()
+    onAudioSettingsChanged: {
+        root.restartOutput()
+        root.restartInput()
+    }
+    function restartInput() {
+        if (inputProc.running) {
+            inputProc.running = false;
+            inputRestartTimer.restart();
+        }
+    }
+    property Timer inputRestartTimer: Timer {
+        interval: 60
+        onTriggered: inputProc.running = Qt.binding(() => root.inputNeeded)
+    }
     function restartOutput() {
         if (outputProc.running) {
             outputProc.running = false;

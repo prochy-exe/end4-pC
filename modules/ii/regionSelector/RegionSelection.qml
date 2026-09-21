@@ -103,14 +103,23 @@ PanelWindow {
         }
         root.lastSelectionMode = root.selectionMode;
     }
+    // Backstop for when the panel opens with the cursor already resting
+    // over a window: onPositionChanged (mouseArea) only fires on an actual
+    // move, so without this, targeting a window under a motionless cursor
+    // needed a nudge first, and a click before that nudge landed was a
+    // no-op (targetedRegionX still -1) - looking like it took two clicks.
     onCursorGlobalXChanged: {
         if (root.selectionMode === RegionSelection.SelectionMode.Monitor) {
             root.updateMonitorHighlight();
+        } else if (root.cursorOnThisMonitor && !root.selectionLocked && !root.dragging) {
+            root.updateTargetedRegion(root.cursorGlobalX - root.monitorOffsetX, root.cursorGlobalY - root.monitorOffsetY);
         }
     }
     onCursorGlobalYChanged: {
         if (root.selectionMode === RegionSelection.SelectionMode.Monitor) {
             root.updateMonitorHighlight();
+        } else if (root.cursorOnThisMonitor && !root.selectionLocked && !root.dragging) {
+            root.updateTargetedRegion(root.cursorGlobalX - root.monitorOffsetX, root.cursorGlobalY - root.monitorOffsetY);
         }
     }
     signal recordingStarted()
@@ -154,17 +163,30 @@ PanelWindow {
     property color onBorderColor: "#ff000000"
     property real targetRegionOpacity: Config.options.regionSelector.targetRegions.opacity
     property bool contentRegionOpacity: Config.options.regionSelector.targetRegions.contentRegionOpacity
-    readonly property real monitorLayoutWidth: root.hyprlandMonitor.width ?? root.screen.width
-    readonly property real monitorLayoutHeight: root.hyprlandMonitor.height ?? root.screen.height
-    readonly property bool cursorOnThisMonitor: root.cursorGlobalX >= root.monitorOffsetX
-        && root.cursorGlobalX < root.monitorOffsetX + root.monitorLayoutWidth
+    // Each monitor has its own MouseArea below, and Wayland only routes
+    // pointer events to the surface actually under the cursor, so
+    // mouseArea.containsMouse is normally a direct, instant per-window
+    // signal - but Qt only updates it on an actual pointer enter/move
+    // event, so if the panel is mapped under an already-motionless cursor
+    // before that event arrives, it stays false until the mouse twitches.
+    // OR it with the polled hyprctl cursorpos bounds check (the original
+    // mechanism) so one covers the other's gap: the poll seeds this at
+    // open time, containsMouse stays authoritative once real motion starts
+    // (avoiding the poll's own 40ms-interval drift on secondary monitors).
+    readonly property bool cursorWithinPolledMonitorBounds: root.cursorGlobalX >= root.monitorOffsetX
+        && root.cursorGlobalX < root.monitorOffsetX + root.screen.width
         && root.cursorGlobalY >= root.monitorOffsetY
-        && root.cursorGlobalY < root.monitorOffsetY + root.monitorLayoutHeight
+        && root.cursorGlobalY < root.monitorOffsetY + root.screen.height
+    readonly property bool cursorOnThisMonitor: mouseArea.containsMouse || root.cursorWithinPolledMonitorBounds
 
     // Vars for indicators
     readonly property var windows: [...HyprlandData.windowList].sort((a, b) => {
-        // Sort floating=true windows before others
-        if (a.floating === b.floating) return 0;
+        const specialId = root.hyprlandMonitor.specialWorkspace?.id;
+        const aSpecial = a.workspace.id === specialId;
+        const bSpecial = b.workspace.id === specialId;
+        if (aSpecial !== bSpecial) return aSpecial ? -1 : 1;
+        if (a.floating === b.floating)
+            return (a.focusHistoryID ?? 9999) - (b.focusHistoryID ?? 9999);
         return a.floating ? -1 : 1;
     })
     readonly property var layers: HyprlandData.layers
@@ -188,17 +210,17 @@ PanelWindow {
     property list<point> points: []
     property var mouseButton: null
     property var imageRegions: []
-    readonly property list<var> windowRegions: RegionFunctions.filterWindowRegionsByLayers(
-        root.windows.filter(w => w.workspace.id === root.activeWorkspaceId),
-        root.layerRegions
-    ).map(window => {
-        return {
+    readonly property list<var> windowRegions: root.windows
+        .filter(w => !w.hidden && w.mapped !== false
+            && (w.workspace.id === root.activeWorkspaceId
+                || w.workspace.id === root.hyprlandMonitor.specialWorkspace?.id))
+        .map(window => ({
             at: [window.at[0] - root.monitorOffsetX, window.at[1] - root.monitorOffsetY],
             size: [window.size[0], window.size[1]],
             class: window.class,
             title: window.title,
-        }
-    })
+            address: window.address,
+        }))
     readonly property list<var> layerRegions: {
         const layersOfThisMonitor = root.layers[root.hyprlandMonitor.name]
         const topLayers = layersOfThisMonitor?.levels["2"]
@@ -240,7 +262,7 @@ PanelWindow {
     property real targetedRegionWidth: 0
     property real targetedRegionHeight: 0
     function targetedRegionValid() {
-        return (root.targetedRegionX >= 0 && root.targetedRegionY >= 0)
+        return root.targetedRegionWidth > 0 && root.targetedRegionHeight > 0
     }
     function setRegionToTargeted() {
         const padding = 0;
@@ -347,20 +369,8 @@ PanelWindow {
     }
 
     function updateTargetedRegion(x, y) {
-        // Image regions
-        const clickedRegion = root.imageRegions.find(region => {
-            return region.at[0] <= x && x <= region.at[0] + region.size[0] && region.at[1] <= y && y <= region.at[1] + region.size[1];
-        });
-        if (clickedRegion) {
-            root.targetedRegionX = clickedRegion.at[0];
-            root.targetedRegionY = clickedRegion.at[1];
-            root.targetedRegionWidth = clickedRegion.size[0];
-            root.targetedRegionHeight = clickedRegion.size[1];
-            return;
-        }
-
         // Layer regions
-        const clickedLayer = root.layerRegions.find(region => {
+        const clickedLayer = root.enableLayerRegions && root.layerRegions.find(region => {
             return region.at[0] <= x && x <= region.at[0] + region.size[0] && region.at[1] <= y && y <= region.at[1] + region.size[1];
         });
         if (clickedLayer) {
@@ -372,7 +382,7 @@ PanelWindow {
         }
 
         // Window regions
-        const clickedWindow = root.windowRegions.find(region => {
+        const clickedWindow = root.enableWindowRegions && root.windowRegions.find(region => {
             return region.at[0] <= x && x <= region.at[0] + region.size[0] && region.at[1] <= y && y <= region.at[1] + region.size[1];
         });
         if (clickedWindow) {
@@ -380,6 +390,18 @@ PanelWindow {
             root.targetedRegionY = clickedWindow.at[1];
             root.targetedRegionWidth = clickedWindow.size[0];
             root.targetedRegionHeight = clickedWindow.size[1];
+            return;
+        }
+
+        // Image regions
+        const clickedRegion = root.enableContentRegions && root.imageRegions.find(region => {
+            return region.at[0] <= x && x <= region.at[0] + region.size[0] && region.at[1] <= y && y <= region.at[1] + region.size[1];
+        });
+        if (clickedRegion) {
+            root.targetedRegionX = clickedRegion.at[0];
+            root.targetedRegionY = clickedRegion.at[1];
+            root.targetedRegionWidth = clickedRegion.size[0];
+            root.targetedRegionHeight = clickedRegion.size[1];
             return;
         }
 
@@ -448,7 +470,10 @@ PanelWindow {
             id: imageDimensionCollector
             onStreamFinished: {
                 imageRegions = RegionFunctions.filterImageRegions(
-                    JSON.parse(imageDimensionCollector.text),
+                    JSON.parse(imageDimensionCollector.text).map(region => ({
+                        at: region.at.map(value => value / root.monitorScale),
+                        size: region.size.map(value => value / root.monitorScale),
+                    })),
                     root.windowRegions
                 );
             }
@@ -476,8 +501,11 @@ PanelWindow {
         }
     }
 
-    // Execution after selection
     function snip(forceCopyToClipboard = false) {
+        root.performSnip(forceCopyToClipboard);
+    }
+
+    function performSnip(forceCopyToClipboard = false) {
         // Validity check
         if (root.regionWidth <= 0 || root.regionHeight <= 0) {
             console.warn("[Region Selector] Invalid region size, skipping snip.");
@@ -525,14 +553,28 @@ PanelWindow {
             commandCopyToClipboard,
             root.socialMode
         )
-        Quickshell.execDetached(command);
         if (root.action == RegionSelection.SnipAction.Record || root.action == RegionSelection.SnipAction.RecordWithSound) {
-            root.recordingStarted();
-            root.phase = RegionSelection.Phase.Post
-            root.selectionMode = RegionSelection.SelectionMode.RectCorners
+            root.startRecording(command);
         } else {
+            Quickshell.execDetached(command);
             root.dismiss();
         }
+    }
+
+    function startRecording(command) {
+        recordingStartTimer.command = command;
+        root.phase = RegionSelection.Phase.Post;
+        root.selectionMode = RegionSelection.SelectionMode.RectCorners;
+        root.recordingStarted();
+        recordingStartTimer.restart();
+    }
+
+    Timer {
+        id: recordingStartTimer
+        property var command: []
+        // Let the compositor remove selection guides before recording frames.
+        interval: 100
+        onTriggered: Quickshell.execDetached(command)
     }
 
     // No region/monitor to select here - captures every monitor at once,
@@ -547,9 +589,7 @@ PanelWindow {
             if (root.recordMicAudio) command.push("--mic");
             if (root.copyToClipboard) command.push("--copy-after");
             if (root.socialMode) command.push("--social");
-            Quickshell.execDetached(command);
-            root.recordingStarted();
-            root.phase = RegionSelection.Phase.Post;
+            root.startRecording(command);
             return;
         }
 
@@ -804,8 +844,16 @@ PanelWindow {
                 return;
             }
 
+            // Fast drags can outrun onPositionChanged (the compositor may
+            // coalesce/skip motion events), leaving draggingX/Y stuck at the
+            // press position when release fires. Without this, isClick below
+            // would wrongly read as true, snapping to a targeted region
+            // instead of the rectangle actually dragged.
+            root.draggingX = mouse.x;
+            root.draggingY = mouse.y;
+
             let shouldSnip = true;
-            const isClick = root.draggingX === root.dragStartX && root.draggingY === root.dragStartY;
+            const isClick = Math.hypot(root.draggingX - root.dragStartX, root.draggingY - root.dragStartY) < 4;
 
             if (root.mouseButton === Qt.RightButton) {
                 if (isClick) {
@@ -819,6 +867,7 @@ PanelWindow {
 
             // Detect if it was a click -> Try to select targeted region
             if (isClick) {
+                root.updateTargetedRegion(mouse.x, mouse.y);
                 if (root.targetedRegionValid()) {
                     root.selectionFromTargetRegion = true;
                     root.setRegionToTargeted();
@@ -839,6 +888,14 @@ PanelWindow {
                 root.regionY = minY - padding;
                 root.regionWidth = maxX - minX + padding * 2;
                 root.regionHeight = maxY - minY + padding * 2;
+            }
+            // RectCorners mode: onPositionChanged normally keeps regionX/Y/
+            // Width/Height synced as the drag progresses, but a fast drag can
+            // skip straight to release with few or no move events in between
+            // -- resync here so the final rectangle reflects the corrected
+            // draggingX/Y above rather than a stale mid-drag position.
+            else if (root.selectionMode === RegionSelection.SelectionMode.RectCorners) {
+                root.syncRegionFromDrag();
             }
             if (shouldSnip) {
                 root.captureOrLockSelection();
@@ -949,6 +1006,7 @@ PanelWindow {
                 && !root.hideOcrGuides
                 && !root.ocrInProgress
                 && !root.ocrReady
+
             x: root.dragging ? root.regionX + root.regionWidth : mouseArea.mouseX
             y: root.dragging ? root.regionY + root.regionHeight : mouseArea.mouseY
             action: root.action

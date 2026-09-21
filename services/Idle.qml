@@ -2,30 +2,27 @@ pragma Singleton
 import qs.modules.common
 import QtQuick
 import Quickshell
-import Quickshell.Wayland
+import Quickshell.Io
+import Quickshell.Hyprland
 
-/**
- * A nice wrapper for date and time strings.
- */
 Singleton {
     id: root
 
-    property alias inhibit: idleInhibitor.enabled
+    property bool inhibit: false
     property bool changedBeforePersistenceReady: false
-    inhibit: false
 
+    function restoreInhibit() {
+        if (!Persistent.ready) return;
+        if (!Persistent.isNewHyprlandInstance && !root.changedBeforePersistenceReady)
+            root.inhibit = Persistent.states.idle.inhibit;
+        else
+            Persistent.states.idle.inhibit = root.inhibit;
+    }
+
+    Component.onCompleted: root.restoreInhibit()
     Connections {
         target: Persistent
-        function onReadyChanged() {
-            if (!Persistent.isNewHyprlandInstance) {
-                if (!root.changedBeforePersistenceReady)
-                    root.inhibit = Persistent.states.idle.inhibit;
-                else
-                    Persistent.states.idle.inhibit = root.inhibit;
-            } else {
-                Persistent.states.idle.inhibit = root.inhibit;
-            }
-        }
+        function onReadyChanged() { root.restoreInhibit(); }
     }
 
     function toggleInhibit(active = null) {
@@ -39,22 +36,34 @@ Singleton {
         Persistent.states.idle.inhibit = root.inhibit;
     }
 
-    IdleInhibitor {
-        id: idleInhibitor
-        window: PanelWindow {
-            // Keep a real mapped surface so the compositor reliably applies
-            // the idle-inhibit request.
-            implicitWidth: 1
-            implicitHeight: 1
-            color: "transparent"
-            // Just in case...
-            anchors {
-                right: true
-                bottom: true
-            }
-            // Make it not interactable
-            mask: Region {
-                item: null
+    function resyncInhibitor() {
+        if (root.inhibit && !inhibitorProcess.running)
+            inhibitorProcess.running = true;
+    }
+
+    GlobalShortcut {
+        name: "idleInhibitorResync"
+        description: "Re-applies the idle inhibitor after waking from sleep"
+        onPressed: root.resyncInhibitor()
+    }
+
+    Process {
+        command: ["/usr/bin/python3", `${Directories.scriptPath}/hypridle/power_inhibit.py`]
+        running: true
+        stdinEnabled: true
+    }
+
+    Process {
+        id: inhibitorProcess
+        running: root.inhibit
+        command: ["systemd-inhibit", "--what=idle", "--mode=block",
+            "--who=Quickshell caffeine", "--why=Keep awake is enabled", "cat"]
+        // Closing the pipe also releases the inhibitor when the shell exits.
+        stdinEnabled: true
+        onExited: (exitCode, exitStatus) => {
+            if (root.inhibit) {
+                console.warn("[Idle] Idle inhibitor exited:", exitCode);
+                root.toggleInhibit(false);
             }
         }
     }

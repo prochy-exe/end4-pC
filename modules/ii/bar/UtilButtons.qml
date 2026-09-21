@@ -136,14 +136,14 @@ Item {
             id: screenSnipM3
             UtilButton {
                 iconText: "screenshot_region"
-                onClicked: Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x qs | head -n1) && exec qs ipc --pid \"$pid\" call region screenshot"])
+                onClicked: Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x 'qs|quickshell' | head -n1) && exec qs ipc --pid \"$pid\" call region screenshot"])
             }
         }
 
         Component {
             id: legacyScreenSnip
             CircleUtilButton {
-                onClicked: Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x qs | head -n1) && exec qs ipc --pid \"$pid\" call region screenshot"])
+                onClicked: Quickshell.execDetached(["bash", "-c", "pid=$(pgrep -x 'qs|quickshell' | head -n1) && exec qs ipc --pid \"$pid\" call region screenshot"])
                 MaterialSymbol {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 1; text: "screenshot_region"

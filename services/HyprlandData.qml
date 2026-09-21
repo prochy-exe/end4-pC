@@ -89,7 +89,7 @@ Singleton {
         function onRawEvent(event) {
             // console.log("Hyprland raw event:", event.name);
             if (["openlayer", "closelayer", "screencast"].includes(event.name)) return;
-            updateAll()
+            Qt.callLater(root.updateAll)
         }
     }
 
@@ -98,7 +98,10 @@ Singleton {
         command: ["hyprctl", "clients", "-j"]
         stdout: StdioCollector {
             id: clientsCollector
+            property string previousText: ""
             onStreamFinished: {
+                if (text === previousText) return;
+                previousText = text;
                 root.windowList = JSON.parse(clientsCollector.text)
                 let tempWinByAddress = {};
                 for (var i = 0; i < root.windowList.length; ++i) {
@@ -116,7 +119,10 @@ Singleton {
         command: ["hyprctl", "monitors", "-j"]
         stdout: StdioCollector {
             id: monitorsCollector
+            property string previousText: ""
             onStreamFinished: {
+                if (text === previousText) return;
+                previousText = text;
                 root.monitors = JSON.parse(monitorsCollector.text);
             }
         }
@@ -127,7 +133,10 @@ Singleton {
         command: ["hyprctl", "layers", "-j"]
         stdout: StdioCollector {
             id: layersCollector
+            property string previousText: ""
             onStreamFinished: {
+                if (text === previousText) return;
+                previousText = text;
                 root.layers = JSON.parse(layersCollector.text);
             }
         }
@@ -138,7 +147,10 @@ Singleton {
         command: ["hyprctl", "workspaces", "-j"]
         stdout: StdioCollector {
             id: workspacesCollector
+            property string previousText: ""
             onStreamFinished: {
+                if (text === previousText) return;
+                previousText = text;
                 var rawWorkspaces = JSON.parse(workspacesCollector.text);
                 // Filter out invalid workspace ids (e.g. lock-screen temp workspace 2147483647 - N)
                 root.workspaces = rawWorkspaces.filter(ws => ws.id >= 1 && ws.id <= 100);
@@ -158,7 +170,10 @@ Singleton {
         command: ["hyprctl", "activeworkspace", "-j"]
         stdout: StdioCollector {
             id: activeWorkspaceCollector
+            property string previousText: ""
             onStreamFinished: {
+                if (text === previousText) return;
+                previousText = text;
                 root.activeWorkspace = JSON.parse(activeWorkspaceCollector.text);
             }
         }

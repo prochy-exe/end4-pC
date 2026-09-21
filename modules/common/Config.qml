@@ -65,6 +65,11 @@ Singleton {
         return screens.length === 0 || screens.includes(monitorName)
     }
 
+    function lockWidgetsShown(monitorName) {
+        const screens = root.options?.lock?.screenList ?? []
+        return screens.length === 0 || screens.includes(monitorName)
+    }
+
     function getBackgroundWidgetSetting(monitorName, widgetName, fallbackValue) {
         const entry = (root.options?.background?.monitorWidgets ?? []).find(item => item.name === monitorName)
         const value = entry?.widgets?.[widgetName]
@@ -221,6 +226,23 @@ Singleton {
                 }
             }
 
+            // Control-plane settings for the two external hardware bridge
+            // daemons (dx5ii-bridge, wamp-bridge) - both are standalone C
+            // apps with their own WebSocket control API; this only holds
+            // where to find/launch them and which port to talk to.
+            property JsonObject audioBridges: JsonObject {
+                property JsonObject dx5ii: JsonObject {
+                    property string binaryPath: "/mnt/github/dx5ii-bridge/build/dx5iibridge"
+                    property string wsBind: "127.0.0.1"
+                    property int wsPort: 8765
+                }
+                property JsonObject wamp: JsonObject {
+                    property string binaryPath: "/mnt/github/wamp-bridge/build/wamp-bridge"
+                    property string wsBind: "127.0.0.1"
+                    property int wsPort: 8790
+                }
+            }
+
             property JsonObject profile: JsonObject {
                 property string avatarPath: ""
                 property string avatarPicture: ""
@@ -345,6 +367,7 @@ Singleton {
                     }
                     property JsonObject weather: JsonObject {
                         property bool enable: false
+                        property bool showOnLock: true
                         property string placementStrategy: "free" // "free", "leastBusy", "mostBusy"
                         property real x: 400
                         property real y: 100
@@ -353,6 +376,7 @@ Singleton {
 
                     property JsonObject calendar: JsonObject {
                         property bool enable: false
+                        property bool showOnLock: true
                         property string placementStrategy: "free" // "free", "leastBusy", "mostBusy"
                         property real x: 400
                         property real y: 100
@@ -360,15 +384,17 @@ Singleton {
                     }
                     property JsonObject worldClock: JsonObject {
                         property bool enable: false
+                        property bool showOnLock: true
                         property list<string> timezones: ["Australia/Sydney", "Asia/Tokyo", "Europe/London", "America/New_York"]
                         property string placementStrategy: "free"
                         property real x: 400
                         property real y: 100
-                        property string sizeMode: "2x2" 
+                        property string sizeMode: "2x2"
                     }
 
                     property JsonObject notes: JsonObject {
                         property bool enable: false
+                        property bool showOnLock: true
                         property string placementStrategy: "free"
                         property real x: 400
                         property real y: 100
@@ -376,6 +402,7 @@ Singleton {
 
                     property JsonObject userCard: JsonObject {
                         property bool enable: false
+                        property bool showOnLock: true
                         property string placementStrategy: "free"
                         property real x: 400
                         property real y: 100
@@ -383,6 +410,15 @@ Singleton {
 
                     property JsonObject images: JsonObject {
                         property bool enable: false
+                        property bool showOnLock: true
+                        property string placementStrategy: "free"
+                        property real x: 400
+                        property real y: 100
+                    }
+
+                    property JsonObject reverseSearch: JsonObject {
+                        property bool enable: false
+                        property bool showOnLock: true
                         property string placementStrategy: "free"
                         property real x: 400
                         property real y: 100
@@ -390,6 +426,7 @@ Singleton {
 
                     property JsonObject visualizer: JsonObject {
                         property bool enable: false
+                        property bool showOnLock: true
                         property string placementStrategy: "free"
                         property real x: 0
                         property real y: 0
@@ -397,6 +434,7 @@ Singleton {
 
                     property JsonObject customImage: JsonObject {
                         property bool enable: false
+                        property bool showOnLock: true
                         property string placementStrategy: "free"
                         property real x: 400
                         property real y: 100
@@ -407,6 +445,7 @@ Singleton {
 
                     property JsonObject resources: JsonObject {
                         property bool enable: false
+                        property bool showOnLock: true
                         property string placementStrategy: "free"
                         property real x: 400
                         property real y: 100
@@ -415,6 +454,7 @@ Singleton {
 
                     property JsonObject media: JsonObject {
                         property bool enable: false
+                        property bool showOnLock: true
                         property bool showControls: true
                         property bool showLyrics: false
                         property bool showTitles: true
@@ -792,6 +832,7 @@ Singleton {
                 property bool useHyprlock: false
                 property bool launchOnStartup: false
                 property bool showWidgets: false
+                property list<string> screenList: [] // Monitors where showWidgets applies; empty means all monitors
                 property bool showMedia: true
                 property bool showToolbars: true
                 // Idle timeout (seconds) before the lock screen activates,
@@ -801,6 +842,10 @@ Singleton {
                 // scripts/hypridle/set_timeouts.sh).
                 property int idleTimeoutSec: 300
                 property int sleepAfterLockTimeoutSec: 600
+                // Extra seconds after the lock screen activates before the
+                // display itself is powered off, giving the lock surface
+                // time to actually be up first.
+                property int dpmsDelaySec: 10
                 property JsonObject blur: JsonObject {
                     property bool enable: true
                     property real radius: 100
@@ -838,10 +883,10 @@ Singleton {
                 // you can't interact with without dismissing it.
                 property bool tickerEnabled: true
                 property int tickerTimeout: 2000
-                // "bar" (default, hugs whichever edge the bar is on), a fixed
-                // corner/edge/center: top_left, top_center, top_right,
+                // "bar" (default, hugs whichever edge the bar is on), or a
+                // fixed corner/edge/center: top_left, top_center, top_right,
                 // center_left, center, center_right, bottom_left,
-                // bottom_center, bottom_right, or "custom" (tickerCustomX/Y).
+                // bottom_center, bottom_right.
                 property string tickerPosition: "bar"
                 // Also flashes the ticker when the track changes without any
                 // key/bind press (e.g. a song ending and the next one
@@ -857,26 +902,6 @@ Singleton {
                 // focus; "specific" pins to tickerMonitorName regardless.
                 property string tickerMonitorMode: "focused"
                 property string tickerMonitorName: ""
-                // Normalized (0-1) anchor within the assigned monitor, only
-                // used when tickerPosition is "custom". X is always the
-                // item's LEFT edge; Y is whichever edge tickerCustomAnchor
-                // names ("top" | "bottom"):
-                // - "top": Y is the top edge - item grows downward.
-                // - "bottom": Y is the bottom edge - item grows upward.
-                //
-                // tickerCustomAnchor is NOT a user setting. The popup editor
-                // derives it from where the item is dropped - top half of the
-                // screen anchors the top, bottom half anchors the bottom (see
-                // PopupPlacement.inferCustomAnchor()) - because the only
-                // thing it decides is which edge stays put while the item
-                // grows, and that follows from where it sits. A third
-                // "center" value used to be exposed; it pinned the centre, so
-                // a growing notification stack pushed itself off the top of
-                // the screen. Configs still carrying it are converted on load
-                // by PopupPlacement.migrateCenterAnchors().
-                property real tickerCustomX: 0.5
-                property real tickerCustomY: 0.5
-                property string tickerCustomAnchor: "top"
             }
 
             property JsonObject networking: JsonObject {
@@ -891,27 +916,18 @@ Singleton {
                 // focus; "specific" pins to monitorName regardless.
                 property string monitorMode: "focused"
                 property string monitorName: ""
-                // Normalized (0-1) anchor within the assigned monitor, only
-                // used when position is "custom" - see media.tickerCustomAnchor
-                // for what customAnchor changes.
-                property real customX: 0.7
-                property real customY: 0.7
-                property string customAnchor: "top"
             }
 
             property JsonObject osd: JsonObject {
                 property int timeout: 1000
                 // Same preset vocabulary as media.tickerPosition (including
-                // "bar" and "custom"). Default "bar" preserves the OSD's
-                // original hardcoded look (hugs the bar edge, centered).
+                // "bar"). Default "bar" preserves the OSD's original
+                // hardcoded look (hugs the bar edge, centered).
                 property string position: "bar"
                 // "focused" follows whichever monitor currently has input
                 // focus; "specific" pins to monitorName regardless.
                 property string monitorMode: "focused"
                 property string monitorName: ""
-                property real customX: 0.5
-                property real customY: 0.5
-                property string customAnchor: "top"
             }
 
             property JsonObject osk: JsonObject {
