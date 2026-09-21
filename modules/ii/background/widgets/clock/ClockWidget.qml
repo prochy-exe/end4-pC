@@ -58,6 +58,9 @@ AbstractBackgroundWidget {
             fade: false
             sourceComponent: CookieClock {
                 anchors.horizontalCenter: parent.horizontalCenter
+                wallpaperItem: root.wallpaperItem
+                originX: root.x
+                originY: root.y
             }
         }
 
@@ -77,13 +80,17 @@ AbstractBackgroundWidget {
             anchors.horizontalCenter: parent.horizontalCenter
             shown: root.clockStyle === "pixel" && (root.shouldShow)
             fade: false
-            sourceComponent: PixelClock {}
+            sourceComponent: PixelClock {
+                wallpaperItem: root.wallpaperItem
+                originX: root.x
+                originY: root.y
+            }
         }
 
         FadeLoader {
             id: quoteLoader
             anchors.horizontalCenter: parent.horizontalCenter
-            shown: Config.options.background.widgets.clock.quote.enable && root.clockStyle === "pixel" && Config.options.background.widgets.clock.quote.text !== "" && root.shouldShow
+            shown: Config.options.background.widgets.clock.quote.enable && (root.clockStyle === "pixel" || root.clockStyle === "cookie") && Config.options.background.widgets.clock.quote.text !== "" && root.shouldShow
             sourceComponent: CookieQuote {}
         }
 

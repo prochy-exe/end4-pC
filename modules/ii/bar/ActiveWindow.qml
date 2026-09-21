@@ -9,18 +9,17 @@ import QtQuick.Layouts
 import Quickshell
 import QtQuick.Controls
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import Quickshell.Widgets
 import Qt5Compat.GraphicalEffects
 
 Item {
     id: root
     property bool vertical: false
-    readonly property HyprlandMonitor monitor: Hyprland.monitorFor(root.QsWindow.window?.screen)
+    readonly property var monitor: WM.monitorFor(root.QsWindow.window?.screen)
     readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
-    property string activeWindowAddress: `0x${activeWindow?.HyprlandToplevel?.address}`
-    property bool focusingThisMonitor: HyprlandData.activeWorkspace?.monitor == monitor?.name
-    property var biggestWindow: HyprlandData.biggestWindowForWorkspace(monitor?.activeWorkspace?.id ?? 1)
+    property string activeWindowAddress: activeWindow?.HyprlandToplevel?.address ? `0x${activeWindow.HyprlandToplevel.address}` : ""
+    property bool focusingThisMonitor: WM.focusedMonitor?.name === monitor?.name
+    property var biggestWindow: WM.biggestWindowForWorkspace(WM.activeWorkspaceForMonitor(monitor?.name)?.id ?? 1)
 
     property string activeAppClass: {
         if (!root.focusingThisMonitor || !root.activeWindow?.activated)
@@ -42,7 +41,7 @@ Item {
         console.log("iconPath:", root.mainAppIconSource)
     }
 
-    implicitWidth:  vertical ? Appearance.sizes.verticalBarWidth : Math.min(colLayout.implicitWidth + 6, 280)
+    implicitWidth:  vertical ? Appearance.sizes.verticalBarWidth : Math.min(colLayout.implicitWidth + 12, 280)
     implicitHeight: vertical ? iconItem.implicitHeight : Appearance.sizes.barHeight
 
     // Vertical
@@ -68,7 +67,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.leftMargin: 3
+        anchors.leftMargin: 6
         spacing: -4
 
         StyledText {
@@ -87,7 +86,7 @@ Item {
             elide: Text.ElideRight
             text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ?
                 root.activeWindow?.title :
-                (root.biggestWindow?.title) ?? `${Translation.tr("Workspace")} ${monitor?.activeWorkspace?.id ?? 1}`
+                (root.biggestWindow?.title) ?? `${Translation.tr("Workspace")} ${WM.activeWorkspaceForMonitor(monitor?.name)?.id ?? 1}`
         }
     }
 }

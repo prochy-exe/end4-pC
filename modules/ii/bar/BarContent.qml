@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.UPower
-import Quickshell.Hyprland
 import Quickshell.Services.SystemTray
 import qs
 import qs.services
@@ -118,10 +117,46 @@ Item {
     }
 
     // center-only
-    readonly property bool centerOnly: !root.isMaterial
-        && root.effectiveLeftLayout.length === 0
+    readonly property bool centerOnly: root.effectiveLeftLayout.length === 0
         && root.effectiveRightLayout.length === 0
     readonly property int currentCornerStyle: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle)
+
+    Binding {
+        target: GlobalStates
+        property: "barCenterOnly"
+        value: root.centerOnly
+        restoreMode: Binding.RestoreBinding
+    }
+
+    RoundCorner {
+        id: leftPillCorner
+        visible: root.centerOnly && Config.options.bar.showBackground && Config.options.bar.cornerStyle === 0 
+        x: barContent.centerPillX - implicitSize
+        implicitSize: Appearance.rounding.screenRounding
+        color: Config.options.bar.followFrameColor
+            ? Appearance.getColorFromName(Config.options.bar.frameColor)
+            : Appearance.colors.colLayer0
+        corner: RoundCorner.CornerEnum.TopRight
+
+        states: State {
+            name: "bottom"
+            when: Config.options.bar.bottom
+            AnchorChanges {
+                target: leftPillCorner
+                anchors.top: undefined
+                anchors.bottom: barContent.bottom
+            }
+            PropertyChanges {
+                target: leftPillCorner
+                corner: RoundCorner.CornerEnum.BottomRight
+            }
+        }
+        AnchorChanges {
+            target: leftPillCorner
+            anchors.top: barContent.top
+            anchors.bottom: undefined
+        }
+    }
 
     Rectangle {
         id: centerPill
@@ -139,6 +174,36 @@ Item {
         bottomRightRadius: root.currentCornerStyle === 0 && !Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom) ? Appearance.rounding.screenRounding : radius
         topLeftRadius:     root.currentCornerStyle === 0 && Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom) ? Appearance.rounding.screenRounding : radius
         topRightRadius:    root.currentCornerStyle === 0 && Config.getBarSetting(root.monitorName, ["bottom"], Config.options.bar.bottom) ? Appearance.rounding.screenRounding : radius
+    }
+
+    RoundCorner {
+        id: rightPillCorner
+        visible: root.centerOnly && Config.options.bar.showBackground && Config.options.bar.cornerStyle === 0
+        x: barContent.centerPillX + barContent.centerPillWidth
+        implicitSize: Appearance.rounding.screenRounding
+        color: Config.options.bar.followFrameColor
+            ? Appearance.getColorFromName(Config.options.bar.frameColor)
+            : Appearance.colors.colLayer0
+        corner: RoundCorner.CornerEnum.TopLeft
+
+        states: State {
+            name: "bottom"
+            when: Config.options.bar.bottom
+            AnchorChanges {
+                target: rightPillCorner
+                anchors.top: undefined
+                anchors.bottom: barContent.bottom
+            }
+            PropertyChanges {
+                target: rightPillCorner
+                corner: RoundCorner.CornerEnum.BottomLeft
+            }
+        }
+        AnchorChanges {
+            target: rightPillCorner
+            anchors.top: barContent.top
+            anchors.bottom: undefined
+        }
     }
 
     Item {
@@ -252,6 +317,26 @@ Item {
             width: root.isMaterial ? centerMaterialPill.implicitWidth : middleRow.implicitWidth
             height: parent.height
 
+            // Dynamic Island — left
+            Loader {
+                id: diLeftWidget
+                anchors.right: absoluteCenter.left
+                anchors.rightMargin: 8
+                anchors.verticalCenter: absoluteCenter.verticalCenter
+                active: Config.options.bar.dynamicIsland.leftWidget !== "none" && GlobalStates.dynamicIslandEnabled
+                source: active ? root.getWidgetUrl(Config.options.bar.dynamicIsland.leftWidget) : ""
+            }
+
+            // Dynamic Island — right
+            Loader {
+                id: diRightWidget
+                anchors.left: absoluteCenter.right
+                anchors.leftMargin: 8
+                anchors.verticalCenter: absoluteCenter.verticalCenter
+                active: Config.options.bar.dynamicIsland.rightWidget !== "none" && GlobalStates.dynamicIslandEnabled
+                source: active ? root.getWidgetUrl(Config.options.bar.dynamicIsland.rightWidget) : ""
+            }
+
             // Material pill wrapper
             Rectangle {
                 id: centerMaterialPill
@@ -277,6 +362,7 @@ Item {
                         BarGroup {
                             Layout.fillHeight: true
                             currentIndex: index
+                            paintBackground: modelData !== "dynamicIsland"
                             totalCount: root.effectiveMiddleLayout.length
                             paintMaterialPill: root.shouldPaintMaterialPill(modelData)
                             bgColor: root.getMaterialPillColor(modelData)
@@ -312,6 +398,7 @@ Item {
                     BarGroup {
                         Layout.fillHeight: true
                         currentIndex: index
+                        paintBackground: modelData !== "dynamicIsland"
                         totalCount: root.effectiveMiddleLayout.length
                         monitorName: root.monitorName
                         Loader {

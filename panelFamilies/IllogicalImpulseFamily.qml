@@ -7,6 +7,7 @@ import qs.modules.ii.background
 import qs.modules.ii.bar
 import qs.modules.ii.cheatsheet
 import qs.modules.ii.dock
+import qs.modules.ii.equalizer
 import qs.modules.ii.lock
 import qs.modules.ii.mediaControls
 import qs.modules.ii.notificationPopup
@@ -27,6 +28,7 @@ import qs.modules.ii.verticalBar
 import qs.modules.ii.wallpaperSelector
 import qs.modules.ii.desktopMenu
 import qs.modules.ii.dropover
+import qs.modules.ii.frame
 
 Scope {
     PanelLoader { component: AudioBridge {} }
@@ -35,6 +37,7 @@ Scope {
     PanelLoader { component: Background {} }
     PanelLoader { component: Cheatsheet {} }
     PanelLoader { extraCondition: Config.options.dock.enable; component: Dock {} }
+    PanelLoader { component: EqualizerPopup {} }
     PanelLoader { component: Lock {} }
     PanelLoader { component: MediaControls {} }
     PanelLoader { component: NotificationPopup {} }
@@ -55,4 +58,6 @@ Scope {
     PanelLoader { component: RecordingInputOverlay {} }
     PanelLoader { component: DesktopMenu {} }
     PanelLoader { component: DropShelfPanel {} }
+    PanelLoader { component: NiriBackdrop {} }
+    PanelLoader { component: ScreenFrame {} }
 }

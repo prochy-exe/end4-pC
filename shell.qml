@@ -60,7 +60,7 @@ ShellRoot {
         Updates.load()
         LyricsService.restartLyrics()
     }
-
+    
     PanelFamilyLoader {
         identifier: "ii"
         component: IllogicalImpulseFamily {}

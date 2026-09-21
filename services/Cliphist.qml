@@ -9,6 +9,7 @@ import Quickshell.Io
 
 Singleton {
     id: root
+
     // property string cliphistBinary: FileUtils.trimFileProtocol(`${Directories.home}/.cargo/bin/stash`)
     property string cliphistBinary: "cliphist"
     property real pasteDelay: 0.05
@@ -531,8 +532,9 @@ Singleton {
 
     Process {
         id: wipeProc
-        command: [root.cliphistBinary, "wipe"]
+        command: ["bash", "-c", `${root.cliphistBinary} wipe; rm -rf ~/.cache/cliphist/db`]
         onExited: (exitCode, exitStatus) => {
+            root.entries = [];
             root.refresh();
         }
     }
@@ -647,6 +649,7 @@ Singleton {
                 root.rebuildPinsFromCurrentEntries()
                 root.refreshVideoMetadataQueue()
             } else {
+                root.entries = []
                 console.error("[Cliphist] Failed to refresh with code", exitCode, "and status", exitStatus)
             }
         }

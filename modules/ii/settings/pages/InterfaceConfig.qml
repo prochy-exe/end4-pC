@@ -2314,6 +2314,7 @@ ContentPage {
             }
         }
         ContentSection { // I see that for many the overview is important, I put it first why not
+            visible: WM.compositor !== "niri"
             icon: "overview_key"
             shape: MaterialShape.Shape.Gem
             title: Translation.tr("Overview")
@@ -2533,6 +2534,7 @@ ContentPage {
                 }
                 ConfigSwitch {
                     buttonIcon: "widgets"
+                    enabled: WM.compositor !== "niri"
                     text: Translation.tr("Show Widgets")
                     infoText: Translation.tr("Master switch. Per-monitor and per-widget overrides are in the desktop widgets menu (right-click → Widgets).")
                     checked: Config.options.lock.showWidgets

@@ -148,7 +148,7 @@ Scope {
 
                     VerticalBarContent {
                         id: barContent
-                        
+
                         implicitWidth: Appearance.sizes.verticalBarWidth
                         anchors {
                             top: parent.top
@@ -254,12 +254,12 @@ Scope {
         description: "Toggles bar on press"
         onPressed: { GlobalStates.barOpen = !GlobalStates.barOpen; }
     }
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "barOpen"
         description: "Opens bar on press"
         onPressed: { GlobalStates.barOpen = true; }
     }
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "barClose"
         description: "Closes bar on press"
         onPressed: { GlobalStates.barOpen = false; }

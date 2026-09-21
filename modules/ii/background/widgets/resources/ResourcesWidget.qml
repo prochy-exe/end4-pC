@@ -40,6 +40,18 @@ AbstractBackgroundWidget {
         StyledRectangularShadow {
             target: statCard
             z: -2
+            visible: Config.options.background.widgets.shadow
+        }
+
+        FastBlurred {
+            anchors.fill: parent
+            blurSource: root.wallpaperItem
+            cardRadius: statCard.radius
+            tint: Appearance.colors.colLayer1
+            tintOpacity: 0.55
+            trackX: statCard.x + root.x
+            trackY: statCard.y + root.y
+            visible: Config.options.background.widgets.blurWidgets 
         }
 
         ColumnLayout {

@@ -7,12 +7,12 @@ import qs.modules.common.widgets
 import qs.services
 import qs
 
-MouseArea {
+Item {
     id: root
 
     required property var fileModelData
-    property bool isDirectory: fileModelData.fileIsDir
-    property bool useThumbnail: Images.isValidImageByName(fileModelData.fileName)
+    property bool isDirectory: fileModelData ? Boolean(fileModelData.fileIsDir) : false
+    property bool useThumbnail: fileModelData ? Images.isValidImageByName(fileModelData.fileName) : false
     property alias colBackground: background.color
     property alias colText: wallpaperItemName.color
     property alias radius: background.radius
@@ -25,24 +25,6 @@ MouseArea {
 
     margins: Appearance.sizes.wallpaperSelectorItemMargins
     padding: Appearance.sizes.wallpaperSelectorItemPadding
-    hoverEnabled: true
-    onClicked: {
-        // Live preview shows on Wallpapers.previewPath globally, with no
-        // notion of "which monitor this preview is for" - fine for lockWall
-        // (no live preview surface anyway) and for the shared wallpaper (all
-        // monitors should show it). A per-monitor target has no such surface
-        // either: the monitor being edited already has its own override, so
-        // Background.qml's effectiveWallpaperPath resolves that override
-        // first and never reaches the preview at all, while every *other*
-        // monitor (no override) falls through to the global preview path and
-        // incorrectly shows it. Same treatment as lockWall until previewing
-        // is made monitor-aware: skip straight to select.
-        if (GlobalStates.wallpaperSelectorTarget === "lockWall" || GlobalStates.wallpaperSelectorTarget.startsWith("monitor:") || !Config.options.background.enableWallpaperPreview)
-            root.activated()
-        else
-            root.previewRequested()
-    }
-    onDoubleClicked: root.activated()
 
     Rectangle {
         id: background
@@ -86,7 +68,7 @@ MouseArea {
                         id: thumbnailImage
 
                         generateThumbnail: false
-                        sourcePath: fileModelData.filePath
+                        sourcePath: (fileModelData && fileModelData.filePath) ? fileModelData.filePath : ""
                         cache: false
                         fillMode: Image.PreserveAspectCrop
                         clip: true
@@ -160,7 +142,7 @@ MouseArea {
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 font.pixelSize: Appearance.font.pixelSize.smaller
-                text: fileModelData.fileName
+                text: (fileModelData && fileModelData.fileName) ? fileModelData.fileName : ""
 
                 Behavior on color {
                     animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)

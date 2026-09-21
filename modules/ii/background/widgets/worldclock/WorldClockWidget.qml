@@ -4,6 +4,7 @@ import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.common.functions
 import qs.modules.common.widgets.widgetCanvas
 import qs.modules.ii.background.widgets
 
@@ -14,8 +15,20 @@ AbstractBackgroundWidget {
 
     property string sizeMode: root.configEntry.sizeMode ?? "2x2"
 
-    property real widgetWidth:  sizeMode === "2x2" ? 276 : 420
+    readonly property int clockCount: Math.min(Math.max(root.configEntry.clockCount ?? 4, 1), 4)
+    readonly property real fourByOneWidth: root.clockCount * 132 + (root.clockCount - 1) * 12
+
+    property real widgetWidth:  sizeMode === "2x2" ? 276 : root.fourByOneWidth
     property real widgetHeight: sizeMode === "2x2" ? 252 : 120
+
+    readonly property real widthToggleFraction: 0.3
+    readonly property real widthToggleDelta: (root.fourByOneWidth - 276) * root.widthToggleFraction
+
+    function modeForDrag(dx) {
+        if (root.sizeMode === "2x2" && dx > root.widthToggleDelta) return "4x1"
+        if (root.sizeMode === "4x1" && dx < -root.widthToggleDelta) return "2x2"
+        return root.sizeMode
+    }
 
     Behavior on widgetWidth  { animation: Appearance.animation.elementResize.numberAnimation.createObject(this) }
     Behavior on widgetHeight { animation: Appearance.animation.elementResize.numberAnimation.createObject(this) }
@@ -59,13 +72,28 @@ AbstractBackgroundWidget {
             }
         }
 
-        StyledDropShadow { target: contentRect }
+        StyledDropShadow { 
+            target: contentRect 
+            visible: sizeMode !== "4x1" && Config.options.background.widgets.shadow
+            z: -2
+        }
 
         Rectangle {
             id: contentRect
             anchors.fill: parent
             color:  MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
             radius: Appearance.rounding?.verylarge ?? 30
+
+            FastBlurred {
+                anchors.fill: parent
+                blurSource: root.wallpaperItem
+                cardRadius: contentRect.radius
+                tint: Appearance.colors.colLayer1
+                tintOpacity: 0.55
+                trackX: root.x  
+                trackY: root.y
+                visible: Config.options.background.widgets.blurWidgets && sizeMode === "2x2"
+            }
 
             // 2x2
             ColumnLayout {
@@ -88,10 +116,12 @@ AbstractBackgroundWidget {
                         Layout.fillWidth: true
                         spacing: -2
                         StyledText {
+                            Layout.fillWidth: true
                             font.pixelSize: Appearance.font.pixelSize.normal
                             font.weight: Font.Medium
                             color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                             text: root.localCityName
+                            elide: Text.ElideRight
                         }
                     }
                     Item { Layout.fillWidth: true }
@@ -254,45 +284,73 @@ AbstractBackgroundWidget {
 
             // 4x1
             RowLayout {
-                anchors { fill: parent; margins: 8 }
-                spacing: 8
+                anchors { fill: parent; margins: 0 }
+                spacing: 12
                 visible: sizeMode === "4x1"
 
                 Repeater {
-                    model: Math.min(root.worldCities.length, 4)
-                    delegate: AndroidClock {
+                    model: Math.min(root.worldCities.length, root.clockCount)
+                    delegate: Item {
+                        id: clockWrapper
                         required property int index
                         property var cityData: root.worldCities[index] ?? null
 
-                        Layout.fillHeight: true
-                        Layout.fillWidth:  true
+                        Layout.preferredWidth: 132
+                        Layout.preferredHeight: 120
 
-                        backgroundColor: cityData?.isDay ?? true
-                            ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                            : MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
-                        handColor: cityData?.isDay ?? true
-                            ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
-                            : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
-                        centerDotColor: cityData?.isDay ?? true
-                            ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
-                            : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
-                        label:       cityData?.name ?? ""
-                        labelColor:  Qt.rgba(
-                            (cityData?.isDay ?? true ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)).r,
-                            (cityData?.isDay ?? true ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)).g,
-                            (cityData?.isDay ?? true ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)).b,
-                            0.75)
-                        labelSpacing: 6
-                        autoTime:    false
-                        hourAngle: {
-                            if (!cityData?.time) return 0
-                            const p = cityData.time.split(":")
-                            return (parseInt(p[0]) % 12) * 30 + parseInt(p[1]) * 0.5
+                        StyledRectangularShadow {
+                            target: androidClock
+                            z: -2
+                            visible: Config.options.background.widgets.shadow
                         }
-                        minuteAngle: {
-                            if (!cityData?.time) return 0
-                            const p = cityData.time.split(":")
-                            return parseInt(p[1]) * 6
+
+                        FastBlurred {
+                            anchors.fill: parent
+                            visible: Config.options.background.widgets.blurWidgets
+                            blurSource: root.wallpaperItem
+                            cardRadius: Appearance.rounding?.verylarge ?? 30
+                            tint: (clockWrapper.cityData?.isDay ?? true)
+                                ? Appearance.colors.colPrimary
+                                : Appearance.colors.colLayer1
+                            tintOpacity: 0.55
+                            trackX: root.x
+                            trackY: root.y
+                        }
+
+                        AndroidClock {
+                            id: androidClock
+                            anchors.fill: parent
+                            radius: Appearance.rounding?.verylarge ?? 30
+
+                            backgroundColor: Config.options.background.widgets.blurWidgets
+                                ? "transparent"
+                                : ((clockWrapper.cityData?.isDay ?? true)
+                                    ? Appearance.colors.colPrimary
+                                    : Appearance.colors.colPrimaryContainer)
+                            handColor: (clockWrapper.cityData?.isDay ?? true)
+                                ? Appearance.colors.colOnPrimary
+                                : Appearance.colors.colOnLayer0
+                            centerDotColor: (clockWrapper.cityData?.isDay ?? true)
+                                ? Appearance.colors.colOnPrimary
+                                : Appearance.colors.colOnLayer0
+                            label:       clockWrapper.cityData?.name ?? ""
+                            labelColor:  Qt.rgba(
+                                ((clockWrapper.cityData?.isDay ?? true) ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer0).r,
+                                ((clockWrapper.cityData?.isDay ?? true) ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer0).g,
+                                ((clockWrapper.cityData?.isDay ?? true) ? Appearance.colors.colOnPrimary : Appearance.colors.colOnLayer0).b,
+                                0.75)
+                            labelSpacing: 6
+                            autoTime:    false
+                            hourAngle: {
+                                if (!clockWrapper.cityData?.time) return 0
+                                const p = clockWrapper.cityData.time.split(":")
+                                return (parseInt(p[0]) % 12) * 30 + parseInt(p[1]) * 0.5
+                            }
+                            minuteAngle: {
+                                if (!clockWrapper.cityData?.time) return 0
+                                const p = clockWrapper.cityData.time.split(":")
+                                return parseInt(p[1]) * 6
+                            }
                         }
                     }
                 }

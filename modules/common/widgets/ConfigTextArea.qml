@@ -27,7 +27,6 @@ RowLayout {
     property color colLabel: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
     property real cornerRadius: rounded ? Appearance.rounding.large : Appearance.rounding.small
 
-    // Optional trailing confirm button
     property bool confirmButtonVisible: false
     property string confirmButtonIcon: "check"
     property color colConfirmBackground: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)

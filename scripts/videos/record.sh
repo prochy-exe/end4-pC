@@ -83,7 +83,11 @@ build_audio_args() {
 }
 
 getactivemonitor() {
-    hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .name'
+    if [[ "$(detect_compositor)" == "niri" ]]; then
+        niri msg -j workspaces | jq -r '.[] | select(.is_focused == true) | .output'
+    else
+        hyprctl monitors -j | jq -r '.[] | select(.focused == true) | .name'
+    fi
 }
 
 # Probes for a working GPU encoder so re-encodes don't have to burn CPU on

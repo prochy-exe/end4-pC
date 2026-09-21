@@ -25,7 +25,7 @@ Scope {
         }
         LazyLoader {
             id: barLoader
-            active: GlobalStates.barOpen && !GlobalStates.screenLocked
+            active: GlobalStates.barOpen && !GlobalStates.screenLocked && !GlobalStates.startupLockPending
             required property ShellScreen modelData
             component: PanelWindow { // Bar window
                 id: barRoot
@@ -48,6 +48,24 @@ Scope {
                             showBarTimer.stop();
                             barRoot.superShow = false;
                         }
+                    }
+                }
+
+                property bool showCorners: !Config.options.bar.autoHide.enable || mustShow
+
+                Timer {
+                    id: cornerRevealTimer
+                    interval: 65
+                    onTriggered: barRoot.showCorners = true
+                }
+
+                onMustShowChanged: {
+                    if (!Config.options.bar.autoHide.enable) return;
+                    if (mustShow) {
+                        cornerRevealTimer.restart()
+                    } else {
+                        cornerRevealTimer.stop()
+                        barRoot.showCorners = false
                     }
                 }
                 property bool superShow: false
@@ -265,6 +283,13 @@ Scope {
 
                         sourceComponent: Item {
                             implicitHeight: Appearance.rounding.screenRounding
+
+                            readonly property color decoratorColor: showBarBackground
+                                ? (Config.options.bar.followFrameColor && Config.options.bar.frameColor
+                                    ? Appearance.getColorFromName(Config.options.bar.frameColor)
+                                    : Appearance.colors.colLayer0)
+                                : "transparent"
+
                             RoundCorner {
                                 id: leftCorner
                                 anchors {
@@ -327,7 +352,7 @@ Scope {
         }
     }
 
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "barToggle"
         description: "Toggles bar on press"
 
@@ -336,7 +361,7 @@ Scope {
         }
     }
 
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "barOpen"
         description: "Opens bar on press"
 
@@ -345,7 +370,7 @@ Scope {
         }
     }
 
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "barClose"
         description: "Closes bar on press"
 

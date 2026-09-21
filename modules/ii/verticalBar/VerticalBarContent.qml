@@ -207,7 +207,7 @@ Item {
 
             Rectangle {
                 id: centerMaterialPill
-                visible: root.isMaterial
+                visible: root.isMaterial && !GlobalStates.dynamicIslandEnabled
                 anchors.centerIn: parent
                 implicitWidth: centerMaterialCol.implicitWidth 
                 implicitHeight: centerMaterialCol.implicitHeight + 10
@@ -230,6 +230,7 @@ Item {
                             Layout.fillWidth: true
                             vertical: true
                             currentIndex: index
+                            paintBackground: modelData !== "dynamicIsland"
                             totalCount: root.effectiveMiddleLayout.length
                             paintMaterialPill: root.shouldPaintMaterialPill(modelData)
                             bgColor: root.getMaterialPillColor(modelData)
@@ -259,6 +260,7 @@ Item {
                         Layout.fillWidth: true
                         vertical: true
                         currentIndex: index
+                        paintBackground: modelData !== "dynamicIsland"
                         totalCount: root.effectiveMiddleLayout.length
                         Loader {
                             Layout.fillWidth: true

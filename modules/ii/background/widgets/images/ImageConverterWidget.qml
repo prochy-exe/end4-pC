@@ -148,6 +148,12 @@ AbstractBackgroundWidget {
         converter.outputPath = valid[0].replace(/\.[^/.]+$/, "") + "_converted." + root.selectedFormat
         converter.running = true
     }
+    
+    StyledRectangularShadow {
+        target: contentItem
+        z: -2
+        visible: Config.options.background.widgets.shadow
+    }
 
     function pasteFromClipboard() {
         if (root.dropStatus === "converting") return
@@ -205,6 +211,17 @@ AbstractBackgroundWidget {
         radius: Appearance.rounding?.verylarge ?? 30
         implicitWidth: 276
         implicitHeight: 252
+
+        FastBlurred {
+            anchors.fill: parent
+            blurSource: root.wallpaperItem
+            cardRadius: contentItem.radius
+            tint: Appearance.colors.colLayer1
+            tintOpacity: 0.55
+            trackX: root.x  
+            trackY: root.y
+            visible: Config.options.background.widgets.blurWidgets 
+        }
 
         ColumnLayout {
             id: columnLayout
