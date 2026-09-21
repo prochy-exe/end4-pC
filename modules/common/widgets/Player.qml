@@ -185,7 +185,10 @@ Item {
                     displayedArtFilePath: root.displayedArtFilePath
                     radius: root.radius
                     artDominantColor: root.artDominantColor
-                    onToggleLyrics: root.showLyrics = !root.showLyrics
+                    onToggleLyrics: {
+                        root.showLyrics = !root.showLyrics
+                        Config.options.bar.media.showLyrics = root.showLyrics
+                    }
                 }
             }
         }

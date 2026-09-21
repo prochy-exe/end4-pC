@@ -19,6 +19,14 @@ Scope {
         id: panelWindow
         property string searchingText: ""
         readonly property HyprlandMonitor monitor: Hyprland.monitorFor(panelWindow.screen)
+        readonly property bool barCenterOnly: Config.options.bar.layouts.leftLayout.length === 0
+            && Config.options.bar.layouts.rightLayout.length === 0
+            && !Config.options.bar.vertical
+
+        readonly property bool barOverlapActive: panelWindow.barCenterOnly
+            && Config.options.bar.centerOnlyReserveFrame
+            && !Config.options.bar.bottom
+            && !Config.options.bar.autoHide.enable
         property bool monitorIsFocused: (Hyprland.focusedMonitor?.id == monitor?.id)
         visible: GlobalStates.overviewOpen
         property var targetScreen: Quickshell.screens[0]
@@ -81,11 +89,24 @@ Scope {
         Column {
             id: columnLayout
             visible: GlobalStates.overviewOpen
+            opacity: GlobalStates.overviewOpen ? 1 : 0
+            scale: GlobalStates.overviewOpen ? 1 : 0.85
+            transformOrigin: Item.Top
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 top: parent.top
+                topMargin: panelWindow.barOverlapActive
+                    ? Appearance.sizes.barHeight - Config.options.bar.frameThickness
+                    : 0
             }
             spacing: -8
+
+            Behavior on opacity {
+                NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+            }
+            Behavior on scale {
+                NumberAnimation { duration: 400; easing.type: Easing.BezierSpline; easing.bezierCurve: Appearance.animationCurves.expressiveDefaultSpatial }
+            }
 
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Escape) {
@@ -206,7 +227,7 @@ Scope {
         }
     }
 
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "searchToggle"
         description: "Toggles search on press"
 
@@ -214,7 +235,7 @@ Scope {
             GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
         }
     }
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "overviewWorkspacesClose"
         description: "Closes overview on press"
 
@@ -222,7 +243,7 @@ Scope {
             GlobalStates.overviewOpen = false;
         }
     }
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "overviewWorkspacesToggle"
         description: "Toggles overview on press"
 
@@ -230,7 +251,7 @@ Scope {
             GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
         }
     }
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "searchToggleRelease"
         description: "Toggles search on release"
 
@@ -246,7 +267,7 @@ Scope {
             GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
         }
     }
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "searchToggleReleaseInterrupt"
         description: "Interrupts possibility of search being toggled on release. " + "This is necessary because GlobalShortcut.onReleased in quickshell triggers whether or not you press something else while holding the key. " + "To make sure this works consistently, use binditn = MODKEYS, catchall in an automatically triggered submap that includes everything."
 
@@ -254,7 +275,7 @@ Scope {
             GlobalStates.superReleaseMightTrigger = false;
         }
     }
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "overviewClipboardToggle"
         description: "Toggle clipboard query on overview widget"
 
@@ -263,7 +284,7 @@ Scope {
         }
     }
 
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "overviewEmojiToggle"
         description: "Toggle emoji query on overview widget"
 
@@ -272,7 +293,7 @@ Scope {
         }
     }
 
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "overviewSymbolsToggle"
         description: "Toggle material symbols search on overview widget"
 

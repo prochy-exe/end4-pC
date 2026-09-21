@@ -12,6 +12,15 @@ MouseArea {
     property bool centerXActive: false
     property bool centerYActive: false
 
+    property var registeredWidgets: []
+    property bool selecting: false
+    property point selectionStartPoint: Qt.point(0, 0)
+    property rect selectionRect: Qt.rect(0, 0, 0, 0)
+
+    property var groupDragMemberStarts: []
+    property real groupDragStartX: 0
+    property real groupDragStartY: 0
+
     function setDragging(active) {
         root.showGrid = active
         if (!active) {
@@ -36,9 +45,68 @@ MouseArea {
         }
     }
 
+    function beginGroupDrag(initiator) {
+        if (!initiator.selected) {
+            root.groupDragMemberStarts = []
+            return
+        }
+        root.groupDragStartX = initiator.x
+        root.groupDragStartY = initiator.y
+        root.groupDragMemberStarts = root.registeredWidgets
+            .filter(w => w.selected && w !== initiator)
+            .map(w => ({ widget: w, startX: w.x, startY: w.y }))
+        for (const entry of root.groupDragMemberStarts) entry.widget.groupDragActive = true
+    }
+
+    function updateGroupDrag(initiator) {
+        if (root.groupDragMemberStarts.length === 0) return
+        const dx = initiator.x - root.groupDragStartX
+        const dy = initiator.y - root.groupDragStartY
+        for (const entry of root.groupDragMemberStarts) {
+            entry.widget.x = entry.startX + dx
+            entry.widget.y = entry.startY + dy
+        }
+    }
+
+    function endGroupDrag() {
+        for (const entry of root.groupDragMemberStarts) {
+            entry.widget.groupDragActive = false
+            entry.widget.commitPosition()
+        }
+        root.groupDragMemberStarts = []
+    }
+
+    onPressed: (mouse) => {
+        if (Config.options.background.widgetsLocked) return
+        root.selecting = true
+        root.selectionStartPoint = Qt.point(mouse.x, mouse.y)
+        root.selectionRect = Qt.rect(mouse.x, mouse.y, 0, 0)
+        if (!(mouse.modifiers & Qt.ControlModifier)) root.clearSelection()
+    }
+
+    onPositionChanged: (mouse) => {
+        if (!root.selecting) return
+        const startX = root.selectionStartPoint.x
+        const startY = root.selectionStartPoint.y
+        const rectX = Math.min(startX, mouse.x)
+        const rectY = Math.min(startY, mouse.y)
+        const rectW = Math.abs(mouse.x - startX)
+        const rectH = Math.abs(mouse.y - startY)
+        root.selectionRect = Qt.rect(rectX, rectY, rectW, rectH)
+        root.selectWithinRect(root.selectionRect)
+    }
+
+    onReleased: {
+        root.selecting = false
+    }
+
     Repeater {
-        model: root.gridVisible ? Math.ceil(root.height / root.gridSize) : 0
-        delegate: Rectangle {
+        id: crossRepeater
+        readonly property int cols: Math.ceil(root.width / root.gridSize) + 1
+        readonly property int rows: Math.ceil(root.height / root.gridSize) + 1
+        model: root.gridVisible ? cols * rows : 0
+        delegate: Item {
+            id: crossPoint
             required property int index
             y: index * root.gridSize
             width: root.width
@@ -85,6 +153,19 @@ MouseArea {
         Behavior on opacity {
             animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
         }
+    }
+
+    Rectangle {
+        id: selectionRectVisual
+        visible: root.selecting
+        x: root.selectionRect.x
+        y: root.selectionRect.y
+        width: root.selectionRect.width
+        height: root.selectionRect.height
+        color: Qt.rgba(Appearance.colors.colPrimary.r, Appearance.colors.colPrimary.g, Appearance.colors.colPrimary.b, 0.15)
+        border.width: 1
+        border.color: Appearance.colors.colPrimary
+        z: 9999
     }
 
     Component {

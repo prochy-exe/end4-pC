@@ -17,6 +17,7 @@ Item {
     property string monitorName: ""
     property int currentPage: 0
     property bool showingProfile: false
+    property bool isMinimal: Config.options.settings.style === "minimal"
 
     Connections {
         target: GlobalStates
@@ -108,12 +109,15 @@ Item {
                     spacing: 10
                     expanded: root.width > 900
 
-                    RowLayout {
-                        visible: navRail.expanded
-                        spacing: 10
-                        Layout.fillWidth: true
-                        Layout.margins: 5
+                    Item {
+                        id: profileRowContainer
+                        visible: true
+                        Layout.fillWidth: false
+                        Layout.margins: isMinimal ? 0 : 5
                         Layout.topMargin: 15
+                        Layout.bottomMargin: isMinimal ? -30 : 0
+                        implicitHeight: profileRow.implicitHeight
+                        implicitWidth: profileRow.implicitWidth
 
                         Rectangle {
                             id: avatarRect
@@ -139,9 +143,13 @@ Item {
                                         radius: avatarRect.radius
                                     }
                                 }
-                                onStatusChanged: {
-                                    if (status === Image.Error)
-                                        visible = false
+
+                                MaterialSymbol {
+                                    anchors.centerIn: parent
+                                    text: "account_circle"
+                                    iconSize: 32
+                                    color: Appearance.colors.colOnPrimaryContainer
+                                    visible: avatarImage.status === Image.Error
                                 }
                             }
 
@@ -154,9 +162,14 @@ Item {
                             }
                         }
 
-                        ColumnLayout {
-                            spacing: 2
-                            Layout.fillWidth: true
+                                StyledText {
+                                    text: Config.options.profile.displayName === "" ? SystemInfo.username : Config.options.profile.displayName
+                                    font.pixelSize: Appearance.font.pixelSize.normal
+                                    color: Appearance.colors.colOnLayer1
+                                    font.weight: Font.Medium
+                                    elide: Text.ElideRight
+                                    Layout.maximumWidth: 100
+                                }
 
                             StyledText {
                                 text: Config.options.profile.displayName === "" ? SystemInfo.username : Config.options.profile.displayName
@@ -188,8 +201,9 @@ Item {
                     }
 
                     Rectangle {
-                        width: 160
-                        Layout.topMargin: -5
+                        Layout.preferredWidth: isMinimal ? 50 : 160
+                        Layout.topMargin: isMinimal ? 30 : -5
+                        Layout.bottomMargin: isMinimal ? -30 : 0
                         height: 2
                         gradient: Gradient {
                             orientation: Gradient.Horizontal
@@ -203,6 +217,7 @@ Item {
 
                     FloatingActionButton {
                         id: fab
+                        visible: !isMinimal
                         Layout.bottomMargin: -25
                         property bool justCopied: false
                         iconText: justCopied ? "check" : "edit"

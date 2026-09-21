@@ -9,12 +9,12 @@ import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
 import qs.modules.common.models
-import Quickshell.Hyprland
 
 ContentPage {
     id: page
+    property bool isMinimal: Config.options.settings.style === "minimal"
     forceWidth: true
-    baseWidth: 720
+    baseWidth: !isMinimal ? 700 : 600
     bottomContentPadding: 35
 
     function goTo(term) {
@@ -124,13 +124,14 @@ ContentPage {
         id: mainLayout
         Layout.fillWidth: true
         Layout.fillHeight: true
-        spacing: 16
+        spacing: 6
 
         ContentSection {
             icon: "screenshot_monitor"
             title: Translation.tr("Wallpaper & Colors")
             shape: MaterialShape.Shape.Puffy
             Layout.fillWidth: true
+            collapsible: false
 
             RowLayout {
                 Layout.fillWidth: true
@@ -190,6 +191,7 @@ ContentPage {
                 }
 
                 ColumnLayout {
+                    visible: !isMinimal
                     Layout.fillWidth: true
                     spacing: 4
 
@@ -214,7 +216,7 @@ ContentPage {
                                 { value: "scheme-expressive",  displayName: Translation.tr("Expressive"),  icon: "palette" },
                                 { value: "scheme-fidelity",    displayName: Translation.tr("Fidelity"),    icon: "equal" },
                                 { value: "scheme-fruit-salad", displayName: Translation.tr("Fruit Salad"), icon: "nutrition" },
-                                { value: "scheme-monochrome",  displayName: Translation.tr("Monochrome"),  icon: "invert_colors" },
+                                { value: "scheme-monochrome",  displayName: Translation.tr("Mono"),  icon: "invert_colors" },
                                 { value: "scheme-neutral",     displayName: Translation.tr("Neutral"),     icon: "tonality" },
                                 { value: "scheme-rainbow",     displayName: Translation.tr("Rainbow"),     icon: "gradient" },
                                 { value: "scheme-tonal-spot",  displayName: Translation.tr("Tonal Spot"),  icon: "lens" },
@@ -268,19 +270,25 @@ ContentPage {
                 }
             }
 
-            ConfigRow {
-                ConfigSwitch {
-                    buttonIcon: "motion_mode"
-                    text: Translation.tr("Transparency")
-                    checked: Config.options.appearance.transparency.enable
-                    onCheckedChanged: { Config.options.appearance.transparency.enable = checked; }
-                }
-                ConfigSwitch {
-                    buttonIcon: "autofps_select"
-                    enabled: Config.options.appearance.transparency.enable
-                    text: Translation.tr("Automatic")
-                    checked: Config.options.appearance.transparency.automatic
-                    onCheckedChanged: { Config.options.appearance.transparency.automatic = checked; }
+            ContentSubsection {
+                visible: isMinimal
+                Layout.topMargin: 20
+                title: Translation.tr("Transparency")     
+                GroupedList {
+                    visible: isMinimal
+                    ConfigSwitch {
+                        buttonIcon: "check"
+                        text: Translation.tr("Enable")
+                        checked: Config.options.appearance.transparency.enable
+                        onCheckedChanged: { Config.options.appearance.transparency.enable = checked; }
+                    }
+                    ConfigSwitch {
+                        buttonIcon: "autofps_select"
+                        enabled: Config.options.appearance.transparency.enable
+                        text: Translation.tr("Automatic")
+                        checked: Config.options.appearance.transparency.automatic
+                        onCheckedChanged: { Config.options.appearance.transparency.automatic = checked; }
+                    }
                 }
             }
             ConfigSwitch {
@@ -316,14 +324,9 @@ ContentPage {
             title: Translation.tr("Bar & Screen")
             shape: MaterialShape.Shape.ClamShell
             Layout.fillWidth: true
-
-            GridLayout {
-                Layout.fillWidth: true
-                columns: 2
-                rowSpacing: 8
-                columnSpacing: 8
-
-                Rectangle {
+            visible: isMinimal
+            GroupedList {
+                ConfigSelectionArray {
                     Layout.fillWidth: true
                     Layout.preferredHeight: barPosCol.implicitHeight + 24
                     radius: Appearance.rounding.normal
@@ -368,9 +371,14 @@ ContentPage {
                             ]
                         }
                     }
+                    options: [
+                        { displayName: Translation.tr("Top"), icon: "arrow_upward",   value: 0 },
+                        { displayName: Translation.tr("Left"), icon: "arrow_back",     value: 2 },
+                        { displayName: Translation.tr("Bottom"), icon: "arrow_downward", value: 1 },
+                        { displayName: Translation.tr("Right"), icon: "arrow_forward",  value: 3 }
+                    ]
                 }
-
-                Rectangle {
+                ConfigSelectionArray {
                     Layout.fillWidth: true
                     Layout.preferredHeight: barStyleCol.implicitHeight + 24
                     radius: Appearance.rounding.normal
@@ -454,8 +462,7 @@ ContentPage {
                     }
                     
                 }
-
-                Rectangle {
+                ConfigSelectionArray {
                     Layout.fillWidth: true
                     Layout.preferredHeight: groupStyleCol.implicitHeight + 24
                     radius: Appearance.rounding.normal
@@ -494,6 +501,50 @@ ContentPage {
                             ]
                         }
                     }
+                    options: [
+                        { displayName: Translation.tr("Top"), icon: "arrow_upward",   value: 0 },
+                        { displayName: Translation.tr("Left"), icon: "arrow_back",     value: 2 },
+                        { displayName: Translation.tr("Bottom"), icon: "arrow_downward", value: 1 },
+                        { displayName: Translation.tr("Right"), icon: "arrow_forward",  value: 3 }
+                    ]
+                }
+                ConfigSelectionArray {
+                    Layout.fillWidth: true
+                    icon: "settop_component"
+                    text: Translation.tr("Bar style")
+                    currentValue: Config.options.bar.cornerStyle
+                    onSelected: newValue => { Config.options.bar.cornerStyle = newValue; }
+                    options: [
+                        { displayName: Translation.tr("Hug"), icon: "line_curve", value: 0 },
+                        { displayName: Translation.tr("Float"), icon: "view_day",   value: 1 },
+                        { displayName: Translation.tr("Islands"), icon: "crop_3_2",   value: 2 },
+                        { displayName: Translation.tr("M3"), icon: "interests",  value: 3 },
+                        { displayName: Translation.tr("Panel"), icon: "toolbar",  value: 4 }
+                    ]
+                }
+                ConfigSelectionArray {
+                    text: Translation.tr("Group style")
+                    icon: "tab_group"
+                    currentValue: Config.options.bar.borderless
+                    onSelected: newValue => { Config.options.bar.borderless = newValue; }
+                    options: [
+                        { displayName: Translation.tr(""),          icon: "block",          value: "transparent" },
+                        { displayName: Translation.tr("Pills"),     icon: "pill",           value: "pills" },
+                        { displayName: Translation.tr("Separated"), icon: "view_column_2",  value: "separated" },
+                        { displayName: Translation.tr("Segmented"), icon: "tablet",           value: "segmented" },
+                    ]
+                }
+                ConfigSelectionArray {
+                    Layout.fillWidth: true
+                    icon: "rounded_corner"
+                    text: Translation.tr("Screen round corner")
+                    currentValue: Config.options.appearance.fakeScreenRounding
+                    onSelected: newValue => { Config.options.appearance.fakeScreenRounding = newValue; }
+                    options: [
+                        { displayName: Translation.tr("No"),                  icon: "close",           value: 0 },
+                        { displayName: Translation.tr("Yes"),                 icon: "check",           value: 1 },
+                        { displayName: Translation.tr("When not fullscreen"), icon: "fullscreen_exit", value: 2 }
+                    ]
                 }
             }
         }

@@ -74,11 +74,13 @@ Item {
         onLoaded: {
             root.setClockPreset(categoryFileView.text().trim())
         }
+        onLoadFailed: (error) => {}
     }
 
     property bool useSineCookie: Config.options.background.widgets.clock.cookie.useSineCookie
-    StyledDropShadow {
-        target: root.useSineCookie ? sineCookieLoader : roundedPolygonCookieLoader
+    Item {
+        id: cookieContainer
+        anchors.fill: parent
 
         RotationAnimation on rotation {
             running: Config.options.background.widgets.clock.cookie.constantlyRotate
@@ -88,27 +90,60 @@ Item {
             from: 360
             to: 0
         }
-    }
-    Loader {
-        id: sineCookieLoader
-        z: 0
-        visible: false // The DropShadow already draws it
-        active: root.useSineCookie
-        sourceComponent: SineCookie {
-            implicitSize: root.implicitSize
-            sides: Config.options.background.widgets.clock.cookie.sides
-            color: root.colBackground
+
+        StyledDropShadow {
+            target: cookieShapes
+            visible: !root.blurWidgets && Config.options.background.widgets.shadow
         }
-    }
-    Loader {
-        id: roundedPolygonCookieLoader
-        z: 0
-        visible: false // The DropShadow already draws it
-        active: !root.useSineCookie
-        sourceComponent: MaterialCookie {
-            implicitSize: root.implicitSize
-            sides: Config.options.background.widgets.clock.cookie.sides
-            color: root.colBackground
+
+        Item {
+            id: cookieShapes
+            anchors.fill: parent
+
+            Loader {
+                id: sineCookieLoader
+                anchors.fill: parent
+                z: 0
+                visible: !root.blurWidgets
+                active: root.useSineCookie
+                sourceComponent: SineCookie {
+                    implicitSize: root.implicitSize
+                    sides: Config.options.background.widgets.clock.cookie.sides
+                    color: root.colBackground
+                }
+            }
+            Loader {
+                id: roundedPolygonCookieLoader
+                anchors.fill: parent
+                z: 0
+                visible: !root.blurWidgets
+                active: !root.useSineCookie
+                sourceComponent: MaterialCookie {
+                    implicitSize: root.implicitSize
+                    sides: Config.options.background.widgets.clock.cookie.sides
+                    color: root.colBackground
+                }
+            }
+        }
+
+        // Blurred wallpaper, masked by the cookie shape
+        FastBlurred {
+            id: cookieBlur
+            anchors.fill: parent
+            blurSource: root.wallpaperItem
+            cardRadius: 0
+            tint: Appearance.colors.colLayer1
+            tintOpacity: 0.55
+            trackX: root.originX + root.x
+            trackY: root.originY + root.y
+            visible: false
+        }
+        OpacityMask {
+            anchors.fill: parent
+            source: cookieBlur
+            maskSource: root.useSineCookie ? sineCookieLoader.item : roundedPolygonCookieLoader.item
+            z: 0
+            visible: root.blurWidgets
         }
     }
 

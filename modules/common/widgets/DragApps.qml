@@ -12,7 +12,6 @@ import Quickshell.Io
 import Quickshell
 import Quickshell.Widgets
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 Item {
     id: root
@@ -73,9 +72,16 @@ Item {
 
             property string appId:     root._workOrder[index] ?? ""
             property var    appEntry:  TaskbarApps.apps.find(a => a.appId === appId) ?? null
-            property var    deskEntry: appEntry ? DesktopEntries.heuristicLookup(appId) : null
+            property var    deskEntry: DesktopEntries.heuristicLookup(appId)
             property bool   appActive: appEntry?.toplevels?.find(t => t.activated) !== undefined
             property int    _lastFocused: -1
+
+            Connections {
+                target: DesktopEntries
+                function onApplicationsChanged() {
+                    slotItem.deskEntry = DesktopEntries.heuristicLookup(slotItem.appId)
+                }
+            }
 
             width:  root.btnSize
             height: root.implicitHeight
@@ -280,7 +286,8 @@ Item {
         id: previewPopup
         property var appTopLevel: root.lastHoveredButton?.appToplevel ?? null
 
-        property bool shouldShow: (popupMouseArea.containsMouse || root.buttonHovered)
+        property bool shouldShow: WM.compositor === "hyprland"
+                                  && (popupMouseArea.containsMouse || root.buttonHovered)
                                   && !root._dragging
                                   && appTopLevel
                                   && appTopLevel.toplevels
@@ -376,7 +383,7 @@ Item {
 
                     Repeater {
                         model: ScriptModel {
-                            values: previewPopup.appTopLevel?.toplevels ?? []
+                            values: WM.compositor === "hyprland" ? (previewPopup.appTopLevel?.toplevels ?? []) : []
                         }
 
                         RippleButton {

@@ -12,7 +12,6 @@ import Quickshell.Hyprland
 LockScreen {
     id: root
 
-    // Monitor name -> workspace id to restore on unlock (set when locking)
     property var savedWorkspaces: ({})
     property string lastProcessedLockWall: ""
     property bool lastProcessedDarkmode: Appearance.m3colors.darkmode
@@ -65,7 +64,6 @@ LockScreen {
         }
     }
 
-    // Single batch for lock and unlock so we don't race multiple hyprctl calls
     Connections {
         target: GlobalStates
         function onScreenLockedChanged() {
@@ -75,13 +73,17 @@ LockScreen {
                 var wallChanged = Config.options.background.lockWall !== root.lastProcessedLockWall
                 var modeChanged = Appearance.m3colors.darkmode !== root.lastProcessedDarkmode
 
+            if (GlobalStates.screenLocked) {
                 if (Config.options.background.lockWall !== "" && (wallChanged || modeChanged)) {
                     lockThemeProc.running = true
                 } else if (Config.options.background.lockWall !== "") {
                     MaterialThemeLoader.useLockTheme()
                 }
+                
+                if (WM.compositor === "niri") {
+                    return;
+                }
 
-                // Lock: save workspace per monitor and move all to temp workspace in one batch
                 var next = {}
                 var batch = "keyword animation workspaces,1,7,menu_decel,slidevert; "
                 for (var i = 0; i < Quickshell.screens.length; ++i) {
@@ -102,12 +104,13 @@ LockScreen {
                     MaterialThemeLoader.useLiveTheme()
                     MonitorThemes.refresh()
                 }
-                restoreTimer.start()
+                if (WM.compositor !== "niri") {
+                    restoreTimer.start()
+                }
             }
         }
     }
 
-    // Push everything down (visual only; workspace switch is in Connections above)
     Variants {
         model: Quickshell.screens
         delegate: Scope {

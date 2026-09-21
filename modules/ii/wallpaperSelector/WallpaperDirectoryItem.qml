@@ -7,12 +7,12 @@ import qs.modules.common.widgets
 import qs.services
 import qs
 
-MouseArea {
+Item {
     id: root
 
     required property var fileModelData
-    property bool isDirectory: fileModelData.fileIsDir
-    property bool useThumbnail: Images.isValidImageByName(fileModelData.fileName)
+    property bool isDirectory: fileModelData ? Boolean(fileModelData.fileIsDir) : false
+    property bool useThumbnail: fileModelData ? Images.isValidImageByName(fileModelData.fileName) : false
     property alias colBackground: background.color
     property alias colText: wallpaperItemName.color
     property alias radius: background.radius
@@ -86,7 +86,7 @@ MouseArea {
                         id: thumbnailImage
 
                         generateThumbnail: false
-                        sourcePath: fileModelData.filePath
+                        sourcePath: (fileModelData && fileModelData.filePath) ? fileModelData.filePath : ""
                         cache: false
                         fillMode: Image.PreserveAspectCrop
                         clip: true
@@ -160,7 +160,7 @@ MouseArea {
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 font.pixelSize: Appearance.font.pixelSize.smaller
-                text: fileModelData.fileName
+                text: (fileModelData && fileModelData.fileName) ? fileModelData.fileName : ""
 
                 Behavior on color {
                     animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)

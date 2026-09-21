@@ -15,6 +15,7 @@ Item {
     readonly property string currentBorderless: Config.getBarSetting(root.monitorName, ["borderless"], Config.options.bar.borderless)
     readonly property int currentCornerStyle: Config.getBarSetting(root.monitorName, ["cornerStyle"], Config.options.bar.cornerStyle)
     property bool paintMaterialPill: false
+    property bool paintBackground: true
     property real padding: (root.isMaterial && !root.paintMaterialPill) ? 0 : 5
     property color bgColor: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
@@ -45,7 +46,7 @@ Item {
             leftMargin: root.vertical ? 4 : 0
             rightMargin: root.vertical ? 4 : 0
         }
-        color: (root.isMaterial && !root.paintMaterialPill)
+        color: !root.paintBackground
             ? "transparent"
             : (root.isMaterial && root.paintMaterialPill)
                 ? root.bgColor

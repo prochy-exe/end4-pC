@@ -4,6 +4,7 @@ import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
+;import qs.modules.common.functions
 import qs.modules.common.widgets.widgetCanvas
 import qs.modules.ii.background.widgets
 
@@ -25,8 +26,8 @@ AbstractBackgroundWidget {
     property real widgetWidth: {
         switch (root.sizeMode) {
             case "1x1": return snapWidth1
-            case "1x2": return snapWidth2
-            default:    return snapWidth3
+            case "2x3": return snapWidth3
+            default:    return snapWidth2
         }
     }
 
@@ -34,6 +35,25 @@ AbstractBackgroundWidget {
         var mid1 = (snapWidth1 + snapWidth2) / 2
         if (value < mid1) return "1x1"
         return root.sizeMode === "1x2" ? "1x2" : "2x2"
+    }
+
+    readonly property real heightToggleFraction: 0.3
+    readonly property real heightToggleDelta: (root.cardHeight * 2 + root.cardSpacing - root.cardHeight) * root.heightToggleFraction
+
+    function modeForDrag(dx, dy, startWidth) {
+        var mid1 = (root.snapWidth1 + root.snapWidth2) / 2
+        var mid2 = (root.snapWidth2 + root.snapWidth3) / 2
+        var newWidth = startWidth + dx
+
+        if (newWidth < mid1) return "1x1"
+        if (newWidth >= mid2) return "2x3"
+
+        if (root.sizeMode === "1x1") {
+            return dy > root.heightToggleDelta ? "2x2" : "1x2"
+        }
+        if (dy > root.heightToggleDelta) return "2x2"
+        if (dy < -root.heightToggleDelta) return "1x2"
+        return root.sizeMode === "2x3" ? "2x2" : root.sizeMode
     }
 
     property int monthShift: 0
@@ -126,9 +146,21 @@ AbstractBackgroundWidget {
         radius: Appearance.rounding?.verylarge ?? 30
         color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
+        FastBlurred {
+            anchors.fill: parent
+            blurSource: root.wallpaperItem
+            cardRadius: card.radius
+            tint: Appearance.colors.colLayer1
+            tintOpacity: 0.55
+            trackX: root.x  
+            trackY: root.y
+            visible: Config.options.background.widgets.blurWidgets 
+        }
+
         StyledRectangularShadow {
             target: card
             z: -2
+            visible: Config.options.background.widgets.shadow
         }
 
         Loader {
@@ -136,6 +168,7 @@ AbstractBackgroundWidget {
             sourceComponent: {
                 if (root.sizeMode === "1x1") return oneByOneContent
                 if (root.sizeMode === "1x2") return oneByTwoContent
+                if (root.sizeMode === "2x3") return twoByThreeContent
                 return twoByTwoContent
             }
         }
@@ -145,7 +178,7 @@ AbstractBackgroundWidget {
             id: oneByOneContent
             Rectangle {
                 anchors.fill: parent
-                radius: parent.radius
+                radius: Appearance.rounding?.verylarge ?? 30
                 color: "transparent"
 
                 ColumnLayout {
@@ -386,29 +419,99 @@ AbstractBackgroundWidget {
             visible: opacity > 0 && !Config.options.background.widgetsLocked
             Behavior on opacity { NumberAnimation { duration: 150 } }
 
-            MouseArea {
-                id: resizeArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.SizeHorCursor
-                preventStealing: true
-                property real startWidth: 0
-                property real startX: 0
-                onPressed: (mouse) => {
-                    startWidth = root.widgetWidth
-                    startX = mapToItem(null, mouse.x, mouse.y).x
+                ColumnLayout {
+                    Layout.preferredWidth: 110
+                    Layout.fillHeight: true
+                    spacing: 2
+
+                    MaterialShapeWrappedMaterialSymbol {
+                        shape: MaterialShape.Shape.Gem
+                        color: Appearance.colors.colPrimary
+                        colSymbol: Appearance.colors.colOnPrimary
+                        text: "calendar_month"
+                        iconSize: 22
+                        fill: 1
+                        padding: 6
+                        implicitWidth: 44
+                        implicitHeight: 44
+                    }
+
+                    Item { Layout.fillHeight: true }
+
+                    StyledText {
+                        text: root.today.toLocaleDateString(Qt.locale(), "MMMM").toUpperCase()
+                        font.pixelSize: Appearance.font.pixelSize.normal
+                        font.weight: Font.Bold
+                        color: Appearance.colors.colOnPrimaryContainer
+                        opacity: 0.6
+                    }
+                    StyledText {
+                        text: root.today.toLocaleDateString(Qt.locale(), "dddd")
+                        font.pixelSize: Appearance.font.pixelSize.larger
+                        font.weight: Font.DemiBold
+                        color: Appearance.colors.colOnPrimaryContainer
+                        opacity: 0.8
+                    }
+
+                    StyledText {
+                        text: root.today.getDate()
+                        font.pixelSize: 66
+                        font.weight: Font.Bold
+                        color: Appearance.colors.colPrimary
+                    }
                 }
-                onPositionChanged: (mouse) => {
-                    if (!pressed) return
-                    var globalX = mapToItem(null, mouse.x, mouse.y).x
-                    var dx = globalX - startX
-                    var newW = startWidth + dx
-                    var mid = (root.snapWidth1 + root.snapWidth2) / 2
-                    if (newW < mid) root.sizeMode = "1x1"
-                    else if (root.sizeMode === "1x1") root.sizeMode = "2x2"
-                }
-                onReleased: {
-                    root.configEntry.sizeMode = root.sizeMode
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+                    radius: (Appearance.rounding?.verylarge ?? 30) - 8
+
+                    ColumnLayout {
+                        anchors { fill: parent; margins: 10 }
+                        spacing: 4
+
+                        RowLayout {
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.topMargin: 10
+                            spacing: 4
+                            Repeater {
+                                model: ["Mo","Tu","We","Th","Fr","Sa","Su"]
+                                delegate: StyledText {
+                                    Layout.preferredWidth: 24
+                                    horizontalAlignment: Text.AlignHCenter
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    font.weight: Font.Bold
+                                    color: Appearance.colors.colOnPrimaryContainer
+                                    opacity: 0.6
+                                    text: modelData
+                                }
+                            }
+                        }
+
+                        ColumnLayout {
+                            Layout.fillHeight: true
+                            Layout.alignment: Qt.AlignHCenter
+                            spacing: -3
+
+                            Repeater {
+                                model: root.getMonthMatrix(root.today)
+                                delegate: RowLayout {
+                                    required property var modelData
+                                    spacing: 4
+                                    Repeater {
+                                        model: parent.modelData
+                                        delegate: DayCell {
+                                            required property var modelData
+                                            day: modelData.day
+                                            currentMonth: modelData.currentMonth
+                                            isToday: modelData.currentMonth && modelData.day === root.today.getDate()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

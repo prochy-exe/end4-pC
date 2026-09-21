@@ -148,7 +148,11 @@ Variants {
 
         property list<HyprlandWorkspace> workspacesForMonitor: Hyprland.workspaces.values.filter(workspace => workspace.monitor && workspace.monitor.name == monitor.name)
         property var activeWorkspaceWithFullscreen: workspacesForMonitor.filter(workspace => ((workspace.toplevels.values.filter(window => window.wayland?.fullscreen)[0] != undefined) && workspace.active))[0]
-        visible: GlobalStates.screenLocked || (!(activeWorkspaceWithFullscreen != undefined)) || !Config?.options.background.hideWhenFullscreen
+        visible: true
+
+        readonly property bool hiddenForFullscreen: !GlobalStates.screenLocked
+            && (activeWorkspaceWithFullscreen != undefined)
+            && Config?.options.background.hideWhenFullscreen
 
         property HyprlandMonitor monitor: Hyprland.monitorFor(modelData)
 
@@ -423,7 +427,13 @@ Variants {
             animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
         }
 
+        // Decode wallpapers at screen resolution. Uploading a 5K+ image and its mipmaps to the GPU
+        // stalls the render thread, and the GUI thread with it while an animation is running.
+        readonly property size wallpaperSourceSize: Qt.size(Math.ceil(modelData.width * modelData.devicePixelRatio),
+            Math.ceil(modelData.height * modelData.devicePixelRatio))
+
         property real transitionProgress: 1.0
+        property bool transitionPending: false
 
         screen: modelData
         exclusionMode: ExclusionMode.Ignore
@@ -462,7 +472,7 @@ Variants {
         }
 
         Component.onCompleted: {
-            previousWallpaper.source = ""
+            previousWallpaper.source = bgRoot.wallpaperSafetyTriggered ? "" : bgRoot.wallpaperPath
             wallpaper.source = bgRoot.wallpaperSafetyTriggered ? "" : bgRoot.wallpaperPath
             bgRoot.currentWallpaperSource = bgRoot.wallpaperPath
             bgRoot.previousWallpaperSource = ""
@@ -478,13 +488,16 @@ Variants {
         onWallpaperPathChanged: {
             bgRoot.videoRevealed = false
             if (wallpaperSafetyTriggered) {
+                bgRoot.transitionPending = false
                 previousWallpaper.source = ""
                 wallpaper.source = ""
                 bgRoot.transitionProgress = 1.0
                 return
             }
-            if (bgRoot.wallpaperAnimation === "") {
+            if (bgRoot.wallpaperAnimation === "" || GlobalStates.startupLockPending) {
+                bgRoot.transitionPending = false
                 wallpaper.source = wallpaperPath
+                previousWallpaper.source = wallpaperPath
                 bgRoot.currentWallpaperSource = wallpaperPath
                 if (!bgRoot.wallpaperIsVideo) return
                 bgRoot.videoRevealed = true
@@ -492,7 +505,6 @@ Variants {
             }
 
             previousWallpaper.source = bgRoot.currentWallpaperSource
-            wallpaper.source = wallpaperPath
             bgRoot.currentWallpaperSource = wallpaperPath
             if (bgRoot.wallpaperAnimation === "random") {
                 bgRoot.currentShader = bgRoot.shaderList[Math.floor(Math.random() * bgRoot.shaderList.length)]
@@ -512,7 +524,7 @@ Variants {
             duration: Config.options.background.transitionDuration
             easing.type: Easing.InOutCubic
             onFinished: {
-                previousWallpaper.source = ""
+                previousWallpaper.source = bgRoot.currentWallpaperSource
                 bgRoot.previousWallpaperSource = ""
                 bgRoot.transitionProgress = 1.0
                 bgRoot.videoRevealed = bgRoot.wallpaperIsVideo
@@ -528,6 +540,15 @@ Variants {
                 if (Wallpapers.folderModel.count > 0) {
                     Wallpapers.randomFromCurrentFolder()
                 }
+            }
+        }
+
+        Connections {
+            target: Config
+            function onReadyChanged() {
+                if (!Config.ready) return
+                bgRoot.setCenteredProgress(GlobalStates.screenLocked ? 0 : (bgRoot.centeredOnlyWhenLocked ? 1 : 0))
+                bgRoot.centeredAnimationReady = true
             }
         }
 
@@ -553,10 +574,11 @@ Variants {
                 height: bgRoot.wallpaperSpansMonitors ? bgRoot.sharedWallpaperSpan.height : parent.height
                 fillMode: bgRoot.wallpaperSpansMonitors ? Image.Stretch : Image.PreserveAspectCrop
                 cache: true
+                mipmap: true
                 smooth: true
-                asynchronous: true
                 layer.enabled: true
-                visible: false
+                visible: !bgRoot.videoRevealed
+                opacity: bgRoot.videoRevealed ? 0 : 1
             }
 
             StyledImage {
@@ -569,6 +591,7 @@ Variants {
                 fillMode: bgRoot.wallpaperSpansMonitors ? Image.Stretch : Image.PreserveAspectCrop
                 cache: true
                 smooth: true
+                mipmap: true
                 asynchronous: true
                 layer.enabled: true
                 visible: !bgRoot.effectsEnabled && !bgRoot.usesClassicTransition && !blurLoader.active && !bgRoot.centeredWallpaperEnabled && !bgRoot.videoRevealed
@@ -598,6 +621,14 @@ Variants {
                 fragmentShader: bgRoot.usesClassicTransition
                     ? Qt.resolvedUrl(`shaders/${bgRoot.currentShader}.frag.qsb`)
                     : ""
+
+                Timer {
+                    interval: 16
+                    repeat: true
+                    running: transitionEffect.visible
+                    onTriggered: transitionEffect.time += interval / 1000.0
+                }
+                onVisibleChanged: if (!visible) transitionEffect.time = 0.0
             }
 
             Loader {
@@ -641,7 +672,12 @@ Variants {
 
             Loader {
                 id: blurLoader
-                active: Config.options.lock.blur.enable && (GlobalStates.screenLocked || scaleAnim.running)
+                // The blur is invisible while the centered wallpaper is active
+                // (opaque shape + solid background cover it), so skip it to
+                // save the expensive multi-sample blur pass on lock/unlock.
+                active: Config.options.lock.blur.enable && !centeredWallpaper.centeredWallpaperEnabled
+                    && (GlobalStates.screenLocked || scaleAnim.running)
+                    && !(bgRoot.userBlurActive || bgRoot.overviewBlurActive)
                 anchors.fill: parent
                 scale: GlobalStates.screenLocked ? Config.options.lock.blur.extraZoom : 1
                 Behavior on scale {
@@ -666,80 +702,50 @@ Variants {
                 }
             }
 
-            Rectangle {
-                id: centeredWallpaperBg
+            Loader {
+                id: fastBlurLoader
+                active: (bgRoot.userBlurActive || bgRoot.overviewBlurActive)
+                    && (!GlobalStates.screenLocked || !centeredWallpaper.centeredWallpaperEnabled || bgRoot.blurFullScreen)
                 anchors.fill: parent
-                color: bgRoot.centeredWallpaperColor
-                opacity: bgRoot.centeredWallpaperEnabled ? 1 : 0
-                visible: opacity > 0
-
-                Behavior on opacity {
-                    animation: Appearance.animation.elementMove.numberAnimation.createObject(this)
-                }
-            }
-
-            MaterialShape {
-                id: centeredWallpaperShapeItem
-                anchors.centerIn: parent
-                width: bgRoot.centeredWallpaperSize
-                height: bgRoot.centeredWallpaperSize
-                color: bgRoot.centeredWallpaperColor
-                shape: bgRoot.centeredWallpaperShape
-                transformOrigin: Item.Center
-                visible: opacity > 0
-
-                state: bgRoot.centeredWallpaperEnabled ? "shown" : "hidden"
-
-                states: [
-                    State {
-                        name: "shown"
-                        PropertyChanges { target: centeredWallpaperShapeItem; scale: 1; opacity: 1 }
-                    },
-                    State {
-                        name: "hidden"
-                        PropertyChanges { target: centeredWallpaperShapeItem; scale: 1.4; opacity: 0 }
-                    }
-                ]
-
-                transitions: [
-                    Transition {
-                        to: "shown"
-                        ParallelAnimation {
-                            NumberAnimation { target: centeredWallpaperShapeItem; property: "scale"; from: 0; duration: Appearance.animation.elementMove.duration; easing.type: Easing.InOutCubic }
-                            NumberAnimation { target: centeredWallpaperShapeItem; property: "opacity"; duration: Appearance.animation.elementMove.duration; easing.type: Easing.InOutCubic }
-                        }
-                    },
-                    Transition {
-                        to: "hidden"
-                        ParallelAnimation {
-                            NumberAnimation { target: centeredWallpaperShapeItem; property: "scale"; duration: Appearance.animation.elementMove.duration; easing.type: Easing.InOutCubic }
-                            NumberAnimation { target: centeredWallpaperShapeItem; property: "opacity"; duration: Appearance.animation.elementMove.duration; easing.type: Easing.InOutCubic }
-                        }
-                    }
-                ]
-
-                layer.enabled: true
-                layer.effect: OpacityMask {
-                    maskSource: MaterialShape {
-                        width: centeredWallpaperShapeItem.width
-                        height: centeredWallpaperShapeItem.height
-                        shape: bgRoot.centeredWallpaperShape
-                    }
-                }
-
-                StyledImage {
+                
+                sourceComponent: Item {
+                    id: blurRoot
                     anchors.fill: parent
-                    source: bgRoot.wallpaperPath
-                    fillMode: Image.PreserveAspectCrop
-                    cache: false
-                    antialiasing: true
-                    sourceSize.width: parent.width
-                    sourceSize.height: parent.height
+
+                    readonly property real fadeWidth: 140
+                    readonly property real blurRadius: 48
+                    readonly property bool alignRight: Config.options.background.splitSide === "right"
+                    property real coreWidth: bgRoot.blurFullScreen ? blurRoot.width : blurRoot.width * bgRoot.splitFraction
+
+                    Behavior on coreWidth {
+                        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                    }
+
+                    FastBlur {
+                        id: blurLayer
+                        anchors.fill: parent
+                        source: bgRoot.wallpaperAnimation === "" || bgRoot.transitionProgress >= 1.0 ? wallpaper : transitionEffect
+                        radius: Config.options.background.blurRadius
+
+                        layer.enabled: !bgRoot.blurFullScreen
+                        layer.effect: OpacityMask {
+                            maskSource: Rectangle {
+                                width: blurLayer.width
+                                height: blurLayer.height
+                                gradient: Gradient {
+                                    orientation: Gradient.Horizontal
+                                    GradientStop { position: blurRoot.alignRight ? 1 - (blurRoot.coreWidth / blurRoot.width) : Math.max(0, (blurRoot.coreWidth - blurRoot.fadeWidth) / blurRoot.width); color: blurRoot.alignRight ? "transparent" : "white" }
+                                    GradientStop { position: blurRoot.alignRight ? Math.min(1, 1 - (blurRoot.coreWidth - blurRoot.fadeWidth) / blurRoot.width) : Math.min(1, blurRoot.coreWidth / blurRoot.width); color: blurRoot.alignRight ? "white" : "transparent" }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
-            DropArea {
-                id: wallpaperDropArea
+            /* Centered Wallpaper */
+            CenteredWallpaper {
+                id: centeredWallpaper
                 anchors.fill: parent
                 keys: ["text/uri-list"]
 
@@ -810,6 +816,12 @@ Variants {
                 }
             }
 
+            /* Wallpaper Drop Area */
+            WallpaperDropArea {
+                anchors.fill: parent
+            }
+
+            /* Widgets Loader */
             WidgetCanvas {
                 id: widgetCanvas
                 anchors.fill: parent
@@ -966,6 +978,7 @@ Variants {
                 }
             }
 
+            /* Desktop menu */
             MouseArea {
                 id: desktopRightClickArea
                 anchors.fill: parent

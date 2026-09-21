@@ -9,7 +9,6 @@ import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 
 ButtonMouseArea {
     id: root
@@ -18,7 +17,7 @@ ButtonMouseArea {
     readonly property string monitorName: root.monitor?.name ?? ""
     WorkspaceModel {
         id: wsModel
-        monitor: root.monitor
+        screen: root.QsWindow.window?.screen
     }
 
     property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)
@@ -59,7 +58,7 @@ ButtonMouseArea {
     }
 
     function switchWorkspaceToHovered() {
-        Hyprland.dispatch(`hl.dsp.focus({workspace = ${wsModel.getWorkspaceIdAt(hoverIndex)}})`);
+        WM.switchWorkspace(wsModel.getWorkspaceIdAt(hoverIndex));
     }
     onPressed: mouse => {
         if (mouse.button == Qt.LeftButton)
@@ -69,9 +68,9 @@ ButtonMouseArea {
     }
     onWheel: event => {
         if (event.angleDelta.y < 0)
-            Hyprland.dispatch(`hl.dsp.focus({workspace = "r+1"})`);
+            WM.switchWorkspaceRelative("next");
         else if (event.angleDelta.y > 0)
-            Hyprland.dispatch(`hl.dsp.focus({workspace = "r-1"})`);
+            WM.switchWorkspaceRelative("prev");
     }
 
     // Indications

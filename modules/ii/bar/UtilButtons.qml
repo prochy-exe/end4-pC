@@ -6,7 +6,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
-import Quickshell.Hyprland
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
 
@@ -224,7 +223,7 @@ Item {
                     anchors.left: btn.right
                     anchors.leftMargin: 8
                     anchors.verticalCenter: btn.verticalCenter
-                    reveal: recordingItem.isRecording && !root.vertical
+                    reveal: recordingItem.isRecording && !root.vertical && !GlobalStates.dynamicIslandEnabled
 
                     StyledText {
                         width: implicitWidth

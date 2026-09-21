@@ -1,9 +1,12 @@
 pragma ComponentBehavior: Bound
 import QtQml
 import QtQuick
+import Quickshell
 import Quickshell.Io
 import qs.modules.common
 import qs.services
+import qs.modules.common
+import qs.modules.common.functions
 import "../"
 
 NestableObject {
@@ -14,10 +17,30 @@ NestableObject {
 
     Component.onCompleted: fetchProc.running = true
 
+    Connections {
+        target: Hyprland
+        enabled: WM.compositor === "hyprland"
+        function onRawEvent(event) {
+            if (["monitoradded", "monitoraddedv2", "monitorremoved", "monitorlayout", "configreloaded"].includes(event.name))
+                refreshTimer.restart()
+        }
+    }
+
+    Timer {
+        id: refreshTimer
+        interval: 300
+        repeat: false
+        onTriggered: fetchProc.running = true
+    }
+
     function updateMonitor(index, changes) {
         let m = root.monitors.slice()
         m[index] = Object.assign({}, m[index], changes)
         root.monitors = m
+
+        let pending = Object.assign({}, root._pendingChanges)
+        pending[index] = Object.assign({}, pending[index] || {}, changes)
+        root._pendingChanges = pending
     }
 
     function _buildLuaLine(m) {
@@ -190,7 +213,37 @@ NestableObject {
             return line
         }).join("\n")
 
-        console.log(`[MonitorConfig] full file:\n${lines}`)
+        if (changedKeys.has("disabled")) {
+            if (m.disabled) setPairs["disabled"] = "1"
+            else resetKeys.push("disabled")
+        }
+        if (changedKeys.has("x") || changedKeys.has("y")) {
+            setPairs["position"] = `${m.x}x${m.y}`
+        }
+        if (changedKeys.has("currentMode") || changedKeys.has("width") || changedKeys.has("height") || changedKeys.has("refreshRate")) {
+            setPairs["mode"] = root._modeToLua(m)
+        }
+        if (changedKeys.has("scale")) setPairs["scale"] = m.scale
+        if (changedKeys.has("transform")) {
+            if (m.transform && m.transform !== 0) setPairs["transform"] = m.transform
+            else resetKeys.push("transform")
+        }
+        if (changedKeys.has("bitdepth")) {
+            if (m.bitdepth) setPairs["bitdepth"] = m.bitdepth
+            else resetKeys.push("bitdepth")
+        }
+        if (changedKeys.has("cm")) {
+            if (m.cm && m.cm !== "auto") setPairs["cm"] = m.cm
+            else resetKeys.push("cm")
+        }
+        if (changedKeys.has("sdrBrightness")) setPairs["sdrbrightness"] = m.sdrBrightness
+        if (changedKeys.has("sdrSaturation")) setPairs["sdrsaturation"] = m.sdrSaturation
+        if (changedKeys.has("minLuminance")) setPairs["min_luminance"] = m.minLuminance
+        if (changedKeys.has("maxLuminance")) setPairs["max_luminance"] = m.maxLuminance
+        if (changedKeys.has("maxAvgLuminance")) setPairs["max_avg_luminance"] = m.maxAvgLuminance
+        if (changedKeys.has("sdrMinLuminance")) setPairs["sdr_min_luminance"] = m.sdrMinLuminance
+        if (changedKeys.has("sdrMaxLuminance")) setPairs["sdr_max_luminance"] = m.sdrMaxLuminance
+        if (changedKeys.has("vrr")) setPairs["vrr"] = m.vrr ? "1" : "0"
 
         const escaped = lines.replace(/'/g, "'\\''")
         const workspaceRules = root._buildWorkspaceRules()
@@ -199,6 +252,10 @@ NestableObject {
         saveProc.command = ["bash", "-c",
             `printf '%s\n' '${escaped}' > ~/.config/hypr/monitors.lua && printf '%s\n' '${escapedWorkspaceRules}' > ~/.config/hypr/workspaces.lua`]
         saveProc.running = true
+
+        let pending = Object.assign({}, root._pendingChanges)
+        delete pending[index]
+        root._pendingChanges = pending
     }
 
     function applyMonitor(m) {
@@ -223,7 +280,11 @@ NestableObject {
         }
 
         root.applyMonitor(root.monitors[index])
-        root.save()
+        root.save(index)
+    }
+
+    function saveHdr(index) {
+        root.save(index)
     }
 
     function logicalWidth(m) {
@@ -252,10 +313,71 @@ NestableObject {
                         transform:     m.transform ?? 0,
                         disabled:      m.disabled,
                         availableModes: m.availableModes,
-                        currentMode:   `${m.width}x${m.height}@${m.refreshRate.toFixed(2)}Hz`
+                        currentMode:   `${m.width}x${m.height}@${m.refreshRate.toFixed(2)}Hz`,
+                        cm:            m.colorManagementPreset ?? "auto",
+                        sdrBrightness: m.sdrBrightness ?? 1.0,
+                        sdrSaturation: m.sdrSaturation ?? 1.0,
+                        sdrMinLuminance: m.sdrMinLuminance ?? 0,
+                        sdrMaxLuminance: m.sdrMaxLuminance ?? 0,
+                        vrr:           m.vrr ?? false,
+                        bitdepth:        null,
+                        minLuminance:    null,
+                        maxLuminance:    null,
+                        maxAvgLuminance: null,
+
+                        hdrSupported: null,
+                        maxBpc:       null,
                     }))
+                    if (root.monitors.length > 0) {
+                        capsProc.command = ["python3", root.capsScriptPath].concat(root.monitors.map(mon => mon.name))
+                        capsProc.running = true
+                        dumpProc.command = ["python3", root.configuratorScriptPath, "--file", root.monitorsLuaPath, "--dump-all"]
+                        dumpProc.running = true
+                    }
                 } catch(e) {
                     console.log("[MonitorConfig] Error parseando JSON:", e)
+                }
+            }
+        }
+    }
+
+    Process {
+        id: capsProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const caps = JSON.parse(text)
+                    let patch = {}
+                    for (const name in caps) {
+                        patch[name] = { hdrSupported: caps[name].hdr, maxBpc: caps[name].maxBpc }
+                    }
+                    root._mergeByName(patch)
+                } catch(e) {
+                    console.log("[MonitorConfig] Error parsing caps JSON:", e)
+                }
+            }
+        }
+    }
+
+    Process {
+        id: dumpProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const dump = JSON.parse(text)
+                    let patch = {}
+                    for (const name in dump) {
+                        const d = dump[name]
+                        patch[name] = {
+                            bitdepth:        d.bitdepth ?? null,
+                            minLuminance:    d.min_luminance ?? null,
+                            maxLuminance:    d.max_luminance ?? null,
+                            maxAvgLuminance: d.max_avg_luminance ?? null,
+                        }
+                    }
+                    root._mergeByName(patch)
+                } catch(e) {
+                    console.log("[MonitorConfig] Error parsing monitors.lua dump JSON:", e)
                 }
             }
         }
