@@ -180,7 +180,7 @@ PanelWindow {
 
     // Vars for indicators
     readonly property var windows: [...HyprlandData.windowList].sort((a, b) => {
-        const specialId = root.hyprlandMonitor.specialWorkspace?.id;
+        const specialId = root.monitor?.specialWorkspace?.id;
         const aSpecial = a.workspace.id === specialId;
         const bSpecial = b.workspace.id === specialId;
         if (aSpecial !== bSpecial) return aSpecial ? -1 : 1;
@@ -213,7 +213,7 @@ PanelWindow {
     readonly property list<var> windowRegions: root.windows
         .filter(w => !w.hidden && w.mapped !== false
             && (w.workspace.id === root.activeWorkspaceId
-                || w.workspace.id === root.hyprlandMonitor.specialWorkspace?.id))
+                || w.workspace.id === root.monitor?.specialWorkspace?.id))
         .map(window => ({
             at: [window.at[0] - root.monitorOffsetX, window.at[1] - root.monitorOffsetY],
             size: [window.size[0], window.size[1]],
@@ -356,8 +356,7 @@ PanelWindow {
         const screenshotAction = root.getScreenshotAction();
         const immediateAction = screenshotAction === ScreenshotAction.Action.Record
             || screenshotAction === ScreenshotAction.Action.RecordWithSound
-            || root.selectionMode !== RegionSelection.SelectionMode.RectCorners
-            || root.selectionFromTargetRegion;
+            || root.selectionMode !== RegionSelection.SelectionMode.RectCorners;
 
         if (immediateAction) {
             root.selectionLocked = false;
@@ -724,13 +723,14 @@ PanelWindow {
         onTriggered: root.cancelStuckOcr()
     }
 
-    // Only clickable in Selection phase
-    mask: Region {
-        item: switch(root.phase) {
-            case RegionSelection.Phase.Select: return mouseArea;
-            case RegionSelection.Phase.Post: return null;
-        }
+    Region {
+        id: emptyInputRegion
+        item: null
     }
+
+    // A null mask makes the whole selector window clickable. During the post
+    // phase, use an empty region so recording controls do not block the desktop.
+    mask: root.phase === RegionSelection.Phase.Select ? null : emptyInputRegion
 
     ScreencopyView { // For freezing
         anchors.fill: parent
@@ -853,7 +853,7 @@ PanelWindow {
             root.draggingY = mouse.y;
 
             let shouldSnip = true;
-            const isClick = Math.hypot(root.draggingX - root.dragStartX, root.draggingY - root.dragStartY) < 4;
+            const isClick = Math.hypot(root.draggingX - root.dragStartX, root.draggingY - root.dragStartY) < 8;
 
             if (root.mouseButton === Qt.RightButton) {
                 if (isClick) {
@@ -899,7 +899,22 @@ PanelWindow {
             }
             if (shouldSnip) {
                 root.captureOrLockSelection();
+            } else {
+                root.dragging = false;
             }
+        }
+        onCanceled: {
+            if (!root.dragging)
+                return;
+
+            if (root.selectionMode === RegionSelection.SelectionMode.RectCorners) {
+                root.syncRegionFromDrag();
+                if (root.regionWidth > 0 && root.regionHeight > 0) {
+                    root.lockSelectionForConfirm();
+                    return;
+                }
+            }
+            root.resetSelectionState();
         }
         onPositionChanged: (mouse) => {
             if (root.selectionLocked && root.dragging && root.dragEditMode !== "none") {
@@ -1104,27 +1119,13 @@ PanelWindow {
         Row {
             id: regionSelectionControls
             z: 10
-            // Hidden while actively dragging out a rect/circle selection so
-            // it doesn't sit in the way of the area being selected -
-            // reappears as soon as the drag ends, whether that locks in a
-            // selection or gets cancelled. Monitor-mode clicks never set
-            // dragging (see mouseArea.onPressed), so this doesn't affect it.
-            visible: root.showControls && root.phase === RegionSelection.Phase.Select && !root.ocrInProgress && !root.ocrReady && !root.dragging
+            visible: root.showControls && root.phase === RegionSelection.Phase.Select && !root.ocrInProgress && !root.ocrReady
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 bottom: parent.bottom
-                bottomMargin: -height
+                bottomMargin: 8
             }
-            opacity: 0
-            Connections {
-                target: root
-                function onVisibleChanged() {
-                    console.warn(`[RegionSelector DEBUG] toolbar screen=${root.screen?.name ?? "null"} visible=${regionSelectionControls.visible} width=${regionSelectionControls.width} height=${regionSelectionControls.height} bottomMargin=${regionSelectionControls.anchors.bottomMargin}`)
-                    if (!visible) return;
-                    regionSelectionControls.anchors.bottomMargin = 8;
-                    regionSelectionControls.opacity = 1;
-                }
-            }
+            opacity: 1
             onVisibleChanged: console.warn(`[RegionSelector DEBUG] toolbar visibility changed screen=${root.screen?.name ?? "null"} visible=${visible} rootVisible=${root.visible} showControls=${root.showControls} phase=${root.phase} dragging=${root.dragging} size=${width}x${height}`)
             Behavior on opacity {
                 animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
@@ -1177,7 +1178,6 @@ PanelWindow {
             id: selectionConfirmControls
             z: 11
             visible: root.selectionLocked
-                && !root.selectionFromTargetRegion
                 && root.phase === RegionSelection.Phase.Select
                 && !root.ocrInProgress
                 && !root.ocrReady
