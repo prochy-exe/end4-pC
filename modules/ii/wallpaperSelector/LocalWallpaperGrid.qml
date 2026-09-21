@@ -153,36 +153,158 @@ Item {
             anchors.margins: 4
             color: Appearance.colors.colLayer1
             radius: Appearance.rounding.normal
-        }
-        Row {
-            anchors.centerIn: parent
-            spacing: 12
-            RippleButton {
-                implicitWidth: 36; implicitHeight: 36
-                buttonRadius: height / 2
-                colBackground: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
-                onClicked: contextMenu.visible = false
-                contentItem: MaterialSymbol {
-                    anchors.centerIn: parent
-                    text: "close"
-                    iconSize: Appearance.font.pixelSize.larger
-                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+            border.width: 1
+            border.color: Appearance.colors.colLayer0Border
+
+            StyledRectangularShadow {
+                target: parent
+            }
+
+            ColumnLayout {
+                anchors.centerIn: parent
+                spacing: 6
+
+                RowLayout {
+                    spacing: 6
+                    Layout.alignment: Qt.AlignHCenter
+
+                    RippleButton {
+                        implicitWidth: 32; implicitHeight: 32
+                        buttonRadius: height / 2
+                        colBackground: Appearance.colors.colSecondaryContainer
+                        onClicked: {
+                            Wallpapers.moveToTop(contextMenu.targetIndex);
+                            contextMenu.visible = false;
+                        }
+                        contentItem: MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "first_page"
+                            iconSize: Appearance.font.pixelSize.normal
+                            color: Appearance.colors.colOnSecondaryContainer
+                        }
+                        StyledToolTip { text: Translation.tr("Move to beginning") }
+                    }
+
+                    RippleButton {
+                        implicitWidth: 32; implicitHeight: 32
+                        buttonRadius: height / 2
+                        colBackground: Appearance.colors.colSecondaryContainer
+                        onClicked: {
+                            Wallpapers.moveWallpaper(contextMenu.targetIndex, Math.max(0, contextMenu.targetIndex - 1));
+                            contextMenu.visible = false;
+                        }
+                        contentItem: MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "arrow_back"
+                            iconSize: Appearance.font.pixelSize.normal
+                            color: Appearance.colors.colOnSecondaryContainer
+                        }
+                        StyledToolTip { text: Translation.tr("Move earlier") }
+                    }
+
+                    RippleButton {
+                        implicitWidth: 32; implicitHeight: 32
+                        buttonRadius: height / 2
+                        colBackground: Appearance.colors.colSecondaryContainer
+                        onClicked: {
+                            Wallpapers.moveWallpaper(contextMenu.targetIndex, Math.min(Wallpapers.wallpaperModel.count - 1, contextMenu.targetIndex + 1));
+                            contextMenu.visible = false;
+                        }
+                        contentItem: MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "arrow_forward"
+                            iconSize: Appearance.font.pixelSize.normal
+                            color: Appearance.colors.colOnSecondaryContainer
+                        }
+                        StyledToolTip { text: Translation.tr("Move later") }
+                    }
+
+                    RippleButton {
+                        implicitWidth: 32; implicitHeight: 32
+                        buttonRadius: height / 2
+                        colBackground: Appearance.colors.colSecondaryContainer
+                        onClicked: {
+                            Wallpapers.moveToBottom(contextMenu.targetIndex);
+                            contextMenu.visible = false;
+                        }
+                        contentItem: MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "last_page"
+                            iconSize: Appearance.font.pixelSize.normal
+                            color: Appearance.colors.colOnSecondaryContainer
+                        }
+                        StyledToolTip { text: Translation.tr("Move to end") }
+                    }
+                }
+
+                RowLayout {
+                    spacing: 8
+                    Layout.alignment: Qt.AlignHCenter
+
+                    RippleButton {
+                        implicitWidth: 32; implicitHeight: 32
+                        buttonRadius: height / 2
+                        colBackground: Appearance.colors.colErrorContainer
+                        onClicked: {
+                            contextMenu.visible = false;
+                            deleteProc.deleteFile(contextMenu.targetPath);
+                        }
+                        contentItem: MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "delete"
+                            iconSize: Appearance.font.pixelSize.normal
+                            color: Appearance.colors.colOnErrorContainer
+                        }
+                        StyledToolTip { text: Translation.tr("Delete wallpaper") }
+                    }
+
+                    RippleButton {
+                        implicitWidth: 32; implicitHeight: 32
+                        buttonRadius: height / 2
+                        colBackground: Appearance.colors.colLayer2
+                        onClicked: contextMenu.visible = false
+                        contentItem: MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "close"
+                            iconSize: Appearance.font.pixelSize.normal
+                            color: Appearance.colors.colOnLayer2
+                        }
+                        StyledToolTip { text: Translation.tr("Cancel") }
+                    }
                 }
             }
-            RippleButton {
-                implicitWidth: 36; implicitHeight: 36
-                buttonRadius: height / 2
-                colBackground: MonitorThemes.shellColorForItem(root, "colErrorContainer", Appearance.colors.colErrorContainer)
-                onClicked: {
-                    contextMenu.visible = false
-                    deleteProc.deleteFile(contextMenu.targetPath)
-                }
-                contentItem: MaterialSymbol {
-                    anchors.centerIn: parent
-                    text: "check"
-                    iconSize: Appearance.font.pixelSize.larger
-                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                }
+        }
+    }
+
+    // ─── Floating drag ghost ───
+    Item {
+        id: dragGhost
+        visible: root.isDragging && root.draggedItemData !== null
+        z: 120
+        width: grid.cellWidth
+        height: grid.cellHeight
+        x: root.dragX - width / 2
+        y: root.dragY - height / 2
+        scale: 1.05
+        opacity: 0.92
+
+        StyledRectangularShadow {
+            target: dragGhostBg
+        }
+
+        Rectangle {
+            id: dragGhostBg
+            anchors.fill: parent
+            radius: Appearance.rounding.normal
+            color: Appearance.colors.colLayer2
+            border.width: 2
+            border.color: Appearance.colors.colPrimary
+
+            WallpaperDirectoryItem {
+                anchors.fill: parent
+                fileModelData: root.draggedItemData ? root.draggedItemData : ({})
+                colBackground: Appearance.colors.colSecondaryContainer
+                colText: Appearance.colors.colOnSecondaryContainer
             }
         }
     }
@@ -235,15 +357,9 @@ Item {
         function moveSelection(delta) {
             currentIndex = Math.max(0, Math.min(grid.model.count - 1, currentIndex + delta));
             positionViewAtIndex(currentIndex, GridView.Contain);
-            const filePath = grid.model.get(currentIndex, "filePath");
-            const isDir = grid.model.get(currentIndex, "fileIsDir");
-            // Keyboard nav needs the same lockWall/monitor-target exclusion
-            // as WallpaperDirectoryItem's click handler - see the comment
-            // there for why per-monitor targets can't preview correctly yet.
-            const canPreview = Config.options.background.enableWallpaperPreview
-                && GlobalStates.wallpaperSelectorTarget !== "lockWall"
-                && !GlobalStates.wallpaperSelectorTarget.startsWith("monitor:");
-            if (!isDir && filePath && canPreview) Wallpapers.startPreview(filePath);
+            const filePath = getModelProp(currentIndex, "filePath");
+            const isDir = getModelProp(currentIndex, "fileIsDir");
+            if (!isDir && filePath && Config.options.background.enableWallpaperPreview) Wallpapers.startPreview(filePath);
         }
 
         function activateCurrent() {
@@ -260,16 +376,42 @@ Item {
             required property int index
             width: grid.cellWidth
             height: grid.cellHeight
-            colBackground: (index === grid?.currentIndex || containsMouse)
-                ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                : (fileModelData.filePath === Config.options.background.wallpaperPath)
-                    ? MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
-                    : ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer))
-            colText: (index === grid.currentIndex || containsMouse)
-                ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
-                : (fileModelData.filePath === Config.options.background.wallpaperPath)
-                    ? MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
-                    : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
+
+            readonly property bool isGhost: root.isDragging && root.dragFromIndex === index
+            readonly property bool isDropTarget: root.isDragging && root.dropTargetIndex === index && root.dragFromIndex !== index
+
+            opacity: isGhost ? 0.3 : 1.0
+            scale: isDropTarget ? 1.05 : 1.0
+            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+            Behavior on opacity { NumberAnimation { duration: 150 } }
+
+            WallpaperDirectoryItem {
+                id: wallpaperItem
+                anchors.fill: parent
+                fileModelData: delegateCell.modelData
+                colBackground: (delegateCell.index === grid.currentIndex || cellMouseArea.containsMouse)
+                    ? Appearance.colors.colPrimary
+                    : (delegateCell.modelData.filePath === Config.options.background.wallpaperPath)
+                        ? Appearance.colors.colSecondaryContainer
+                        : ColorUtils.transparentize(Appearance.colors.colPrimaryContainer)
+                colText: (delegateCell.index === grid.currentIndex || cellMouseArea.containsMouse)
+                    ? Appearance.colors.colOnPrimary
+                    : (delegateCell.modelData.filePath === Config.options.background.wallpaperPath)
+                        ? Appearance.colors.colOnSecondaryContainer
+                        : Appearance.colors.colOnLayer0
+            }
+
+            // Drop target indicator
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: Appearance.sizes.wallpaperSelectorItemMargins
+                radius: Appearance.rounding.normal
+                color: "transparent"
+                border.width: 2
+                border.color: Appearance.colors.colPrimary
+                visible: delegateCell.isDropTarget
+                z: 2
+            }
 
             MouseArea {
                 id: cellMouseArea

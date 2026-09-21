@@ -34,6 +34,37 @@ MouseArea {
         root.centerYActive = yActive
     }
 
+    function registerWidget(widget) {
+        root.registeredWidgets = root.registeredWidgets.concat([widget])
+    }
+
+    function unregisterWidget(widget) {
+        root.registeredWidgets = root.registeredWidgets.filter(w => w !== widget)
+    }
+
+    function bringToFront(widget) {
+        let maxZ = 0
+        for (const candidate of root.registeredWidgets)
+            maxZ = Math.max(maxZ, candidate.z)
+        widget.z = maxZ + 1
+    }
+
+    function clearSelection() {
+        for (const widget of root.registeredWidgets) widget.selected = false
+    }
+
+    function rectsIntersect(a, b) {
+        return a.x < b.x + b.width && a.x + a.width > b.x
+            && a.y < b.y + b.height && a.y + a.height > b.y
+    }
+
+    function selectWithinRect(rect) {
+        for (const widget of root.registeredWidgets) {
+            const bounds = Qt.rect(widget.x, widget.y, widget.width, widget.height)
+            widget.selected = root.rectsIntersect(rect, bounds)
+        }
+    }
+
     Repeater {
         model: root.gridVisible ? Math.ceil(root.width / root.gridSize) : 0
         delegate: Rectangle {
@@ -108,10 +139,27 @@ MouseArea {
         delegate: Item {
             id: crossPoint
             required property int index
-            y: index * root.gridSize
-            width: root.width
-            height: 1
-            color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
+            readonly property int col: index % crossRepeater.cols
+            readonly property int row: Math.floor(index / crossRepeater.cols)
+            readonly property int crossSize: 5
+
+            x: col * root.gridSize - crossSize / 2
+            y: row * root.gridSize - crossSize / 2
+            width: crossSize
+            height: crossSize
+
+            Rectangle {
+                anchors.centerIn: parent
+                width: crossPoint.crossSize
+                height: 1
+                color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
+            }
+            Rectangle {
+                anchors.centerIn: parent
+                width: 1
+                height: crossPoint.crossSize
+                color: MonitorThemes.shellColorForItem(root, "colLayer0Border", Appearance.colors.colLayer0Border)
+            }
         }
     }
 

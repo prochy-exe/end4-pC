@@ -12,6 +12,7 @@ ColumnLayout {
     property string title
     property string icon: ""
     property var bgColor: MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
+    property bool collapsible: true
     default property alias data: sectionContent.data
 
     readonly property string sectionId: root.title

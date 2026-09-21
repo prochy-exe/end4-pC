@@ -329,10 +329,6 @@ ContentPage {
                 ConfigSelectionArray {
                     Layout.fillWidth: true
                     Layout.preferredHeight: barPosCol.implicitHeight + 24
-                    radius: Appearance.rounding.normal
-                    color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
-                    border.width: 1
-                    border.color: "transparent"
 
                     ColumnLayout {
                         id: barPosCol
@@ -381,10 +377,6 @@ ContentPage {
                 ConfigSelectionArray {
                     Layout.fillWidth: true
                     Layout.preferredHeight: barStyleCol.implicitHeight + 24
-                    radius: Appearance.rounding.normal
-                    color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
-                    border.width: 1
-                    border.color: "transparent"
 
                     ColumnLayout {
                         id: barStyleCol
@@ -465,8 +457,6 @@ ContentPage {
                 ConfigSelectionArray {
                     Layout.fillWidth: true
                     Layout.preferredHeight: groupStyleCol.implicitHeight + 24
-                    radius: Appearance.rounding.normal
-                    color: MonitorThemes.shellColorForItem(page, "colLayer1", Appearance.colors.colLayer1)
 
                     ColumnLayout {
                         id: screenRoundCol

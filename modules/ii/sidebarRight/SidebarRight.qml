@@ -17,13 +17,32 @@ Scope {
 
     PanelWindow {
         id: panelWindow
-        visible: GlobalStates.sidebarRightOpen
-        property var targetScreen: Quickshell.screens[0]
-        screen: targetScreen
-        readonly property string monitorName: screen?.name ?? ""
-        readonly property bool barVertical: Config.getBarSetting(monitorName, ["vertical"], Config.options.bar.vertical)
-        readonly property bool barAtBottom: Config.getBarSetting(monitorName, ["bottom"], Config.options.bar.bottom)
-        readonly property int currentCornerStyle: Config.getBarSetting(monitorName, ["cornerStyle"], Config.options.bar.cornerStyle)
+
+        readonly property bool animatedEntrance: WM.compositor !== "hyprland"
+        property bool reallyVisible: false
+        visible: reallyVisible
+
+        Component.onCompleted: reallyVisible = GlobalStates.sidebarRightOpen
+
+        Connections {
+            target: GlobalStates
+            function onSidebarRightOpenChanged() {
+                if (GlobalStates.sidebarRightOpen) {
+                    closeAnimTimer.stop();
+                    panelWindow.reallyVisible = true;
+                } else if (panelWindow.animatedEntrance) {
+                    closeAnimTimer.restart();
+                } else {
+                    panelWindow.reallyVisible = false;
+                }
+            }
+        }
+
+        Timer {
+            id: closeAnimTimer
+            interval: 150
+            onTriggered: panelWindow.reallyVisible = false
+        }
 
         function hide() {
             GlobalStates.sidebarRightOpen = false;
@@ -59,37 +78,33 @@ Scope {
 
         margins {
             top: {
-                if (!centerOnly)
-                    return !barVertical && !barAtBottom ? Appearance.sizes.barHeight : 0;
-                switch (panelWindow.currentCornerStyle) {
-                    case 0: return -Appearance.sizes.barHeight;
-                    case 1: return -Appearance.sizes.barHeight + Appearance.sizes.hyprlandGapsOut;
-                    case 2: return -Appearance.sizes.barHeight + Appearance.sizes.hyprlandGapsOut;
-                    case 3: return -Appearance.sizes.barHeight - Appearance.sizes.hyprlandGapsOut;
-                    default: return 0;
+                if (Config.options.bar.bottom) return 0;
+                if (Config?.options.bar.autoHide.enable) return 0;
+                if (!centerOnly) return 0;
+                switch (Config.options.bar.cornerStyle) {
+                case 0: return -root.barCenterOnlyOffset;
+                case 1: return -root.barCenterOnlyOffset + Appearance.sizes.hyprlandGapsOut;
+                case 2: return -root.barCenterOnlyOffset + Appearance.sizes.hyprlandGapsOut;
+                case 3: return -root.barCenterOnlyOffset - Appearance.sizes.hyprlandGapsOut;
+                default: return 0;
                 }
             }
-            bottom: !centerOnly && !barVertical && barAtBottom ? Appearance.sizes.barHeight : 0
+            bottom: {
+                if (!Config.options.bar.bottom) return 0;
+                if (Config?.options.bar.autoHide.enable) return 0;
+                if (!centerOnly) return 0;
+                switch (Config.options.bar.cornerStyle) {
+                case 0: return -root.barCenterOnlyOffset;
+                case 1: return -root.barCenterOnlyOffset + Appearance.sizes.hyprlandGapsOut;
+                case 2: return -root.barCenterOnlyOffset + Appearance.sizes.hyprlandGapsOut;
+                case 3: return -root.barCenterOnlyOffset - Appearance.sizes.hyprlandGapsOut;
+                default: return 0;
+                }
+            }
         }
 
-        onVisibleChanged: {
-            if (visible)
-                targetScreen = Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
-            if (visible) {
-                MonitorThemes.activateForSurface(panelWindow)
-            }
-            if (visible) {
-                GlobalFocusGrab.addDismissable(panelWindow);
-            } else {
-                GlobalFocusGrab.removeDismissable(panelWindow);
-            }
-        }
-        Connections {
-            target: GlobalFocusGrab
-            function onDismissed() {
-                panelWindow.hide();
-            }
-        }
+        Item {
+            anchors.fill: parent
 
             MouseArea {
                 id: outsideClickArea
@@ -163,7 +178,45 @@ Scope {
             }
         }
 
-            sourceComponent: SidebarRightContent { monitorName: panelWindow.monitorName }
+        IpcHandler {
+            target: "sidebarRight"
+
+            function toggle(): void {
+                GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
+            }
+
+            function close(): void {
+                GlobalStates.sidebarRightOpen = false;
+            }
+
+            function open(): void {
+                GlobalStates.sidebarRightOpen = true;
+            }
+        }
+
+        CompositorGlobalShortcut {
+            name: "sidebarRightToggle"
+            description: "Toggles right sidebar on press"
+
+            onPressed: {
+                GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
+            }
+        }
+        CompositorGlobalShortcut {
+            name: "sidebarRightOpen"
+            description: "Opens right sidebar on press"
+
+            onPressed: {
+                GlobalStates.sidebarRightOpen = true;
+            }
+        }
+        CompositorGlobalShortcut {
+            name: "sidebarRightClose"
+            description: "Closes right sidebar on press"
+
+            onPressed: {
+                GlobalStates.sidebarRightOpen = false;
+            }
         }
     }
 }

@@ -68,38 +68,12 @@ AbstractBackgroundWidget {
         return root.sizeMode
     }
 
-    property int cardWidth: 276
-    property int blurMargin: 18
     property int avatarSize: 64
     property int blurMargin: 18
     property string hostname: SystemInfo.hostname
     property string username: Config.options.profile.displayName === "" ? SystemInfo.username : Config.options.profile.displayName
-    property string userDisplay: {
-        if (Config.options.profile.displayName !== "") {
-            return username
-        }
-        return SystemInfo.usernameDisplay
-    }
+    property string userDisplay: username.length > 10 ? username : (username + "@" + hostname)
     property var currentQuip: weatherQuip()
-
-    function wallpaperPathForScreen() {
-        const screenName = root.QsWindow?.window?.screen?.name ?? "";
-        if (GlobalStates.screenLocked) {
-            if (Config.options.background.lockWallpaperMode === "perMonitor") {
-                const lockOverride = (Config.options.background.lockMonitorWallpapers ?? [])
-                    .find(entry => entry.name === screenName)?.path;
-                if (lockOverride) return lockOverride;
-            }
-            if (Config.options.background.lockWall !== "") return Config.options.background.lockWall;
-        }
-        if (Config.options.background.wallpaperMode === "perMonitor") {
-            const override = (Config.options.background.monitorWallpapers ?? [])
-                .find(entry => entry.name === screenName)?.path;
-            if (override) return override;
-        }
-        return Config.options.background.wallpaperPath;
-    }
-
 
     function weatherQuip() {
         const desc = (Weather.data?.description ?? "").toLowerCase();
@@ -121,10 +95,8 @@ AbstractBackgroundWidget {
         return "Good Evening"
     }
 
-    Item {
-        id: outerRect
-        implicitWidth: root.cardWidth
-        implicitHeight: 252
+    readonly property string greetingText: greetingFor(DateTime.hour24)
+    readonly property string todayString: "Today • " + DateTime.clock.date.toLocaleDateString(Qt.locale(), "dddd d MMM")
 
     // Uptime split into days / hours / minutes for the 2x3 stats row
     property int uptimeSeconds: 0
@@ -194,10 +166,11 @@ AbstractBackgroundWidget {
             }
         }
 
-            property string effectiveSource: "file://" + root.wallpaperPathForScreen()
-
-            Image {
-                id: bgImageA
+        // 1x1
+        Component {
+            id: oneByOneContent
+            Item {
+                id: avatarSingleWrap
                 anchors.fill: parent
                 layer.enabled: true
                 layer.effect: OpacityMask {
@@ -236,71 +209,15 @@ AbstractBackgroundWidget {
                 radius: Appearance.rounding?.verylarge ?? 30
                 color: Appearance.colors.colPrimaryContainer
 
-            property bool usingA: true
-
-            onEffectiveSourceChanged: {
-                if (usingA) {
-                    bgImageB.source = effectiveSource
-                    bgImageB.opacity = 1
-                    bgImageA.opacity = 0
-                } else {
-                    bgImageA.source = effectiveSource
-                    bgImageA.opacity = 1
-                    bgImageB.opacity = 0
-                }
-                usingA = !usingA
-            }
-
-            Component.onCompleted: {
-                bgImageA.source = effectiveSource
-            }
-        }
-
-        FastBlur {
-            id: blurredBg
-            anchors.fill: bgImage
-            source: bgImage
-            radius: 48
-            layer.enabled: true
-            layer.effect: OpacityMask {
-                maskSource: Rectangle {
-                    width: outerRect.width
-                    height: outerRect.height
-                    radius: Appearance.rounding?.verylarge ?? 30
-                }
-            }
-        }
-
-        Rectangle {
-            anchors.fill: blurredBg
-            radius: Appearance.rounding?.verylarge ?? 30
-            color: MonitorThemes.shellColorForItem(root, "colScrim", Appearance.colors.colScrim)
-            opacity: 0.1
-        }
-
-        Rectangle {
-            id: contentBox
-            x: root.blurMargin
-            y: root.avatarSize / 2 + root.blurMargin + 30
-            width: 240
-            color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
-            radius: Appearance.rounding.large
-            implicitHeight: contentColumn.implicitHeight + 30
-
-            ColumnLayout {
-                id: contentColumn
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                    margins: 16
-                }
-                Layout.topMargin: root.avatarSize / 2 + 4
-                spacing: 10
-
-                Item {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: root.avatarSize / 2
+                FastBlurred {
+                    anchors.fill: parent
+                    blurSource: root.wallpaperItem
+                    cardRadius: card.radius
+                    tint: Appearance.colors.colLayer1
+                    tintOpacity: 0.55
+                    trackX: root.x
+                    trackY: root.y
+                    visible: Config.options.background.widgets.blurWidgets
                 }
 
                 RowLayout {
@@ -635,12 +552,11 @@ AbstractBackgroundWidget {
                     }
 
                     MaterialSymbol {
-                        Layout.alignment: Qt.AlignTop
-                        Layout.topMargin: 2
-                        iconSize: Appearance.font.pixelSize.normal
-                        text: root.currentQuip.icon
-                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                        opacity: 0.85
+                        anchors.centerIn: parent
+                        text: "account_circle"
+                        iconSize: 32
+                        color: Appearance.colors.colOnPrimaryContainer
+                        visible: avatarImage.status === Image.Error
                     }
                 }
 
@@ -655,36 +571,68 @@ AbstractBackgroundWidget {
                         Layout.fillWidth: true
                         text: root.userDisplay
                         font.pixelSize: Appearance.font.pixelSize.small
-                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                        opacity: 0.85
-                        text: root.currentQuip.text
+                        font.weight: Font.DemiBold
+                        color: Appearance.colors.colOnLayer1
+                        elide: Text.ElideRight
+                    }
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: "Up • " + DateTime.uptime
+                        font.pixelSize: Appearance.font.pixelSize.smaller
+                        color: Appearance.colors.colOnLayer1
+                        opacity: 0.6
+                        elide: Text.ElideRight
                     }
                 }
+            }
+        }
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.topMargin: 4
-                    spacing: 8
+        // 2x3
+        Component {
+            id: twoByThreeContent
+            Item {
+                id: outerRect3
+                implicitWidth: root.snapWidth4
+                implicitHeight: root.snapHeight3
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        implicitHeight: 40
-                        radius: Appearance.rounding.full
-                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                Rectangle {
+                    id: cardBg
+                    anchors.fill: parent
+                    radius: Appearance.rounding?.verylarge ?? 30
+                    color: Appearance.colors.colPrimaryContainer
+                    clip: true
 
-                        RowLayout {
-                            anchors.centerIn: parent
-                            spacing: 4
-                            MaterialSymbol {
-                                iconSize: Appearance.font.pixelSize.normal
-                                text: "lock"
-                                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
-                            }
-                            StyledText {
-                                font.pixelSize: Appearance.font.pixelSize.small
-                                font.weight: Font.DemiBold
-                                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
-                                text: GlobalStates.screenLocked ? "Locked" : "Lock"
+                    FastBlurred {
+                        anchors.fill: parent
+                        blurSource: root.wallpaperItem
+                        cardRadius: cardBg.radius
+                        tint: Appearance.colors.colLayer1
+                        tintOpacity: 0.55
+                        trackX: root.x
+                        trackY: root.y
+                        visible: Config.options.background.widgets.blurWidgets
+                    }
+
+                    Item {
+                        id: heroWrap
+                        anchors {
+                            top: parent.top
+                            left: parent.left
+                            right: parent.right
+                        }
+                        height: cardBg.height * 0.62
+                        layer.enabled: true
+                        layer.effect: OpacityMask {
+                            maskSource: Rectangle {
+                                width: heroWrap.width
+                                height: heroWrap.height
+                                topLeftRadius: cardBg.radius
+                                topRightRadius: cardBg.radius
+                                gradient: Gradient {
+                                    GradientStop { position: 0.0; color: "#ffffff" }
+                                    GradientStop { position: 0.55; color: "#ffffff" }
+                                    GradientStop { position: 1.0; color: "transparent" }
+                                }
                             }
                         }
 
@@ -700,16 +648,22 @@ AbstractBackgroundWidget {
 
                     // Tr settings button
                     Rectangle {
-                        implicitWidth: 40
-                        implicitHeight: 40
-                        radius: 20
-                        color: "transparent"
-                        border.width: 1
-                        border.color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                        anchors {
+                            top: parent.top
+                            right: parent.right
+                            margins: 12
+                        }
+                        width: 34
+                        height: 34
+                        radius: width / 2
+                        color: ColorUtils.transparentize(Appearance.colors.colLayer0, 0.15)
+                        z: 3
+
                         MaterialSymbol {
                             anchors.centerIn: parent
                             text: "settings"
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                            iconSize: 18
+                            color: Appearance.colors.colOnLayer0
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -720,17 +674,44 @@ AbstractBackgroundWidget {
 
                     // Avatar overlapping
                     Rectangle {
-                        implicitWidth: 40
-                        implicitHeight: 40
-                        radius: 20
-                        color: "transparent"
-                        border.width: 1
-                        border.color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                        id: avatarRect3
+                        x: 16
+                        y: heroWrap.height - 70
+                        width: root.avatarSize + 10
+                        height: root.avatarSize + 10
+                        radius: width / 2
+                        color: Appearance.colors.colPrimaryContainer
+                        border.width: 3
+                        border.color: Appearance.colors.colLayer1
+                        z: 2
+
+                        Image {
+                            id: avatarImage3
+                            anchors.fill: parent
+                            anchors.margins: 3
+                            source: Config.options.profile.avatarPath !== ""
+                                ? "file://" + Config.options.profile.avatarPicture
+                                : "file:///home/" + (Quickshell.env("USER") ?? "user") + "/.face"
+                            sourceSize.width: avatarImage3.width * 2
+                            sourceSize.height: avatarImage3.height * 2
+                            fillMode: Image.PreserveAspectCrop
+                            layer.enabled: true
+                            layer.effect: OpacityMask {
+                                maskSource: Rectangle {
+                                    width: avatarRect3.width - 6
+                                    height: avatarRect3.height - 6
+                                    radius: (avatarRect3.width - 6) / 2
+                                }
+                            }
+                            onStatusChanged: if (status === Image.Error) visible = false
+                        }
+
                         MaterialSymbol {
                             anchors.centerIn: parent
-                            iconSize: Appearance.font.pixelSize.normal
-                            text: "power_settings_new"
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                            text: "account_circle"
+                            iconSize: 32
+                            color: Appearance.colors.colOnPrimaryContainer
+                            visible: avatarImage3.status === Image.Error
                         }
                     }
 
@@ -887,69 +868,15 @@ AbstractBackgroundWidget {
             }
         }
 
-        Rectangle {
-            id: avatarRect
-            x: root.blurMargin + 16
-            y: contentBox.y - root.avatarSize / 2
-            width: root.avatarSize + 10
-            height: root.avatarSize + 10
-            radius: width / 2
-            color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
-            border.width: 3
-            border.color: MonitorThemes.shellColorForItem(root, "colLayer1", Appearance.colors.colLayer1)
-            z: 2
-
-            Image {
-                id: avatarImage
-                anchors.fill: parent
-                anchors.margins: 3
-                source: Config.options.profile.avatarPicture !== ""
-                    ? "file://" + Config.options.profile.avatarPicture
-                    : ""
-                sourceSize.width: avatarImage.width * 2
-                sourceSize.height: avatarImage.height * 2
-                fillMode: Image.PreserveAspectCrop
-                layer.enabled: true
-                layer.effect: OpacityMask {
-                    maskSource: Rectangle {
-                        width: avatarRect.width - 6
-                        height: avatarRect.height - 6
-                        radius: (avatarRect.width - 6) / 2
-                    }
-                }
-                onStatusChanged: {
-                    if (status === Image.Error)
-                        visible = false
-                }
-            }
-
-            MaterialSymbol {
-                anchors.centerIn: parent
-                text: "account_circle"
-                iconSize: 32
-                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                visible: avatarImage.status !== Image.Ready
-            }
-        }
-
-        ColumnLayout {
-            x: avatarRect.x + avatarRect.width + 13
-            y: avatarRect.y + (avatarRect.height - implicitHeight) / 2 + 20
-            spacing: 0
-            z: 2
-
-
-            StyledText {
-                text: root.userDisplay
-                font.pixelSize: Appearance.font.pixelSize.small
-                font.weight: Font.DemiBold
-                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
-            }
-            StyledText {
-                text: "Up • " + DateTime.uptime
-                font.pixelSize: Appearance.font.pixelSize.smaller
-                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
-                opacity: 0.6
+        ResizeHandler {
+            anchorItem: card
+            hoverActive: root.containsMouse
+            locked: Config.options.background.widgetsLocked
+            currentWidth: root.widgetWidth
+            resizeMode: "diagonal"
+            onResizedXY: (dx, dy, startWidth) => { root.sizeMode = root.modeForDrag(dx, dy, startWidth) }
+            onResizeFinished: {
+                root.configEntry.sizeMode = root.sizeMode
             }
         }
     }

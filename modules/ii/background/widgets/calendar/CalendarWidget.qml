@@ -4,7 +4,7 @@ import qs
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
-;import qs.modules.common.functions
+import qs.modules.common.functions
 import qs.modules.common.widgets.widgetCanvas
 import qs.modules.ii.background.widgets
 
@@ -410,14 +410,12 @@ AbstractBackgroundWidget {
             }
         }
 
-        Rectangle {
-            id: resizeHandle
-            width: 16; height: 16; radius: 4
-            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-            anchors { right: card.right; bottom: card.bottom; margins: 4 }
-            opacity: (root.containsMouse || resizeArea.containsMouse || resizeArea.pressed) ? 0.5 : 0
-            visible: opacity > 0 && !Config.options.background.widgetsLocked
-            Behavior on opacity { NumberAnimation { duration: 150 } }
+        // 2x3
+        Component {
+            id: twoByThreeContent
+            RowLayout {
+                anchors { fill: parent; margins: 16 }
+                spacing: 16
 
                 ColumnLayout {
                     Layout.preferredWidth: 110
@@ -426,8 +424,8 @@ AbstractBackgroundWidget {
 
                     MaterialShapeWrappedMaterialSymbol {
                         shape: MaterialShape.Shape.Gem
-                        color: Appearance.colors.colPrimary
-                        colSymbol: Appearance.colors.colOnPrimary
+                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                        colSymbol: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                         text: "calendar_month"
                         iconSize: 22
                         fill: 1
@@ -442,14 +440,14 @@ AbstractBackgroundWidget {
                         text: root.today.toLocaleDateString(Qt.locale(), "MMMM").toUpperCase()
                         font.pixelSize: Appearance.font.pixelSize.normal
                         font.weight: Font.Bold
-                        color: Appearance.colors.colOnPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         opacity: 0.6
                     }
                     StyledText {
                         text: root.today.toLocaleDateString(Qt.locale(), "dddd")
                         font.pixelSize: Appearance.font.pixelSize.larger
                         font.weight: Font.DemiBold
-                        color: Appearance.colors.colOnPrimaryContainer
+                        color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                         opacity: 0.8
                     }
 
@@ -457,14 +455,14 @@ AbstractBackgroundWidget {
                         text: root.today.getDate()
                         font.pixelSize: 66
                         font.weight: Font.Bold
-                        color: Appearance.colors.colPrimary
+                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
                     }
                 }
 
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    color: ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+                    color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colLayer0", Appearance.colors.colLayer0), 0.8)
                     radius: (Appearance.rounding?.verylarge ?? 30) - 8
 
                     ColumnLayout {
@@ -482,7 +480,7 @@ AbstractBackgroundWidget {
                                     horizontalAlignment: Text.AlignHCenter
                                     font.pixelSize: Appearance.font.pixelSize.smaller
                                     font.weight: Font.Bold
-                                    color: Appearance.colors.colOnPrimaryContainer
+                                    color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
                                     opacity: 0.6
                                     text: modelData
                                 }
@@ -516,31 +514,15 @@ AbstractBackgroundWidget {
             }
         }
 
-        Rectangle {
-            id: toggleHandle
-            width: 16; height: 16; radius: 4
-            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-            anchors { left: card.left; bottom: card.bottom; margins: 4 }
-            opacity: (root.containsMouse || toggleArea.containsMouse) && root.sizeMode !== "1x1" ? 0.5 : 0
-            visible: opacity > 0 && !Config.options.background.widgetsLocked
-            Behavior on opacity { NumberAnimation { duration: 150 } }
-
-            MaterialSymbol {
-                anchors.centerIn: parent
-                text: root.sizeMode === "1x2" ? "calendar_view_month" : "calendar_view_week"
-                iconSize: 11
-                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
-            }
-
-            MouseArea {
-                id: toggleArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    root.sizeMode = root.sizeMode === "2x2" ? "1x2" : "2x2"
-                    root.configEntry.sizeMode = root.sizeMode
-                }
+        ResizeHandler {
+            anchorItem: card
+            hoverActive: root.containsMouse
+            locked: Config.options.background.widgetsLocked
+            currentWidth: root.widgetWidth
+            resizeMode: "diagonal"
+            onResizedXY: (dx, dy, startWidth) => { root.sizeMode = root.modeForDrag(dx, dy, startWidth) }
+            onResizeFinished: {
+                root.configEntry.sizeMode = root.sizeMode
             }
         }
     }

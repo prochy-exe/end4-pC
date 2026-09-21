@@ -71,7 +71,7 @@ AbstractBackgroundWidget {
         implicitWidth: root.widgetWidth
         implicitHeight: root.widgetHeight
         radius: Appearance.rounding?.verylarge ?? 30
-        color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+        color: Appearance.colors.colPrimaryContainer
 
         StyledRectangularShadow {
             target: card
@@ -114,8 +114,8 @@ AbstractBackgroundWidget {
                 MaterialShapeWrappedMaterialSymbol {
                     Layout.alignment: Qt.AlignRight
                     shape: MaterialShape.Shape.Cookie12Sided
-                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                    colSymbol: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                    color: Appearance.colors.colPrimary
+                    colSymbol: Appearance.colors.colOnPrimary
                     text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
                     iconSize: 18
                     fill: 1
@@ -130,13 +130,13 @@ AbstractBackgroundWidget {
                     text: Weather.data?.temp ?? "--°"
                     font.pixelSize: Appearance.font.pixelSize.hugeass
                     font.weight: Font.Bold
-                    color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                    color: Appearance.colors.colOnPrimaryContainer
                 }
                 StyledText {
                     Layout.fillWidth: true
                     text: Weather.data?.city ?? "--"
                     font.pixelSize: Appearance.font.pixelSize.small
-                    color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                    color: Appearance.colors.colOnPrimaryContainer
                     opacity: 0.6
                     elide: Text.ElideRight
                 }
@@ -285,39 +285,13 @@ AbstractBackgroundWidget {
                 // Header
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 8
-
-                    ColumnLayout {
-                        spacing: -4
-                        StyledText {
-                            text: Weather.data?.temp ?? "--°"
-                            font.pixelSize: Appearance.font.pixelSize.hugeass
-                            font.weight: Font.Bold
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                        }
-                        StyledText {
-                            text: Weather.data?.city ?? "--"
-                            font.pixelSize: Appearance.font.pixelSize.small
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
-                            elide: Text.ElideRight
-                        }
-                        StyledText {
-                            text: Weather.data?.description ?? "--"
-                            font.pixelSize: Appearance.font.pixelSize.small
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
-                            elide: Text.ElideRight
-                        }
-                    }
-
-                    Item { Layout.fillWidth: true }
+                    spacing: 10
 
                     MaterialShapeWrappedMaterialSymbol {
                         Layout.alignment: Qt.AlignVCenter
                         shape: MaterialShape.Shape.Cookie12Sided
-                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                        colSymbol: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                        color: Appearance.colors.colPrimary
+                        colSymbol: Appearance.colors.colOnPrimary
                         text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
                         iconSize: 24
                         fill: 1
@@ -346,7 +320,7 @@ AbstractBackgroundWidget {
                             opacity: 0.6
                             elide: Text.ElideRight
                         }
-                        
+
                     }
                 }
 
@@ -354,51 +328,168 @@ AbstractBackgroundWidget {
                     Layout.fillWidth: true
                     spacing: 4
 
-                    RowLayout {
-                        spacing: 2
-                        MaterialSymbol {
-                            iconSize: Appearance.font.pixelSize.smaller
-                            text: "humidity_mid"
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
-                        }
-                        StyledText {
-                            text: Weather.data?.humidity ?? "--"
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
+                    MaterialSymbol {
+                        iconSize: Appearance.font.pixelSize.normal
+                        text: "location_on"
+                        color: Appearance.colors.colPrimary
+                        opacity: 0.7
+                    }
+                    StyledText {
+                        text: Weather.data?.city ?? "--"
+                        font.pixelSize: Appearance.font.pixelSize.small
+                        font.weight: Font.Medium
+                        color: Appearance.colors.colOnPrimaryContainer
+                        opacity: 0.7
+                        elide: Text.ElideRight
+                    }
+                }
+
+                // Metrics Grid
+                GridLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    columns: 2
+                    rowSpacing: 6
+                    columnSpacing: 6
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: Appearance.rounding?.large ?? 14
+                        color: Appearance.colors.colSurfaceVariant ?? ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            spacing: 6
+
+                            MaterialSymbol {
+                                iconSize: 16
+                                text: "humidity_mid"
+                                color: Appearance.colors.colPrimary
+                            }
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 0
+                                StyledText {
+                                    text: "Humidity"
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                    opacity: 0.6
+                                }
+                                StyledText {
+                                    text: Weather.data?.humidity ?? "--"
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                    font.weight: Font.Bold
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                }
+                            }
                         }
                     }
 
-                    RowLayout {
-                        spacing: 2
-                        MaterialSymbol {
-                            iconSize: Appearance.font.pixelSize.smaller
-                            text: "rainy"
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: Appearance.rounding?.large ?? 14
+                        color: Appearance.colors.colSurfaceVariant ?? ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            spacing: 6
+
+                            MaterialSymbol {
+                                iconSize: 16
+                                text: "rainy"
+                                color: Appearance.colors.colPrimary
+                            }
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 0
+                                StyledText {
+                                    text: "Rain"
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                    opacity: 0.6
+                                }
+                                StyledText {
+                                    text: Weather.data?.cr ?? "--"
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                    font.weight: Font.Bold
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                }
+                            }
                         }
-                        StyledText {
-                            text: Weather.data?.cr ?? "--"
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
+
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: Appearance.rounding?.large ?? 14
+                        color: Appearance.colors.colSurfaceVariant ?? ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            spacing: 6
+
+                            MaterialSymbol {
+                                iconSize: 16
+                                text: "air"
+                                color: Appearance.colors.colPrimary
+                            }
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 0
+                                StyledText {
+                                    text: "Wind"
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                    opacity: 0.6
+                                }
+                                StyledText {
+                                    text: Weather.data?.wind ?? "--"
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                    font.weight: Font.Bold
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                }
+                            }
                         }
                     }
 
-                    RowLayout {
-                        spacing: 2
-                        MaterialSymbol {
-                            iconSize: Appearance.font.pixelSize.smaller
-                            text: "air"
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
-                        }
-                        StyledText {
-                            text: Weather.data?.wind ?? "--"
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: Appearance.rounding?.large ?? 14
+                        color: Appearance.colors.colSurfaceVariant ?? ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            spacing: 6
+
+                            MaterialSymbol {
+                                iconSize: 16
+                                text: "visibility"
+                                color: Appearance.colors.colPrimary
+                            }
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 0
+                                StyledText {
+                                    text: "Visibility"
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                    opacity: 0.6
+                                }
+                                StyledText {
+                                    text: Weather.data?.visib ?? "--"
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                    font.weight: Font.Bold
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                }
+                            }
                         }
                     }
                 }
@@ -426,7 +517,7 @@ AbstractBackgroundWidget {
                             pixelSize: 40
                             weight: Font.Bold
                         }
-                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                        color: Appearance.colors.colPrimary
                     }
 
                     ColumnLayout {
@@ -437,13 +528,13 @@ AbstractBackgroundWidget {
                             text: Weather.data?.description ?? ""
                             font.pixelSize: Appearance.font.pixelSize.normal
                             font.weight: Font.DemiBold
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                            color: Appearance.colors.colOnPrimaryContainer
                             elide: Text.ElideRight
                         }
                         StyledText {
                             text: Weather.data?.city ?? "--"
                             font.pixelSize: Appearance.font.pixelSize.small
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                            color: Appearance.colors.colOnPrimaryContainer
                             opacity: 0.6
                             elide: Text.ElideRight
                         }
@@ -455,8 +546,8 @@ AbstractBackgroundWidget {
                         Layout.topMargin: -5
                         Layout.alignment: Qt.AlignVCenter
                         shape: MaterialShape.Shape.Cookie12Sided
-                        color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                        colSymbol: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                        color: Appearance.colors.colPrimary
+                        colSymbol: Appearance.colors.colOnPrimary
                         text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
                         iconSize: 24
                         fill: 1
@@ -589,19 +680,34 @@ AbstractBackgroundWidget {
                         Layout.alignment: Qt.AlignVCenter
                         spacing: 0
 
-                    RowLayout {
-                        spacing: 2
-                        MaterialSymbol {
-                            iconSize: Appearance.font.pixelSize.smaller
-                            text: "humidity_mid"
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
-                        }
                         StyledText {
-                            text: Weather.data?.humidity ?? "--"
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
+                            text: Weather.data?.temp ?? "--°"
+                            font {
+                                pixelSize: 42
+                                weight: Font.Bold
+                            }
+                            color: Appearance.colors.colPrimary
+                        }
+
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 4
+
+                            MaterialSymbol {
+                                iconSize: Appearance.font.pixelSize.smaller
+                                text: "location_on"
+                                color: Appearance.colors.colPrimary
+                                opacity: 0.7
+                            }
+                            StyledText {
+                                text: Weather.data?.city ?? "--"
+                                font.pixelSize: Appearance.font.pixelSize.small
+                                font.weight: Font.Medium
+                                color: Appearance.colors.colOnPrimaryContainer
+                                opacity: 0.7
+                                elide: Text.ElideRight
+                            }
                         }
                     }
 
@@ -609,28 +715,7 @@ AbstractBackgroundWidget {
                         Layout.alignment: Qt.AlignVCenter
                         Layout.topMargin: -16
                         spacing: 2
-                        MaterialSymbol {
-                            iconSize: Appearance.font.pixelSize.smaller
-                            text: "rainy"
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
-                        }
-                        StyledText {
-                            text: Weather.data?.cr ?? "--"
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
-                        }
-                    }
 
-                    RowLayout {
-                        spacing: 2
-                        MaterialSymbol {
-                            iconSize: Appearance.font.pixelSize.smaller
-                            text: "air"
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
-                        }
                         StyledText {
                             text: Weather.data?.description ?? ""
                             font.pixelSize: Appearance.font.pixelSize.normal
@@ -642,48 +727,41 @@ AbstractBackgroundWidget {
                         StyledText {
                             text: "Feels like " + (Weather.data?.tempFeelsLike ?? "--")
                             font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
-                        }
-                    }
-
-                    RowLayout {
-                        spacing: 2
-                        MaterialSymbol {
-                            iconSize: Appearance.font.pixelSize.smaller
-                            text: "visibility"
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
-                        }
-                        StyledText {
-                            text: Weather.data?.visib ?? "--"
-                            font.pixelSize: Appearance.font.pixelSize.smaller
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.6
+                            color: Appearance.colors.colOnPrimaryContainer
+                            opacity: 0.55
                         }
                     }
 
                     Item { Layout.fillWidth: true }
 
-                    ColumnLayout{
-                        Layout.topMargin: -5
-                        Layout.rightMargin: 5
-                        spacing: 1
-                        RowLayout {
-                            spacing: 4
-                            MaterialSymbol {
-                                iconSize: Appearance.font.pixelSize.smaller
-                                text: "wb_twilight"
-                                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                                opacity: 0.6
-                            }
-                            StyledText {
-                                text: Weather.data?.sunrise ?? "--"
-                                font.pixelSize: Appearance.font.pixelSize.smaller
-                                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                                opacity: 0.6
-                            }
-                        }
+                    MaterialShapeWrappedMaterialSymbol {
+                        Layout.alignment: Qt.AlignVCenter
+                        Layout.topMargin: -10
+                        shape: MaterialShape.Shape.Cookie12Sided
+                        color: Appearance.colors.colPrimary
+                        colSymbol: Appearance.colors.colOnPrimary
+                        text: Icons.getWeatherIcon(Weather.data.wCode) ?? "cloud"
+                        iconSize: 26
+                        fill: 1
+                        padding: 11
+                        implicitWidth: 52
+                        implicitHeight: 52
+                    }
+                }
+
+                // Metrics Grid
+                GridLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    columns: 3
+                    rowSpacing: 8
+                    columnSpacing: 8
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: Appearance.rounding?.large ?? 18
+                        color: Appearance.colors.colSurfaceVariant ?? ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
 
                         RowLayout {
                             anchors.fill: parent
@@ -691,16 +769,206 @@ AbstractBackgroundWidget {
                             spacing: 8
 
                             MaterialSymbol {
-                                iconSize: Appearance.font.pixelSize.smaller
-                                text: "nights_stay"
-                                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                                opacity: 0.6
+                                iconSize: 20
+                                text: "humidity_mid"
+                                color: Appearance.colors.colPrimary
                             }
-                            StyledText {
-                                text: Weather.data?.sunset ?? "--"
-                                font.pixelSize: Appearance.font.pixelSize.smaller
-                                color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                                opacity: 0.6
+
+                            ColumnLayout {
+                                spacing: 0
+                                Layout.fillWidth: true
+                                StyledText {
+                                    text: "Humidity"
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                    opacity: 0.6
+                                }
+                                StyledText {
+                                    text: Weather.data?.humidity ?? "--"
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                    font.weight: Font.Bold
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: Appearance.rounding?.large ?? 18
+                        color: Appearance.colors.colSurfaceVariant ?? ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 8
+
+                            MaterialSymbol {
+                                iconSize: 20
+                                text: "air"
+                                color: Appearance.colors.colPrimary
+                            }
+
+                            ColumnLayout {
+                                spacing: 0
+                                Layout.fillWidth: true
+                                StyledText {
+                                    text: "Wind"
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                    opacity: 0.6
+                                }
+                                StyledText {
+                                    text: Weather.data?.wind ?? "--"
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                    font.weight: Font.Bold
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: Appearance.rounding?.large ?? 18
+                        color: Appearance.colors.colSurfaceVariant ?? ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 8
+
+                            MaterialSymbol {
+                                iconSize: 20
+                                text: "rainy"
+                                color: Appearance.colors.colPrimary
+                            }
+
+                            ColumnLayout {
+                                spacing: 0
+                                Layout.fillWidth: true
+                                StyledText {
+                                    text: "Rain Chance"
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                    opacity: 0.6
+                                }
+                                StyledText {
+                                    text: Weather.data?.cr ?? "--"
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                    font.weight: Font.Bold
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: Appearance.rounding?.large ?? 18
+                        color: Appearance.colors.colSurfaceVariant ?? ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 8
+
+                            MaterialSymbol {
+                                iconSize: 20
+                                text: "visibility"
+                                color: Appearance.colors.colPrimary
+                            }
+
+                            ColumnLayout {
+                                spacing: 0
+                                Layout.fillWidth: true
+                                StyledText {
+                                    text: "Visibility"
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                    opacity: 0.6
+                                }
+                                StyledText {
+                                    text: Weather.data?.visib ?? "--"
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                    font.weight: Font.Bold
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: Appearance.rounding?.large ?? 18
+                        color: Appearance.colors.colSurfaceVariant ?? ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 8
+
+                            MaterialSymbol {
+                                iconSize: 20
+                                text: "wb_twilight"
+                                color: Appearance.colors.colPrimary
+                            }
+
+                            ColumnLayout {
+                                spacing: 0
+                                Layout.fillWidth: true
+                                StyledText {
+                                    text: "Sunrise"
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                    opacity: 0.6
+                                }
+                                StyledText {
+                                    text: Weather.data?.sunrise ?? "--"
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                    font.weight: Font.Bold
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: Appearance.rounding?.large ?? 18
+                        color: Appearance.colors.colSurfaceVariant ?? ColorUtils.transparentize(Appearance.colors.colLayer0, 0.8)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 8
+
+                            MaterialSymbol {
+                                iconSize: 20
+                                text: "nights_stay"
+                                color: Appearance.colors.colPrimary
+                            }
+
+                            ColumnLayout {
+                                spacing: 0
+                                Layout.fillWidth: true
+                                StyledText {
+                                    text: "Sunset"
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                    opacity: 0.6
+                                }
+                                StyledText {
+                                    text: Weather.data?.sunset ?? "--"
+                                    font.pixelSize: Appearance.font.pixelSize.small
+                                    font.weight: Font.Bold
+                                    color: Appearance.colors.colOnSurfaceVariant ?? Appearance.colors.colOnPrimaryContainer
+                                }
                             }
                         }
                     }
@@ -708,48 +976,14 @@ AbstractBackgroundWidget {
             }
         }
 
-        Rectangle {
-            id: resizeHandle
-            width: 16
-            height: 16
-            radius: 4
-            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-            anchors {
-                right: card.right
-                bottom: card.bottom
-                margins: 4
-            }
-            opacity: (root.containsMouse || resizeArea.containsMouse || resizeArea.pressed) ? 0.5 : 0
-            visible: opacity > 0 && !Config.options.background.widgetsLocked
-
-            Behavior on opacity {
-                NumberAnimation { duration: 150 }
-            }
-
-            MouseArea {
-                id: resizeArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.SizeHorCursor
-                preventStealing: true
-
-                property real startWidth: 0
-                property real startX: 0
-
-                onPressed: (mouse) => {
-                    startWidth = root.widgetWidth
-                    startX = mapToItem(null, mouse.x, mouse.y).x
-                }
-                onPositionChanged: (mouse) => {
-                    if (!pressed) return
-                    var globalX = mapToItem(null, mouse.x, mouse.y).x
-                    var dx = globalX - startX
-                    root.sizeMode = root.modeForWidth(startWidth + dx)
-                }
-                onReleased: {
-                    root.configEntry.sizeMode = root.sizeMode
-                }
-            }
+        ResizeHandler {
+            anchorItem: card
+            hoverActive: root.containsMouse
+            locked: Config.options.background.widgetsLocked
+            currentWidth: root.widgetWidth
+            resizeMode: "diagonal"
+            onResizedXY: (dx, dy, startWidth) => { root.sizeMode = root.modeForDrag(dx, dy, startWidth) }
+            onResizeFinished: { root.configEntry.sizeMode = root.sizeMode }
         }
     }
 }

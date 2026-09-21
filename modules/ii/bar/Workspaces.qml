@@ -9,6 +9,7 @@ import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Hyprland
 
 ButtonMouseArea {
     id: root
@@ -17,7 +18,7 @@ ButtonMouseArea {
     readonly property string monitorName: root.monitor?.name ?? ""
     WorkspaceModel {
         id: wsModel
-        screen: root.QsWindow.window?.screen
+        monitor: root.monitor
     }
 
     property bool vertical: Config.getBarSetting(root.monitorName, ["vertical"], Config.options.bar.vertical)

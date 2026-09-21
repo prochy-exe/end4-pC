@@ -616,6 +616,7 @@ Variants {
                 property real aspectY: 1.0
                 property vector2d aspectRatio: Qt.vector2d(aspectX, aspectY)
                 property vector2d origin: Qt.vector2d(0.5, 0.5)
+                property real time: 0
                 // Skipped whenever the shader wallpaper is in charge, and also
                 // for "datamosh" - that has no classic .frag.qsb to look up.
                 fragmentShader: bgRoot.usesClassicTransition
@@ -704,7 +705,7 @@ Variants {
 
             Loader {
                 id: fastBlurLoader
-                active: (bgRoot.userBlurActive || bgRoot.overviewBlurActive)
+                active: Boolean(bgRoot.userBlurActive || bgRoot.overviewBlurActive)
                     && (!GlobalStates.screenLocked || !centeredWallpaper.centeredWallpaperEnabled || bgRoot.blurFullScreen)
                 anchors.fill: parent
                 
@@ -747,73 +748,9 @@ Variants {
             CenteredWallpaper {
                 id: centeredWallpaper
                 anchors.fill: parent
-                keys: ["text/uri-list"]
-
-                property var currentUrls: []
-
-                onEntered: (drag) => {
-                    drag.accepted = drag.hasUrls
-                    wallpaperDropArea.currentUrls = drag.hasUrls ? drag.urls : []
-                }
-
-                onExited: {
-                    wallpaperDropArea.currentUrls = []
-                }
-
-                onDropped: (drop) => {
-                    if (!drop.hasUrls) {
-                        drop.accepted = false
-                        wallpaperDropArea.currentUrls = []
-                        return
-                    }
-
-                    if (drop.urls.length === 1) {
-                        const path = CF.FileUtils.trimFileProtocol(decodeURIComponent(drop.urls[0].toString()))
-                        const validExt = /\.(png|jpe?g|webp|bmp|gif)$/i.test(path)
-                        if (validExt) {
-                            Wallpapers.select(path, Appearance.m3colors.darkmode)
-                        } else {
-                            const globalPos = wallpaperDropArea.mapToGlobal(drop.x, drop.y)
-                            DropShelf.show(drop.urls, globalPos.x, globalPos.y)
-                        }
-                    } else {
-                        const globalPos = wallpaperDropArea.mapToGlobal(drop.x, drop.y)
-                        DropShelf.show(drop.urls, globalPos.x, globalPos.y)
-                    }
-                    drop.accept()
-                    wallpaperDropArea.currentUrls = []
-                }
-
-                Rectangle {
-                    id: dropOverlay
-                    anchors.fill: parent
-                    visible: wallpaperDropArea.containsDrag
-                    color: CF.ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary), 0.6)
-
-                    property bool isSingleImage: wallpaperDropArea.currentUrls.length === 1
-                        && /\.(png|jpe?g|webp|bmp|gif)$/i.test(
-                            CF.FileUtils.trimFileProtocol(wallpaperDropArea.currentUrls[0].toString())
-                        )
-
-                    ColumnLayout {
-                        anchors.centerIn: parent
-                        spacing: 8
-                        MaterialSymbol {
-                            Layout.alignment: Qt.AlignHCenter
-                            text: dropOverlay.isSingleImage ? "wallpaper" : "stacks"
-                            iconSize: 64
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
-                        }
-                        StyledText {
-                            Layout.alignment: Qt.AlignHCenter
-                            text: dropOverlay.isSingleImage
-                                ? Translation.tr("Drop to set as wallpaper")
-                                : Translation.tr("Drop to add to shelf")
-                            font.pixelSize: Appearance.font.pixelSize.large
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
-                        }
-                    }
-                }
+                screen: bgRoot.screen
+                wallpaperPath: bgRoot.wallpaperPath
+                wallpaperIsVideo: bgRoot.wallpaperIsVideo
             }
 
             /* Wallpaper Drop Area */

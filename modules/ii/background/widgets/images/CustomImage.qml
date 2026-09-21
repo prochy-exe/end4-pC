@@ -154,19 +154,12 @@ AbstractBackgroundWidget {
             }
         }
 
-        Rectangle {
-            id: resizeHandle
-            width: 16
-            height: 16
-            radius: 4
-            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-            anchors {
-                right: imageShape.right
-                bottom: imageShape.bottom
-                margins: 6
-            }
-            opacity: (root.containsMouse || resizeArea.containsMouse || resizeArea.pressed) ? 0.5 : 0
-            visible: opacity > 0 && !Config.options.background.widgetsLocked
+        ResizeHandler {
+            anchorItem: imageShape
+            hoverActive: root.containsMouse
+            locked: Config.options.background.widgetsLocked
+            currentWidth: root.widgetSize
+            resizeMode: "diagonal"
             z: 1
             onResized: (newValue) => {
                 root.widgetSize = Math.max(80, newValue)

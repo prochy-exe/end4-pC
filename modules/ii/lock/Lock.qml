@@ -73,7 +73,6 @@ LockScreen {
                 var wallChanged = Config.options.background.lockWall !== root.lastProcessedLockWall
                 var modeChanged = Appearance.m3colors.darkmode !== root.lastProcessedDarkmode
 
-            if (GlobalStates.screenLocked) {
                 if (Config.options.background.lockWall !== "" && (wallChanged || modeChanged)) {
                     lockThemeProc.running = true
                 } else if (Config.options.background.lockWall !== "") {

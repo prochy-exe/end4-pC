@@ -152,20 +152,6 @@ Singleton {
         }
     }
 
-    Timer {
-        interval: Config?.options.resources.updateInterval ?? 3000
-        running: true
-        repeat: true
-        onTriggered: {
-            tempProc.running = false
-            tempProc.running = true
-            diskProc.running = false
-            diskProc.running = true
-            processAndGpuProc.running = false
-            processAndGpuProc.running = true
-        }
-    }
-
     function kbToGbString(kb) {
         return (kb / (1024 * 1024)).toFixed(1) + " GB"
     }
@@ -214,6 +200,8 @@ Singleton {
 
             diskProc.running = false
             diskProc.running = true
+            processAndGpuProc.running = false
+            processAndGpuProc.running = true
 
             const textMeminfo = fileMeminfo.text()
             memoryTotal = Number(textMeminfo.match(/MemTotal: *(\d+)/)?.[1] ?? 1)

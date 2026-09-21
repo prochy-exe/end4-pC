@@ -146,6 +146,7 @@ Scope { // Scope
         
         sourceComponent: PanelWindow { // Window
             id: panelWindow
+            readonly property bool animatedEntrance: WM.compositor !== "hyprland"
             visible: GlobalStates.sidebarLeftOpen
             property var targetScreen: Quickshell.screens[0]
             screen: targetScreen

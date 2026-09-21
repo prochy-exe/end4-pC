@@ -60,7 +60,7 @@ StyledPopup {
         id: nodeRow
         required property var modelData
         readonly property bool isActive: root.isActive(modelData)
-        width: ListView.view.width
+        width: ListView.view?.width ?? 0
         implicitHeight: 30
         colBackground: "transparent"
         enabled: modelData.online || modelData.value === ""

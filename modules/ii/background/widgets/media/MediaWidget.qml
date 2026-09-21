@@ -23,7 +23,17 @@ AbstractBackgroundWidget {
     hoverEnabled: true
 
     readonly property var playerList: MprisController.players
-    readonly property MprisPlayer currentPlayer: MprisController.activePlayer
+    property MprisPlayer currentPlayer: {
+        const preferred = Config.options.bar.media.preferredPlayer.trim().toLowerCase()
+        if (preferred.length === 0) return MprisController.activePlayer
+        const _ = MprisController.players.count
+        for (const p of MprisController.players) {
+            if ((p.identity ?? "").toLowerCase().includes(preferred) ||
+                (p.desktopEntry ?? "").toLowerCase().includes(preferred))
+                return p
+        }
+        return MprisController.activePlayer
+    }
     property var artUrl: currentPlayer?.trackArtUrl
     property string artDownloadLocation: Directories.coverArt
     property string artFileName: Qt.md5(artUrl)
@@ -132,7 +142,7 @@ AbstractBackgroundWidget {
             ? root.doubleCardHeight
             : (root.cardHeight + (root.sizeMode === "1x3" && root.showLyrics ? 264 : 0))
         radius: Appearance.rounding?.verylarge ?? 30
-        color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+        color: Appearance.colors.colPrimaryContainer
         clip: true
 
         Behavior on implicitHeight {
@@ -197,12 +207,89 @@ AbstractBackgroundWidget {
                 }
 
                 Rectangle {
-                    id: artRect
-                    anchors.left: parent.left
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    width: root.widgetHeight
-                    color: MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
+                    anchors.fill: parent
+                    gradient: Gradient {
+                        GradientStop { position: 0.0; color: "transparent" }
+                        GradientStop { position: 0.5; color: ColorUtils.transparentize("#000000", 0.85) }
+                        GradientStop { position: 1.0; color: ColorUtils.transparentize("#000000", 0.1) }
+                    }
+                }
+
+                RowLayout {
+                    anchors {
+                        bottom: parent.bottom
+                        horizontalCenter: parent.horizontalCenter
+                        bottomMargin: 10
+                    }
+                    spacing: 4
+                    visible: MprisController.activePlayer !== null
+
+                    RippleButton {
+                        implicitWidth: 26
+                        implicitHeight: 26
+                        buttonRadius: Appearance.rounding?.full ?? 999
+                        colBackground: "transparent"
+                        colBackgroundHover: ColorUtils.transparentize("#ffffff", 0.8)
+                        colRipple: ColorUtils.transparentize("#ffffff", 0.7)
+                        downAction: () => root.currentPlayer?.previous()
+
+                        MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "skip_previous"
+                            iconSize: 16
+                            fill: 1
+                            color: Appearance.colors.colPrimary
+                        }
+                    }
+
+                    MaterialShapeWrappedMaterialSymbol {
+                        shape: MaterialShape.Shape.Cookie12Sided
+                        color: Appearance.colors.colPrimary
+                        colSymbol: Appearance.colors.colOnPrimary
+                        text: root.currentPlayer?.isPlaying ? "pause" : "play_arrow"
+                        iconSize: 18
+                        fill: 1
+                        padding: 6
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: root.currentPlayer?.togglePlaying()
+                        }
+                    }
+
+                    RippleButton {
+                        implicitWidth: 26
+                        implicitHeight: 26
+                        buttonRadius: Appearance.rounding?.full ?? 999
+                        colBackground: "transparent"
+                        colBackgroundHover: ColorUtils.transparentize("#ffffff", 0.8)
+                        colRipple: ColorUtils.transparentize("#ffffff", 0.7)
+                        downAction: () => root.currentPlayer?.next()
+
+                        MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "skip_next"
+                            iconSize: 16
+                            fill: 1
+                            color: Appearance.colors.colPrimary
+                        }
+                    }
+                }
+            }
+        }
+
+        // 1x2
+        Component {
+            id: oneByTwoContent
+            RowLayout {
+                anchors.fill: parent
+                spacing: 0
+
+                Rectangle {
+                    id: artBlock
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: root.cardHeight
+                    color: Appearance.colors.colSurfaceContainerLow
                     topLeftRadius: card.radius
                     bottomLeftRadius: card.radius
                     topRightRadius: 0
@@ -235,8 +322,8 @@ AbstractBackgroundWidget {
                         anchors.centerIn: parent
                         fill: 1
                         text: "music_note"
-                        iconSize: root.widgetHeight / 3
-                        color: MonitorThemes.shellColorForItem(root, "colOnSecondaryContainer", Appearance.colors.colOnSecondaryContainer)
+                        iconSize: root.cardHeight / 3
+                        color: Appearance.colors.colOnSecondaryContainer
                         visible: root.displayedArtFilePath === ""
                     }
                 }
@@ -259,27 +346,20 @@ AbstractBackgroundWidget {
                             text: root.currentPlayer?.trackArtist ?? "Play"
                             font.pixelSize: Appearance.font.pixelSize.small
                             font.weight: Font.DemiBold
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                            color: Appearance.colors.colOnPrimaryContainer
                             elide: Text.ElideRight
                         }
                         StyledText {
                             Layout.fillWidth: true
                             text: root.currentPlayer?.trackTitle ?? Translation.tr("Something")
-                            font.pixelSize: Appearance.font.pixelSize.small
-                            color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                            opacity: 0.65
+                            font.pixelSize: Appearance.font.pixelSize.smaller
+                            color: Appearance.colors.colOnPrimaryContainer
+                            opacity: 0.6
                             elide: Text.ElideRight
                         }
                     }
 
-                    // Controls
-                    Rectangle {
-                        id: controlsPill
-                        Layout.alignment: Qt.AlignRight
-                        implicitWidth: controlsRow.implicitWidth + 10
-                        implicitHeight: root.buttonSize + 8
-                        radius: Appearance.rounding?.full ?? 999
-                        color: ColorUtils.transparentize(MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer), 0.9)
+                    Item { Layout.fillHeight: true }
 
                     RowLayout {
                         Layout.fillWidth: true
@@ -437,27 +517,210 @@ AbstractBackgroundWidget {
 
                         MaterialSymbol {
                             anchors.centerIn: parent
+                            text: "skip_previous"
+                            iconSize: root.buttonIconSize - 2
+                            fill: 1
+                            color: Appearance.colors.colOnPrimaryContainer
+                        }
+                    }
+
+                    MaterialShapeWrappedMaterialSymbol {
+                        shape: MaterialShape.Shape.Cookie12Sided
+                        color: Appearance.colors.colPrimary
+                        colSymbol: Appearance.colors.colOnPrimary
+                        text: root.currentPlayer?.isPlaying ? "pause" : "play_arrow"
+                        iconSize: root.buttonIconSize + 6
+                        fill: 1
+                        padding: 8
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: root.currentPlayer?.togglePlaying()
+                        }
+                    }
+
+                    RippleButton {
+                        implicitWidth: 28
+                        implicitHeight: 28
+                        buttonRadius: Appearance.rounding?.full ?? 999
+                        colBackground: "transparent"
+                        colBackgroundHover: Appearance.colors.colPrimaryContainerHover
+                        colRipple: Appearance.colors.colPrimaryContainerActive
+                        downAction: () => root.currentPlayer?.next()
+
+                        MaterialSymbol {
+                            anchors.centerIn: parent
+                            text: "skip_next"
+                            iconSize: root.buttonIconSize - 2
+                            fill: 1
+                            color: Appearance.colors.colOnPrimaryContainer
+                        }
+                    }
+                }
+            }
+        }
+
+        // 1x3
+        Component {
+            id: oneByThreeContent
+            Column {
+                anchors.fill: parent
+                spacing: 0
+
+                // Main Row
+                Item {
+                    width: parent.width
+                    height: root.cardHeight
+
+                    Rectangle {
+                        id: artRect
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        width: root.cardHeight
+                        color: Appearance.colors.colSurfaceContainerLow
+                        topLeftRadius: card.radius
+                        bottomLeftRadius: card.radius
+                        topRightRadius: 0
+                        bottomRightRadius: 0
+                        clip: true
+                        layer.enabled: true
+                        layer.effect: OpacityMask {
+                            maskSource: Rectangle {
+                                width: artRect.width
+                                height: artRect.height
+                                topLeftRadius: card.radius
+                                bottomLeftRadius: card.radius
+                                topRightRadius: 0
+                                bottomRightRadius: 0
+                            }
+                        }
+
+                        StyledImage {
+                            anchors.fill: parent
+                            source: root.displayedArtFilePath
+                            fillMode: Image.PreserveAspectCrop
+                            cache: false
+                            antialiasing: true
+                            sourceSize.width: artRect.width * 2
+                            sourceSize.height: artRect.height * 2
+                            visible: root.displayedArtFilePath !== ""
+                        }
+
+                        MaterialSymbol {
+                            anchors.centerIn: parent
+                            fill: 1
+                            text: "music_note"
+                            iconSize: root.cardHeight / 3
+                            color: Appearance.colors.colOnSecondaryContainer
+                            visible: root.displayedArtFilePath === ""
+                        }
+                    }
+
+                    ColumnLayout {
+                        anchors {
+                            left: artRect.right
+                            right: parent.right
+                            top: parent.top
+                            bottom: parent.bottom
+                            leftMargin: 16
+                            rightMargin: 14
+                        }
+                        spacing: -10
+
+                        // Artist + Title
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignVCenter
                             spacing: 2
 
-                            RippleButton {
-                                implicitWidth: root.buttonSize
-                                implicitHeight: root.buttonSize
-                                buttonRadius: Appearance.rounding?.full ?? 999
-                                colBackground: root.showLyrics
-                                    ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                                    : "transparent"
-                                colBackgroundHover: MonitorThemes.shellColorForItem(root, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover)
-                                colRipple: MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
-                                downAction: () => { root.showLyrics = !root.showLyrics }
+                            StyledText {
+                                Layout.fillWidth: true
+                                text: root.currentPlayer?.trackArtist ?? "Play"
+                                font.pixelSize: Appearance.font.pixelSize.normal
+                                font.weight: Font.DemiBold
+                                color: Appearance.colors.colOnPrimaryContainer
+                                elide: Text.ElideRight
+                            }
 
-                                MaterialSymbol {
-                                    anchors.centerIn: parent
-                                    text: "lyrics"
-                                    iconSize: root.buttonIconSize
-                                    fill: root.showLyrics ? 1 : 0
-                                    color: root.showLyrics
-                                        ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
-                                        : MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                            StyledText {
+                                Layout.fillWidth: true
+                                text: root.currentPlayer?.trackTitle ?? Translation.tr("Something")
+                                font.pixelSize: Appearance.font.pixelSize.small
+                                color: Appearance.colors.colOnPrimaryContainer
+                                opacity: 0.65
+                                elide: Text.ElideRight
+                            }
+                        }
+
+                        // Controls
+                        Rectangle {
+                            id: controlsPill
+                            Layout.alignment: Qt.AlignRight
+                            implicitWidth: controlsRow.implicitWidth + 10
+                            implicitHeight: root.buttonSize + 8
+                            radius: Appearance.rounding?.full ?? 999
+                            color: ColorUtils.transparentize(Appearance.colors.colOnPrimaryContainer, 0.9)
+
+                            RowLayout {
+                                id: controlsRow
+                                anchors.centerIn: parent
+                                spacing: 2
+
+                                RippleButton {
+                                    implicitWidth: root.buttonSize
+                                    implicitHeight: root.buttonSize
+                                    buttonRadius: Appearance.rounding?.full ?? 999
+                                    colBackground: root.showLyrics
+                                        ? Appearance.colors.colPrimary
+                                        : "transparent"
+                                    colBackgroundHover: Appearance.colors.colPrimaryContainerHover
+                                    colRipple: Appearance.colors.colPrimaryContainerActive
+                                    downAction: () => { root.showLyrics = !root.showLyrics }
+
+                                    MaterialSymbol {
+                                        anchors.centerIn: parent
+                                        text: "lyrics"
+                                        iconSize: root.buttonIconSize
+                                        fill: root.showLyrics ? 1 : 0
+                                        color: root.showLyrics
+                                            ? Appearance.colors.colOnPrimary
+                                            : Appearance.colors.colOnPrimaryContainer
+                                    }
+                                }
+
+                                MaterialShapeWrappedMaterialSymbol {
+                                    shape: MaterialShape.Shape.Cookie12Sided
+                                    color: Appearance.colors.colPrimary
+                                    colSymbol: Appearance.colors.colOnPrimary
+                                    text: root.currentPlayer?.isPlaying ? "pause" : "play_arrow"
+                                    iconSize: root.buttonIconSize + 12
+                                    fill: 1
+                                    padding: 8
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: root.currentPlayer?.togglePlaying()
+                                    }
+                                }
+
+                                RippleButton {
+                                    implicitWidth: root.buttonSize
+                                    implicitHeight: root.buttonSize
+                                    buttonRadius: Appearance.rounding?.full ?? 999
+                                    colBackground: "transparent"
+                                    colBackgroundHover: Appearance.colors.colPrimaryContainerHover
+                                    colRipple: Appearance.colors.colPrimaryContainerActive
+                                    downAction: () => root.currentPlayer?.next()
+                                    altAction: () => root.currentPlayer?.previous()
+
+                                    MaterialSymbol {
+                                        anchors.centerIn: parent
+                                        text: "skip_next"
+                                        iconSize: root.buttonIconSize
+                                        fill: 1
+                                        color: Appearance.colors.colOnPrimaryContainer
+                                    }
                                 }
                             }
                         }
@@ -601,8 +864,8 @@ AbstractBackgroundWidget {
 
                             MaterialShapeWrappedMaterialSymbol {
                                 shape: MaterialShape.Shape.Cookie12Sided
-                                color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                                colSymbol: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
+                                color: Appearance.colors.colPrimary
+                                colSymbol: Appearance.colors.colOnPrimary
                                 text: root.currentPlayer?.isPlaying ? "pause" : "play_arrow"
                                 iconSize: root.buttonIconSize + 10
                                 fill: 1
@@ -610,26 +873,14 @@ AbstractBackgroundWidget {
 
                                 MouseArea {
                                     anchors.fill: parent
-                                    onClicked: root.currentPlayer?.togglePlaying()
-                                }
-                            }
-
-                            RippleButton {
-                                implicitWidth: root.buttonSize
-                                implicitHeight: root.buttonSize
-                                buttonRadius: Appearance.rounding?.full ?? 999
-                                colBackground: "transparent"
-                                colBackgroundHover: MonitorThemes.shellColorForItem(root, "colPrimaryContainerHover", Appearance.colors.colPrimaryContainerHover)
-                                colRipple: MonitorThemes.shellColorForItem(root, "colPrimaryContainerActive", Appearance.colors.colPrimaryContainerActive)
-                                downAction: () => root.currentPlayer?.next()
-                                altAction: () => root.currentPlayer?.previous()
-
-                                MaterialSymbol {
-                                    anchors.centerIn: parent
-                                    text: "skip_next"
-                                    iconSize: root.buttonIconSize
-                                    fill: 1
-                                    color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
+                                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                    onClicked: (mouse) => {
+                                        if (mouse.button === Qt.RightButton) {
+                                            root.currentPlayer?.next()
+                                        } else {
+                                            root.currentPlayer?.togglePlaying()
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -637,35 +888,25 @@ AbstractBackgroundWidget {
                 }
 
                 Rectangle {
-                    anchors.centerIn: parent
-                    width: parent.width - 48
-                    height: 1
-                    gradient: Gradient {
-                        orientation: Gradient.Horizontal
-                        GradientStop { position: 0.0; color: "transparent" }
-                        GradientStop { position: 0.2; color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) }
-                        GradientStop { position: 0.8; color: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer) }
-                        GradientStop { position: 1.0; color: "transparent" }
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: ColorUtils.transparentize(Appearance.colors.colOnPrimaryContainer, 0.88)
+                    topLeftRadius: 0
+                    topRightRadius: 0
+                    bottomLeftRadius: card.radius
+                    bottomRightRadius: card.radius
+                    clip: true
+
+                    Lyrics {
+                        anchors.fill: parent
+                        anchors.margins: 10
+                        textAlignment: Text.AlignHCenter
+                        textColor: Appearance.colors.colOnPrimaryContainer
+                        activeColor: Appearance.colors.colPrimary
+                        dimColor: Appearance.colors.colSubtext
+                        indicatorColor: Appearance.colors.colPrimary
+                        indicatorShapeColor: Appearance.colors.colOnPrimary
                     }
-                    opacity: 0.15
-                }
-            }
-
-            Item {
-                width: parent.width
-                height: root.showLyrics ? 250 : 0
-                visible: root.showLyrics
-
-                Lyrics {
-                    anchors.fill: parent
-                    anchors.leftMargin: 16
-                    anchors.rightMargin: 16
-                    textAlignment: Text.AlignHCenter
-                    textColor: MonitorThemes.shellColorForItem(root, "colOnPrimaryContainer", Appearance.colors.colOnPrimaryContainer)
-                    activeColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                    dimColor: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
-                    indicatorColor: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                    indicatorShapeColor: MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
                 }
             }
         }

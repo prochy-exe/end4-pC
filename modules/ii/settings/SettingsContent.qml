@@ -52,26 +52,41 @@ Item {
     }
 
     onCurrentPageChanged: {
-        if (root.pages[currentPage]?.name === Translation.tr("About")) {
+        const pageName = root.pages[currentPage]?.name ?? ""
+        if (pageName === Translation.tr("About")) {
             if (SystemInfo.cpu === "") SystemInfo.refresh()
             Updates.refresh()
         }
     }
     
-    property var pages: [
-        { name: Translation.tr("Quick"),      icon: "instant_mix",    component: Qt.resolvedUrl("pages/QuickConfig.qml") },
-        { name: Translation.tr("General"),    icon: "browse",         component: Qt.resolvedUrl("pages/GeneralConfig.qml") },
-        { name: Translation.tr("Appearance"), icon: "palette",        component: Qt.resolvedUrl("pages/AppearanceConfig.qml") },
-        { name: Translation.tr("Wallpaper effects"), icon: "blur_on", component: Qt.resolvedUrl("pages/WallpaperEffectsConfig.qml") },
-        { name: Translation.tr("Interface"),  icon: "bottom_app_bar", component: Qt.resolvedUrl("pages/InterfaceConfig.qml") },
-        { name: Translation.tr("Services"),   icon: "settings",       component: Qt.resolvedUrl("pages/ServicesConfig.qml") },
-        { name: Translation.tr("Windows"),    icon: "select_window_2", component: Qt.resolvedUrl("pages/WindowsConfig.qml") },
-        { name: Translation.tr("Keybinds"),   icon: "keyboard",       component: Qt.resolvedUrl("pages/KeybindsConfig.qml") },
-        { name: Translation.tr("About"),      icon: "info",           component: Qt.resolvedUrl("pages/About.qml") }
-    ]
+    property var pages: {
+        let list = [
+            { name: Translation.tr("Quick"),      icon: "instant_mix",    component: Qt.resolvedUrl("pages/QuickConfig.qml") },
+            { name: Translation.tr("General"),    icon: "browse",         component: Qt.resolvedUrl("pages/GeneralConfig.qml") },
+            { name: Translation.tr("Bar"),        icon: "toast",          iconRotation: 180, component: Qt.resolvedUrl("pages/BarConfig.qml") },
+            { name: Translation.tr("Desktop"),    icon: "texture",        component: Qt.resolvedUrl("pages/BackgroundConfig.qml") },
+            { name: Translation.tr("Interface"),  icon: "bottom_app_bar", component: Qt.resolvedUrl("pages/InterfaceConfig.qml") },
+            { name: Translation.tr("Services"),   icon: "settings",       component: Qt.resolvedUrl("pages/ServicesConfig.qml") },
+        ]
+        if (WM.compositor === "hyprland") {
+                    list.push({ name: Translation.tr("Hyprland"), icon: "select_window_2", component: Qt.resolvedUrl("pages/HyprlandConfig.qml") })
+                }
+        if (WM.compositor === "niri") {
+                    list.push({ name: Translation.tr("Niri"), icon: "select_window_2", component: Qt.resolvedUrl("pages/NiriConfig.qml") })
+                }
+        list.push({ name: Translation.tr("About"), icon: "info", component: Qt.resolvedUrl("pages/About.qml") })
+        return list
+    }
 
     Component.onCompleted: {
         Config.readWriteDelay = 0
+        Qt.callLater(() => {
+            for (let i = 0; i < root.pages.length; i++) {
+                let loader = pagesRepeater.itemAt(i)
+                if (loader) loader.active = true
+            }
+            if (profileLoader) profileLoader.active = true
+        })
     }
 
     ColumnLayout {
@@ -89,8 +104,8 @@ Item {
                 id: navRailWrapper
                 Layout.fillHeight: true
                 Layout.margins: 0
-                implicitWidth: navRail.expanded ? 240 : fab.baseSize
-                color: MonitorThemes.colorForItem(root, "surface_container_low", Appearance.m3colors.m3surfaceContainerLow)
+                implicitWidth: navRail.expanded ? 195 : fab.baseSize
+                color: isMinimal ? "transparent" : Appearance.colors.colLayer1
                 radius: Appearance.rounding.normal
 
                 Behavior on implicitWidth {
@@ -99,13 +114,7 @@ Item {
 
                 NavigationRail {
                     id: navRail
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                        top: parent.top
-                        bottom: parent.bottom
-                        leftMargin: navRail.expanded ? 20 : 0
-                    }
+                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom; leftMargin: 20 }
                     spacing: 10
                     expanded: root.width > 900
 
@@ -119,28 +128,38 @@ Item {
                         implicitHeight: profileRow.implicitHeight
                         implicitWidth: profileRow.implicitWidth
 
-                        Rectangle {
-                            id: avatarRect
-                            width: 48
-                            height: 48
-                            radius: width / 2
-                            color: MonitorThemes.colorForItem(root, "primary_container", Appearance.colors.colPrimaryContainer)
+                        RowLayout {
+                            id: profileRow
+                            anchors.fill: parent
+                            spacing: 10
 
-                            Image {
-                                id: avatarImage
-                                anchors.fill: parent
-                                source: Config.options.profile.avatarPicture !== "" 
-                                    ? "file://" + Config.options.profile.avatarPicture 
-                                    : ""
-                                sourceSize.width: avatarImage.width * 2
-                                sourceSize.height: avatarImage.height * 2
-                                fillMode: Image.PreserveAspectCrop
-                                layer.enabled: true
-                                layer.effect: OpacityMask {
-                                    maskSource: Rectangle {
-                                        width: avatarRect.width
-                                        height: avatarRect.height
-                                        radius: avatarRect.radius
+                            Rectangle {
+                                id: avatarRect
+                                width: 48
+                                height: 48
+                                radius: width / 2
+                                color: Appearance.colors.colPrimaryContainer
+
+                                Image {
+                                    id: avatarImage
+                                    anchors.fill: parent
+                                    source: Config.options.profile.avatarPath !== ""
+                                        ? "file://" + Config.options.profile.avatarPicture
+                                        : "file:///home/" + (Quickshell.env("USER") ?? "user") + "/.face"
+                                    sourceSize.width: avatarImage.width * 2
+                                    sourceSize.height: avatarImage.height * 2
+                                    fillMode: Image.PreserveAspectCrop
+                                    layer.enabled: true
+                                    layer.effect: OpacityMask {
+                                        maskSource: Rectangle {
+                                            width: avatarRect.width
+                                            height: avatarRect.height
+                                            radius: avatarRect.radius
+                                        }
+                                    }
+                                    onStatusChanged: {
+                                        if (status === Image.Error)
+                                            visible = false
                                     }
                                 }
 
@@ -153,14 +172,10 @@ Item {
                                 }
                             }
 
-                            MaterialSymbol {
-                                anchors.centerIn: parent
-                                text: "account_circle"
-                                iconSize: 32
-                                color: MonitorThemes.colorForItem(root, "on_primary_container", Appearance.colors.colOnPrimaryContainer)
-                                visible: avatarImage.status !== Image.Ready
-                            }
-                        }
+                            ColumnLayout {
+                                spacing: 2
+                                Layout.fillWidth: true
+                                visible: !isMinimal
 
                                 StyledText {
                                     text: Config.options.profile.displayName === "" ? SystemInfo.username : Config.options.profile.displayName
@@ -171,33 +186,27 @@ Item {
                                     Layout.maximumWidth: 100
                                 }
 
-                            StyledText {
-                                text: Config.options.profile.displayName === "" ? SystemInfo.username : Config.options.profile.displayName
-                                font.pixelSize: Appearance.font.pixelSize.normal
-                                color: MonitorThemes.shellColorForItem(root, "colOnLayer1", Appearance.colors.colOnLayer1)
-                                font.weight: Font.Medium
-                                elide: Text.ElideRight
-                                Layout.maximumWidth: 100
-                            }
+                                StyledText {
+                                    id: distroText
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    color: Appearance.colors.colSubtext
+                                    elide: Text.ElideRight
+                                    Layout.maximumWidth: 100
 
-                            StyledText {
-                                id: distroText
-                                font.pixelSize: Appearance.font.pixelSize.smaller
-                                color: MonitorThemes.shellColorForItem(root, "colSubtext", Appearance.colors.colSubtext)
-                                elide: Text.ElideRight
-                                Layout.maximumWidth: 100
-
-                                text: {
-                                    const d = Config.options.profile.descriptionText
-                                    if (d === "::uptime::") return Translation.tr("Up • %1").arg(DateTime.uptime)
-                                    return SystemInfo.distroName
+                                    text: {
+                                        const d = Config.options.profile.descriptionText
+                                        if (d === "::uptime::") return Translation.tr("Up • %1").arg(DateTime.uptime)
+                                        return SystemInfo.distroName
+                                    }
                                 }
                             }
                         }
 
-                            TapHandler {
-                                onTapped: root.showingProfile = !root.showingProfile
-                            }
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.showingProfile = !root.showingProfile
+                        }
                     }
 
                     Rectangle {
@@ -208,8 +217,8 @@ Item {
                         gradient: Gradient {
                             orientation: Gradient.Horizontal
                             GradientStop { position: 0.0; color: "transparent" }
-                            GradientStop { position: 0.2; color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutline) }
-                            GradientStop { position: 0.8; color: MonitorThemes.shellColorForItem(root, "colOutlineVariant", Appearance.colors.colOutline) }
+                            GradientStop { position: 0.2; color: Appearance.colors.colOutline }
+                            GradientStop { position: 0.8; color: Appearance.colors.colOutline }
                             GradientStop { position: 1.0; color: "transparent" }
                         }
                         opacity: 0.15
@@ -241,37 +250,25 @@ Item {
                         }
                     }
 
-                    StyledFlickable {
-                        id: navRailScroll
-                        Layout.topMargin: 25
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        clip: true
-                        contentWidth: width
-                        contentHeight: tabArray.implicitHeight
-
-                        NavigationRailTabArray {
-                            id: tabArray
-                            width: navRailScroll.width
-                            currentIndex: root.currentPage
-                            expanded: navRail.expanded
-                            colToggled: root.showingProfile ? "transparent" : MonitorThemes.shellColorForItem(root, "colSecondaryContainer", Appearance.colors.colSecondaryContainer)
-                            Repeater {
-                                model: root.pages
-                                NavigationRailButton {
-                                    required property var index
-                                    required property var modelData
-                                    toggled: root.currentPage === index && !root.showingProfile
-                                    onPressed: {
-                                        root.currentPage = index
-                                        root.showingProfile = false
-                                    }
-                                    expanded: navRail.expanded
-                                    buttonIcon: modelData.icon
-                                    buttonIconRotation: modelData.iconRotation || 0
-                                    buttonText: modelData.name
-                                    showToggledHighlight: false
+                    NavigationRailTabArray {
+                        currentIndex: root.currentPage
+                        expanded: navRail.expanded
+                        colToggled: root.showingProfile ? "transparent" : Appearance.colors.colSecondaryContainer
+                        Repeater {
+                            model: root.pages
+                            NavigationRailButton {
+                                required property var index
+                                required property var modelData
+                                toggled: root.currentPage === index && !root.showingProfile
+                                onPressed: {
+                                    root.currentPage = index
+                                    root.showingProfile = false
                                 }
+                                expanded: navRail.expanded
+                                buttonIcon: modelData.icon
+                                buttonIconRotation: modelData.iconRotation || 0
+                                buttonText: modelData.name
+                                showToggledHighlight: false
                             }
                         }
                     }
@@ -331,7 +328,7 @@ Item {
 
                     Loader {
                         id: profileLoader
-                        active: Config.ready && (root.showingProfile || item !== null)
+                        active: false
                         anchors.fill: parent
                         source: Qt.resolvedUrl("pages/Profile.qml")
 

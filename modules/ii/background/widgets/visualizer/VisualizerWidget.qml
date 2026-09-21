@@ -60,6 +60,15 @@ AbstractBackgroundWidget {
 
     // Cover art of the current track, cached like the media widget does
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
+    readonly property string artUrl: activePlayer?.trackArtUrl ?? ""
+    readonly property bool needsCover: isRing || useCoverColors
+    readonly property string artFilePath: `${Directories.coverArt}/${Qt.md5(artUrl)}`
+    property bool coverDownloaded: false
+    readonly property string coverUrl: {
+        if (!root.needsCover || root.artUrl.length === 0) return "";
+        if (root.artUrl.startsWith("file://")) return root.artUrl;
+        return root.coverDownloaded ? Qt.resolvedUrl(root.artFilePath) : "";
+    }
     readonly property bool isPlaying: activePlayer?.isPlaying ?? false
     readonly property list<real> points: GlobalStates.visualizerPoints
 
@@ -155,13 +164,18 @@ AbstractBackgroundWidget {
                 visible: false
             }
 
-                property real intensity: pointValue / root.maxBarHeight
-                color: Qt.rgba(
-                    MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary).r * intensity + MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer).r * (1 - intensity),
-                    MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary).g * intensity + MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer).g * (1 - intensity),
-                    MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary).b * intensity + MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer).b * (1 - intensity),
-                    1
-                )
+            VisualizerShader {
+                anchors.fill: parent
+                style: root.style
+                engine: levelEngine
+                color1: root.visualizerColors[0]
+                color2: root.visualizerColors[1]
+                color3: root.visualizerColors[2]
+                cover: coverTexture
+                hasCover: coverImage.status === Image.Ready ? 1 : 0
+            }
+        }
+    }
 
     ResizeHandler {
         anchorItem: root

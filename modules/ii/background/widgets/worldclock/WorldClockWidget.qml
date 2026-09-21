@@ -298,27 +298,10 @@ AbstractBackgroundWidget {
                         Layout.preferredWidth: 132
                         Layout.preferredHeight: 120
 
-                        backgroundColor: cityData?.isDay ?? true
-                            ? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                            : MonitorThemes.shellColorForItem(root, "colSurfaceContainerLow", Appearance.colors.colSurfaceContainerLow)
-                        handColor: cityData?.isDay ?? true
-                            ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
-                            : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
-                        centerDotColor: cityData?.isDay ?? true
-                            ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary)
-                            : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)
-                        label:       cityData?.name ?? ""
-                        labelColor:  Qt.rgba(
-                            (cityData?.isDay ?? true ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)).r,
-                            (cityData?.isDay ?? true ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)).g,
-                            (cityData?.isDay ?? true ? MonitorThemes.shellColorForItem(root, "colOnPrimary", Appearance.colors.colOnPrimary) : MonitorThemes.shellColorForItem(root, "colOnLayer0", Appearance.colors.colOnLayer0)).b,
-                            0.75)
-                        labelSpacing: 6
-                        autoTime:    false
-                        hourAngle: {
-                            if (!cityData?.time) return 0
-                            const p = cityData.time.split(":")
-                            return (parseInt(p[0]) % 12) * 30 + parseInt(p[1]) * 0.5
+                        StyledRectangularShadow {
+                            target: androidClock
+                            z: -2
+                            visible: Config.options.background.widgets.shadow
                         }
 
                         FastBlurred {

@@ -23,11 +23,11 @@ Item {
     property string artFilePath: `${artDownloadLocation}/${artFileName}`
     property color artDominantColor: Config.options.sidebar.media.artColors
         ? ColorUtils.mix(
-            (colorQuantizer?.colors[0] ?? MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)),
-            MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer),
+            (colorQuantizer?.colors[0] ?? Appearance.colors.colPrimary),
+            Appearance.colors.colPrimaryContainer,
             0.8
           )
-        : MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
+        : Appearance.colors.colPrimaryContainer
     property bool downloaded: false
     property list<real> visualizerPoints: []
     property real maxVisualizerValue: 1000
@@ -49,9 +49,7 @@ Item {
 
     onArtFilePathChanged: {
         if (!root.artUrl || root.artUrl.length == 0) {
-            root.downloaded = false
-            coverArtDownloader.running = false
-            root.artDominantColor = MonitorThemes.colorForItem(root, "secondary_container", Appearance.m3colors.m3secondaryContainer)
+            root.artDominantColor = Appearance.m3colors.m3secondaryContainer
             return
         }
         coverArtDownloader.targetFile = root.artUrl
@@ -65,9 +63,7 @@ Item {
         property string targetFile: root.artUrl
         property string artFilePath: root.artFilePath
         command: ["bash", "-c", `[ -f ${artFilePath} ] || curl -sSL '${targetFile}' -o '${artFilePath}'`]
-        onExited: (exitCode, exitStatus) => {
-            root.downloaded = exitCode === 0 && root.artUrl === targetFile
-        }
+        onExited: (exitCode, exitStatus) => { root.downloaded = true }
     }
 
     ColorQuantizer {
@@ -131,8 +127,6 @@ Item {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.preferredWidth: Math.min(parent.width * 1, parent.height * 0.45)
                 Layout.preferredHeight: Layout.preferredWidth
-                radius: Appearance.rounding.normal
-                color: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
 
                 property bool useShape: root.shapeArt && (Config.options.sidebar.media.artShape ?? "Rectangle") !== "Rectangle"
                 property int materialShape: ShapeUtils.getShape(Config.options.sidebar.media.artShape)
@@ -196,7 +190,7 @@ Item {
                     anchors.centerIn: parent 
                     fill: 1
                     text: "music_note"
-                    color: MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
+                    color: Appearance.colors.colPrimary
                     iconSize: Appearance.font.pixelSize.hugeass + 100
                 }
             }
@@ -265,20 +259,6 @@ Item {
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                textAlignment: Text.AlignHCenter
-                textColor: blendedColors.colOnLayer0
-                activeColor: blendedColors.colPrimary
-                dimColor: blendedColors.colSubtext
-                indicatorColor: {
-                    let c = blendedColors.colPrimaryContainer
-                    return (c && c != "#000000" && c != "transparent") ? c : root.artDominantColor
-                }
-                indicatorShapeColor: {
-                    let c = blendedColors.colOnPrimaryContainer
-                    if (c && c != "#000000" && c != "#ffffff" && c != "transparent") return c
-                    return blendedColors.colPrimary || MonitorThemes.shellColorForItem(root, "colPrimary", Appearance.colors.colPrimary)
-                }
-            }
 
                 Lyrics {
                     id: lyricsComp

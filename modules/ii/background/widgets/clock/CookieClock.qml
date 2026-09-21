@@ -19,6 +19,11 @@ Item {
 
     property real implicitSize: 230
 
+    required property Item wallpaperItem
+    property real originX: 0
+    property real originY: 0
+    property bool blurWidgets: Config.options.background.widgets.blurWidgets
+
     property color colShadow: MonitorThemes.shellColorForItem(root, "colShadow", Appearance.colors.colShadow)
     property color colBackground: MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer)
     property color colOnBackground: ColorUtils.mix(MonitorThemes.shellColorForItem(root, "colSecondary", Appearance.colors.colSecondary), MonitorThemes.shellColorForItem(root, "colPrimaryContainer", Appearance.colors.colPrimaryContainer), 0.15)
